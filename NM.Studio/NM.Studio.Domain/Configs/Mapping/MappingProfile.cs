@@ -7,7 +7,7 @@ public partial class MappingProfile
         UserMapping();
         ServiceMapping();
         PhotoMapping();
-        OutfitMapping();
+        ProductMapping();
         AlbumMapping();
     }
 }

@@ -12,8 +12,9 @@ public static class IncludeHelper
         return (queryable switch
         {
             IQueryable<Album> albums => Album(albums) as IQueryable<TEntity>,
-            IQueryable<Outfit> outfits => Outfit(outfits) as IQueryable<TEntity>,
+            IQueryable<Product> products => Product(products) as IQueryable<TEntity>,
             IQueryable<Service> services => Service(services) as IQueryable<TEntity>,
+            IQueryable<Category> categories => Category(categories) as IQueryable<TEntity>,
             IQueryable<Photo> photos => Photo(photos) as IQueryable<TEntity>,
             _ => queryable
         })!;
@@ -27,13 +28,14 @@ public static class IncludeHelper
         return queryable;
     }
 
-    private static IQueryable<Outfit> Outfit(IQueryable<Outfit> queryable)
+    private static IQueryable<Product> Product(IQueryable<Product> queryable)
     {
         queryable = queryable
             .Include(m => m.Size)
-            .Include(m => m.Category)
+            .Include(m => m.Category).ThenInclude(m => m.SubCategories)
+            .Include(m => m.SubCategory)
             .Include(m => m.Color)
-            .Include(m => m.OutfitXPhotos).ThenInclude(m => m.Photo);
+            .Include(m => m.ProductXPhotos).ThenInclude(m => m.Photo);
 
         return queryable;
     }
@@ -44,11 +46,18 @@ public static class IncludeHelper
 
         return queryable;
     }
+    
+    private static IQueryable<Category> Category(IQueryable<Category> queryable)
+    {
+        queryable = queryable.Include(m => m.SubCategories);
+
+        return queryable;
+    }
 
     private static IQueryable<Photo> Photo(IQueryable<Photo> queryable)
     {
         queryable = queryable
-            .Include(m => m.OutfitXPhotos).ThenInclude(m => m.Outfit)
+            .Include(m => m.ProductXPhotos).ThenInclude(m => m.Product)
             .Include(m => m.AlbumsXPhotos).ThenInclude(m => m.Album);
 
         return queryable;

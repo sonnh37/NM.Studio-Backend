@@ -9,10 +9,6 @@ public interface IBusinessResult
 
 public class BusinessResult : IBusinessResult
 {
-    public int Status { get; set; }
-    public string? Message { get; set; }
-    public object? Data { get; set; }
-
     public BusinessResult()
     {
         Status = -1;
@@ -31,4 +27,8 @@ public class BusinessResult : IBusinessResult
         Message = message;
         Data = data;
     }
+
+    public int Status { get; set; }
+    public string? Message { get; set; }
+    public object? Data { get; set; }
 }

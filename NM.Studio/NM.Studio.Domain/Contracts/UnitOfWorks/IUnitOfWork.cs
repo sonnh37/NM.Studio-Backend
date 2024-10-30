@@ -10,9 +10,9 @@ public interface IUnitOfWork : IBaseUnitOfWork
 
     IServiceRepository ServiceRepository { get; }
 
-    IOutfitRepository OutfitRepository { get; }
+    IProductRepository ProductRepository { get; }
 
-    IOutfitXPhotoRepository OutfitXPhotoRepository { get; }
+    IProductXPhotoRepository ProductXPhotoRepository { get; }
 
     IAlbumRepository AlbumRepository { get; }
 

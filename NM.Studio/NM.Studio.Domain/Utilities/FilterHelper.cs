@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.CQRS.Queries.Base;
-using NM.Studio.Domain.CQRS.Queries.Outfits;
-using NM.Studio.Domain.CQRS.Queries.Outfits.Categories;
+using NM.Studio.Domain.CQRS.Queries.Products;
+using NM.Studio.Domain.CQRS.Queries.Products.Categories;
 using NM.Studio.Domain.CQRS.Queries.Photos;
 using NM.Studio.Domain.CQRS.Queries.Services;
 using NM.Studio.Domain.CQRS.Queries.Users;
@@ -19,50 +19,27 @@ public static class FilterHelper
     {
         return query switch
         {
-            OutfitGetAllQuery outfitQuery =>
-                Outfit(queryable as IQueryable<Outfit>, outfitQuery) as IQueryable<TEntity>,
+            ProductGetAllQuery productQuery =>
+                Product(queryable as IQueryable<Product>, productQuery) as IQueryable<TEntity>,
             PhotoGetAllQuery photoQuery => Photo(queryable as IQueryable<Photo>, photoQuery) as IQueryable<TEntity>,
             ServiceGetAllQuery serviceQuery =>
                 Service(queryable as IQueryable<Service>, serviceQuery) as IQueryable<TEntity>,
+            CategoryGetAllQuery categoryGetAllQuery =>
+                Category(queryable as IQueryable<Category>, categoryGetAllQuery) as IQueryable<TEntity>,
             AlbumGetAllQuery albumQuery => Album((queryable as IQueryable<Album>)!, albumQuery) as IQueryable<TEntity>,
-            UserGetAllQuery userQuery => User(queryable as IQueryable<User>, userQuery) as IQueryable<TEntity>,
-            CategoryGetAllQuery cateQuery =>
-                Category((queryable as IQueryable<Category>)!, cateQuery) as IQueryable<TEntity>,
+            UserGetAllQuery userQuery => User((queryable as IQueryable<User>)!, userQuery) as IQueryable<TEntity>,
+            
             _ => BaseFilterHelper.Base(queryable, query)
         };
     }
 
-    private static IQueryable<Category> Category(IQueryable<Category> queryable, CategoryGetAllQuery query)
-    {
-        if (query.Name != null)
-            queryable = queryable.Where(m => m.Name != null && m.Name.ToLower().Trim() == query.Name.ToLower().Trim());
-
-        queryable = BaseFilterHelper.Base(queryable, query);
-
-        return queryable;
-    }
-
-    private static IQueryable<Outfit>? Outfit(IQueryable<Outfit>? queryable, OutfitGetAllQuery query)
+    private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
         if (query.CategoryId != null) queryable = queryable.Where(m => m.CategoryId == query.CategoryId);
         
-        queryable = BaseFilterHelper.Base(queryable, query);
-
-        return queryable;
-    }
-
-    private static IQueryable<Photo>? Photo(IQueryable<Photo>? queryable, PhotoGetAllQuery query)
-    {
-        queryable = BaseFilterHelper.Base(queryable, query);
-        return queryable;
-    }
-
-    private static IQueryable<Service>? Service(IQueryable<Service>? queryable, ServiceGetAllQuery query)
-    {
-        if (!string.IsNullOrEmpty(query.Name))
+        if (!string.IsNullOrEmpty(query.CategoryName))
         {
-            var title = SlugHelper.FromSlug(query.Name.ToLower());
-            queryable = queryable.Where(m => m.Name!.ToLower() == title);
+            queryable = queryable.Where(m => m.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
         }
         
         queryable = BaseFilterHelper.Base(queryable, query);
@@ -70,6 +47,44 @@ public static class FilterHelper
         return queryable;
     }
 
+    private static IQueryable<Category> Category(IQueryable<Category> queryable)
+    {
+        queryable = queryable.Include(m => m.SubCategories);
+
+        return queryable;
+    }
+    
+    private static IQueryable<Photo> Photo(IQueryable<Photo> queryable, PhotoGetAllQuery query)
+    {
+        queryable = BaseFilterHelper.Base(queryable, query);
+        return queryable;
+    }
+
+    private static IQueryable<Category> Category(IQueryable<Category> queryable, CategoryGetAllQuery query)
+    {
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            // var title = SlugHelper.FromSlug(query.Name.ToLower());
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim() == query.Name.ToLower().Trim());
+        }
+        
+        queryable = BaseFilterHelper.Base(queryable, query);
+
+        return queryable;
+    }
+    
+    
+    private static IQueryable<Service> Service(IQueryable<Service> queryable, ServiceGetAllQuery query)
+    {
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim() == query.Name.ToLower().Trim());
+        }
+        
+        queryable = BaseFilterHelper.Base(queryable, query);
+
+        return queryable;
+    }
     private static IQueryable<Album> Album(IQueryable<Album> queryable, AlbumGetAllQuery query)
     {
         if (!string.IsNullOrEmpty(query.Title))
@@ -87,7 +102,7 @@ public static class FilterHelper
     }
 
 
-    private static IQueryable<User>? User(IQueryable<User>? queryable, UserGetAllQuery query)
+    private static IQueryable<User>? User(IQueryable<User> queryable, UserGetAllQuery query)
     {
         if (!string.IsNullOrEmpty(query.Username))
             queryable = queryable.Where(e => e.Username.Contains(query.Username));

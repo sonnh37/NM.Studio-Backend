@@ -11,12 +11,12 @@ public partial class StudioContext : BaseDbContext
     {
     }
 
-    public virtual DbSet<Outfit> Outfits { get; set; } = null!;
+    public virtual DbSet<Product> Products { get; set; } = null!;
     public virtual DbSet<Color> Colors { get; set; } = null!;
     public virtual DbSet<Size> Sizes { get; set; } = null!;
     public virtual DbSet<Category> Categories { get; set; } = null!;
     public virtual DbSet<Photo> Photos { get; set; } = null!;
-    public virtual DbSet<OutfitXPhoto> OutfitXPhotos { get; set; } = null!;
+    public virtual DbSet<ProductXPhoto> ProductXPhotos { get; set; } = null!;
     public virtual DbSet<AlbumXPhoto> AlbumXPhotos { get; set; } = null!;
     public virtual DbSet<Service> Services { get; set; } = null!;
     public virtual DbSet<User> Users { get; set; } = null!;
@@ -46,7 +46,7 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasMany(m => m.Outfits)
+            entity.HasMany(m => m.Products)
                 .WithOne(m => m.Size)
                 .HasForeignKey(m => m.SizeId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -59,7 +59,7 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasMany(m => m.Outfits)
+            entity.HasMany(m => m.Products)
                 .WithOne(m => m.Color)
                 .HasForeignKey(m => m.ColorId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -72,24 +72,43 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasMany(m => m.Outfits)
+            // Thiết lập mối quan hệ 1-n giữa Category và SubCategory
+            entity.HasMany(c => c.SubCategories)
+                .WithOne(sc => sc.Category)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(m => m.Products)
                 .WithOne(m => m.Category)
                 .HasForeignKey(m => m.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<Outfit>(entity =>
+        modelBuilder.Entity<SubCategory>(entity =>
         {
-            entity.ToTable("Outfit");
+            entity.ToTable("SubCategory");
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NEWID()");
+
+            entity.HasOne(sc => sc.Category)
+                .WithMany(c => c.SubCategories)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("Product");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
-            entity.HasMany(m => m.OutfitXPhotos)
-                .WithOne(m => m.Outfit)
-                .HasForeignKey(m => m.OutfitId)
+            entity.HasMany(m => m.ProductXPhotos)
+                .WithOne(m => m.Product)
+                .HasForeignKey(m => m.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -120,9 +139,9 @@ public partial class StudioContext : BaseDbContext
                 .HasForeignKey(photo => photo.AlbumId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasMany(m => m.OutfitXPhotos)
+            entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Photo)
-                .HasForeignKey(photo => photo.OutfitId)
+                .HasForeignKey(photo => photo.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -146,21 +165,21 @@ public partial class StudioContext : BaseDbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<OutfitXPhoto>(entity =>
+        modelBuilder.Entity<ProductXPhoto>(entity =>
         {
-            entity.ToTable("OutfitXPhoto");
+            entity.ToTable("ProductXPhoto");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasOne(m => m.Outfit)
-                .WithMany(m => m.OutfitXPhotos)
-                .HasForeignKey(photo => photo.OutfitId)
+            entity.HasOne(m => m.Product)
+                .WithMany(m => m.ProductXPhotos)
+                .HasForeignKey(photo => photo.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasOne(m => m.Photo)
-                .WithMany(m => m.OutfitXPhotos)
+                .WithMany(m => m.ProductXPhotos)
                 .HasForeignKey(photo => photo.PhotoId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

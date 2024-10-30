@@ -5,6 +5,8 @@ namespace NM.Studio.Domain.Entities;
 public class Category : BaseEntity
 {
     public string? Name { get; set; }
+    
+    public virtual ICollection<SubCategory> SubCategories { get; set; } = new List<SubCategory>();
 
-    public virtual ICollection<Outfit> Outfits { get; set; } = new List<Outfit>();
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

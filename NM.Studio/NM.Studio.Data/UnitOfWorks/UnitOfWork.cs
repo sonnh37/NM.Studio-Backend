@@ -16,9 +16,9 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IServiceRepository ServiceRepository => GetRepository<IServiceRepository>();
 
-    public IOutfitRepository OutfitRepository => GetRepository<IOutfitRepository>();
+    public IProductRepository ProductRepository => GetRepository<IProductRepository>();
 
-    public IOutfitXPhotoRepository OutfitXPhotoRepository => GetRepository<IOutfitXPhotoRepository>();
+    public IProductXPhotoRepository ProductXPhotoRepository => GetRepository<IProductXPhotoRepository>();
 
     public IAlbumRepository AlbumRepository => GetRepository<IAlbumRepository>();
 

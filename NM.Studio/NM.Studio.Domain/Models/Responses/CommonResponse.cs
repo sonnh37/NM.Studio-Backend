@@ -5,9 +5,6 @@ namespace NM.Studio.Domain.Models.Responses;
 
 public class LoginResponse
 {
-    public string? Token { get; set; }
-    public string? Expiration { get; set; }
-
     public LoginResponse()
     {
     }
@@ -17,13 +14,13 @@ public class LoginResponse
         Token = token;
         Expiration = expiration;
     }
+
+    public string? Token { get; set; }
+    public string? Expiration { get; set; }
 }
 
 public class ResultResponse<TResult> where TResult : class
 {
-
-    public TResult? Result { get; set; }
-
     public ResultResponse()
     {
     }
@@ -32,14 +29,12 @@ public class ResultResponse<TResult> where TResult : class
     {
         Result = result;
     }
+
+    public TResult? Result { get; set; }
 }
 
 public class ResultsResponse<TResult> where TResult : class
 {
-    public List<TResult>? Results { get; set; }
-
-    public int TotalRecords { get; set; }
-
     public ResultsResponse()
     {
     }
@@ -49,26 +44,14 @@ public class ResultsResponse<TResult> where TResult : class
         Results = results;
         TotalRecords = results?.Count ?? 0;
     }
+
+    public List<TResult>? Results { get; set; }
+
+    public int TotalRecords { get; set; }
 }
 
 public class PagedResponse<TResult> where TResult : class
 {
-    public List<TResult>? Results { get; }
-
-    public int? TotalPages { get; protected set; }
-
-    public int? TotalRecordsPerPage { get; protected set; }
-
-    public int? TotalRecords { get; protected set; }
-
-    public int? PageNumber { get; protected set; }
-
-    public int? PageSize { get; protected set; }
-
-    public string? SortField { get; protected set; }
-
-    public SortOrder? SortOrder { get; protected set; }
-
     public PagedResponse()
     {
     }
@@ -86,4 +69,20 @@ public class PagedResponse<TResult> where TResult : class
             ? (int)Math.Ceiling((decimal)(totalOrigin / (double)pagedQuery.PageSize))
             : null;
     }
+
+    public List<TResult>? Results { get; }
+
+    public int? TotalPages { get; protected set; }
+
+    public int? TotalRecordsPerPage { get; protected set; }
+
+    public int? TotalRecords { get; protected set; }
+
+    public int? PageNumber { get; protected set; }
+
+    public int? PageSize { get; protected set; }
+
+    public string? SortField { get; protected set; }
+
+    public SortOrder? SortOrder { get; protected set; }
 }

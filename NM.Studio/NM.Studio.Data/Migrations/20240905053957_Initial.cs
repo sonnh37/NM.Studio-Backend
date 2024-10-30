@@ -185,7 +185,7 @@ namespace NM.Studio.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Outfit",
+                name: "Product",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
@@ -205,21 +205,21 @@ namespace NM.Studio.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Outfit", x => x.Id);
+                    table.PrimaryKey("PK_Product", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Outfit_Category_CategoryId",
+                        name: "FK_Product_Category_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Category",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Outfit_Color_ColorId",
+                        name: "FK_Product_Color_ColorId",
                         column: x => x.ColorId,
                         principalTable: "Color",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Outfit_Size_SizeId",
+                        name: "FK_Product_Size_SizeId",
                         column: x => x.SizeId,
                         principalTable: "Size",
                         principalColumn: "Id",
@@ -227,11 +227,11 @@ namespace NM.Studio.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OutfitXPhoto",
+                name: "ProductXPhoto",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false, defaultValueSql: "NEWID()"),
-                    OutfitId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     PhotoId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -241,15 +241,15 @@ namespace NM.Studio.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OutfitXPhoto", x => x.Id);
+                    table.PrimaryKey("PK_ProductXPhoto", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OutfitXPhoto_Outfit_OutfitId",
-                        column: x => x.OutfitId,
-                        principalTable: "Outfit",
+                        name: "FK_ProductXPhoto_Product_ProductId",
+                        column: x => x.ProductId,
+                        principalTable: "Product",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_OutfitXPhoto_Photo_PhotoId",
+                        name: "FK_ProductXPhoto_Photo_PhotoId",
                         column: x => x.PhotoId,
                         principalTable: "Photo",
                         principalColumn: "Id",
@@ -267,28 +267,28 @@ namespace NM.Studio.Data.Migrations
                 column: "PhotoId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Outfit_CategoryId",
-                table: "Outfit",
+                name: "IX_Product_CategoryId",
+                table: "Product",
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Outfit_ColorId",
-                table: "Outfit",
+                name: "IX_Product_ColorId",
+                table: "Product",
                 column: "ColorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Outfit_SizeId",
-                table: "Outfit",
+                name: "IX_Product_SizeId",
+                table: "Product",
                 column: "SizeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OutfitXPhoto_OutfitId",
-                table: "OutfitXPhoto",
-                column: "OutfitId");
+                name: "IX_ProductXPhoto_ProductId",
+                table: "ProductXPhoto",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OutfitXPhoto_PhotoId",
-                table: "OutfitXPhoto",
+                name: "IX_ProductXPhoto_PhotoId",
+                table: "ProductXPhoto",
                 column: "PhotoId");
         }
 
@@ -299,7 +299,7 @@ namespace NM.Studio.Data.Migrations
                 name: "AlbumXPhoto");
 
             migrationBuilder.DropTable(
-                name: "OutfitXPhoto");
+                name: "ProductXPhoto");
 
             migrationBuilder.DropTable(
                 name: "Service");
@@ -311,7 +311,7 @@ namespace NM.Studio.Data.Migrations
                 name: "Album");
 
             migrationBuilder.DropTable(
-                name: "Outfit");
+                name: "Product");
 
             migrationBuilder.DropTable(
                 name: "Photo");

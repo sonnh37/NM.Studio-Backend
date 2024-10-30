@@ -10,7 +10,7 @@ public enum UserStatus
     Inactive
 }
 
-public enum OutfitStatus
+public enum ProductStatus
 {
     // Trạng thái không xác định hoặc chưa thiết lập
     Unspecified = 0,

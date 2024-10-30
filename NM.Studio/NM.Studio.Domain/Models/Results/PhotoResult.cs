@@ -16,9 +16,9 @@ public class PhotoResult : BaseResult
 
     public Guid? AlbumId { get; set; }
 
-    public Guid? OutfitId { get; set; }
+    public Guid? ProductId { get; set; }
 
     public List<AlbumXPhotoResult> AlbumsXPhotos { get; set; } = new();
 
-    public List<OutfitXPhotoResult> OutfitXPhotos { get; set; }
+    public List<ProductXPhotoResult> ProductXPhotos { get; set; } = new();
 }

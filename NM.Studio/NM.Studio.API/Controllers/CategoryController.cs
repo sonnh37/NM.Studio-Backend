@@ -1,5 +1,5 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Outfits.Categories;
-using NM.Studio.Domain.CQRS.Queries.Outfits.Categories;
+﻿using NM.Studio.Domain.CQRS.Commands.Products.Categories;
+using NM.Studio.Domain.CQRS.Queries.Products.Categories;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

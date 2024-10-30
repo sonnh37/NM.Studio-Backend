@@ -11,12 +11,12 @@ public static class RepositoryRegistration
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IOutfitRepository, OutfitRepository>();
+        services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
         services.AddScoped<IPhotoRepository, PhotoRepository>();
         services.AddScoped<IAlbumRepository, AlbumRepository>();
         services.AddScoped<IAlbumXPhotoRepository, AlbumXPhotoRepository>();
-        services.AddScoped<IOutfitXPhotoRepository, OutfitXPhotoRepository>();
+        services.AddScoped<IProductXPhotoRepository, ProductXPhotoRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
     }
 }

@@ -8,12 +8,12 @@ public static class ServiceRegistration
     public static void AddCustomServices(this IServiceCollection services)
     {
         services.AddTransient<IUserService, UserService>();
-        services.AddTransient<IOutfitService, OutfitService>();
+        services.AddTransient<IProductService, ProductService>();
         services.AddTransient<IServiceService, ServiceService>();
         services.AddTransient<IPhotoService, PhotoService>();
         services.AddTransient<IAlbumService, AlbumService>();
         services.AddTransient<IAlbumXPhotoService, AlbumXPhotoService>();
-        services.AddTransient<IOutfitXPhotoService, OutfitXPhotoService>();
+        services.AddTransient<IProductXPhotoService, ProductXPhotoService>();
         services.AddTransient<ICategoryService, CategoryService>();
     }
 }

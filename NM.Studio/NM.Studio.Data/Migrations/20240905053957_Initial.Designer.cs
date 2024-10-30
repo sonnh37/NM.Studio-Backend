@@ -158,7 +158,7 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("Color", (string)null);
                 });
 
-            modelBuilder.Entity("CMS.Studio.Domain.Entities.Outfit", b =>
+            modelBuilder.Entity("CMS.Studio.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -212,10 +212,10 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasIndex("SizeId");
 
-                    b.ToTable("Outfit", (string)null);
+                    b.ToTable("Product", (string)null);
                 });
 
-            modelBuilder.Entity("CMS.Studio.Domain.Entities.OutfitXPhoto", b =>
+            modelBuilder.Entity("CMS.Studio.Domain.Entities.ProductXPhoto", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -237,7 +237,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<DateTime?>("LastUpdatedDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("OutfitId")
+                    b.Property<Guid?>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PhotoId")
@@ -245,11 +245,11 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OutfitId");
+                    b.HasIndex("ProductId");
 
                     b.HasIndex("PhotoId");
 
-                    b.ToTable("OutfitXPhoto", (string)null);
+                    b.ToTable("ProductXPhoto", (string)null);
                 });
 
             modelBuilder.Entity("CMS.Studio.Domain.Entities.Photo", b =>
@@ -455,20 +455,20 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Photo");
                 });
 
-            modelBuilder.Entity("CMS.Studio.Domain.Entities.Outfit", b =>
+            modelBuilder.Entity("CMS.Studio.Domain.Entities.Product", b =>
                 {
                     b.HasOne("CMS.Studio.Domain.Entities.Category", "Category")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("CMS.Studio.Domain.Entities.Color", "Color")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("ColorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("CMS.Studio.Domain.Entities.Size", "Size")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -479,19 +479,19 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Size");
                 });
 
-            modelBuilder.Entity("CMS.Studio.Domain.Entities.OutfitXPhoto", b =>
+            modelBuilder.Entity("CMS.Studio.Domain.Entities.ProductXPhoto", b =>
                 {
-                    b.HasOne("CMS.Studio.Domain.Entities.Outfit", "Outfit")
-                        .WithMany("OutfitXPhotos")
-                        .HasForeignKey("OutfitId")
+                    b.HasOne("CMS.Studio.Domain.Entities.Product", "Product")
+                        .WithMany("ProductXPhotos")
+                        .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("CMS.Studio.Domain.Entities.Photo", "Photo")
-                        .WithMany("OutfitXPhotos")
+                        .WithMany("ProductXPhotos")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Outfit");
+                    b.Navigation("Product");
 
                     b.Navigation("Photo");
                 });
@@ -503,29 +503,29 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("CMS.Studio.Domain.Entities.Category", b =>
                 {
-                    b.Navigation("Outfits");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("CMS.Studio.Domain.Entities.Color", b =>
                 {
-                    b.Navigation("Outfits");
+                    b.Navigation("Products");
                 });
 
-            modelBuilder.Entity("CMS.Studio.Domain.Entities.Outfit", b =>
+            modelBuilder.Entity("CMS.Studio.Domain.Entities.Product", b =>
                 {
-                    b.Navigation("OutfitXPhotos");
+                    b.Navigation("ProductXPhotos");
                 });
 
             modelBuilder.Entity("CMS.Studio.Domain.Entities.Photo", b =>
                 {
                     b.Navigation("AlbumsXPhotos");
 
-                    b.Navigation("OutfitXPhotos");
+                    b.Navigation("ProductXPhotos");
                 });
 
             modelBuilder.Entity("CMS.Studio.Domain.Entities.Size", b =>
                 {
-                    b.Navigation("Outfits");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

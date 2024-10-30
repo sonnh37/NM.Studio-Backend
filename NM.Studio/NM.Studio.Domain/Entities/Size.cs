@@ -6,5 +6,5 @@ public class Size : BaseEntity
 {
     public string? Name { get; set; }
 
-    public virtual ICollection<Outfit> Outfits { get; set; } = new List<Outfit>();
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

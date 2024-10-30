@@ -155,7 +155,49 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("Color", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Outfit", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Href")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Src")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Photo", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -201,6 +243,9 @@ namespace NM.Studio.Data.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("SubCategoryId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
@@ -209,10 +254,12 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasIndex("SizeId");
 
-                    b.ToTable("Outfit", (string)null);
+                    b.HasIndex("SubCategoryId");
+
+                    b.ToTable("Product", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.OutfitXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -233,62 +280,20 @@ namespace NM.Studio.Data.Migrations
 
                     b.Property<DateTime?>("LastUpdatedDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("OutfitId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PhotoId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("Id");
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.HasIndex("OutfitId");
+                    b.HasKey("Id");
 
                     b.HasIndex("PhotoId");
 
-                    b.ToTable("OutfitXPhoto", (string)null);
-                });
+                    b.HasIndex("ProductId");
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWID()");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Href")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("LastUpdatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Src")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Tag")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Photo", (string)null);
+                    b.ToTable("ProductXPhoto", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
@@ -367,6 +372,41 @@ namespace NM.Studio.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Size", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWID()");
+
+                    b.Property<Guid?>("CategoryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("SubCategory", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.User", b =>
@@ -452,45 +492,61 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Photo");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Outfit", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.Color", "Color")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("ColorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.Size", "Size")
-                        .WithMany("Outfits")
+                        .WithMany("Products")
                         .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("NM.Studio.Domain.Entities.SubCategory", "SubCategory")
+                        .WithMany()
+                        .HasForeignKey("SubCategoryId");
 
                     b.Navigation("Category");
 
                     b.Navigation("Color");
 
                     b.Navigation("Size");
+
+                    b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.OutfitXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
                 {
-                    b.HasOne("NM.Studio.Domain.Entities.Outfit", "Outfit")
-                        .WithMany("OutfitXPhotos")
-                        .HasForeignKey("OutfitId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("NM.Studio.Domain.Entities.Photo", "Photo")
-                        .WithMany("OutfitXPhotos")
+                        .WithMany("ProductXPhotos")
                         .HasForeignKey("PhotoId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Outfit");
+                    b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
+                        .WithMany("ProductXPhotos")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Photo");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Album", b =>
@@ -500,29 +556,31 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Category", b =>
                 {
-                    b.Navigation("Outfits");
+                    b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Color", b =>
                 {
-                    b.Navigation("Outfits");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Outfit", b =>
-                {
-                    b.Navigation("OutfitXPhotos");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
                 {
                     b.Navigation("AlbumsXPhotos");
 
-                    b.Navigation("OutfitXPhotos");
+                    b.Navigation("ProductXPhotos");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
+                {
+                    b.Navigation("ProductXPhotos");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Size", b =>
                 {
-                    b.Navigation("Outfits");
+                    b.Navigation("Products");
                 });
 #pragma warning restore 612, 618
         }

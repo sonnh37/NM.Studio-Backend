@@ -1,5 +1,5 @@
 ﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.Outfits.Categories;
+using NM.Studio.Domain.CQRS.Queries.Products.Categories;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using MediatR;

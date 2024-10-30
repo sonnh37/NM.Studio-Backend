@@ -16,5 +16,5 @@ public class Photo : BaseEntity
 
     public virtual ICollection<AlbumXPhoto> AlbumsXPhotos { get; set; } = new List<AlbumXPhoto>();
 
-    public virtual ICollection<OutfitXPhoto> OutfitXPhotos { get; set; } = new List<OutfitXPhoto>();
+    public virtual ICollection<ProductXPhoto> ProductXPhotos { get; set; } = new List<ProductXPhoto>();
 }

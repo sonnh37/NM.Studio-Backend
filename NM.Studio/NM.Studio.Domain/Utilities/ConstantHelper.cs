@@ -13,9 +13,9 @@ public class ConstantHelper
 
     public const string Categories = $"{BaseApi}/categories";
 
-    public const string Outfits = $"{BaseApi}/outfits";
+    public const string Products = $"{BaseApi}/products";
 
-    public const string OutfitXPhoto = $"{BaseApi}/outfitXPhotos";
+    public const string ProductXPhoto = $"{BaseApi}/productXPhotos";
 
     public const string Photos = $"{BaseApi}/photos";
 
