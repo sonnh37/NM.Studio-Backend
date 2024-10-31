@@ -25,4 +25,6 @@ public class ProductGetAllQuery : GetAllQuery
     //
     
     public string? CategoryName { get; set; }
+    
+    public string? SubCategoryName { get; set; }
 }

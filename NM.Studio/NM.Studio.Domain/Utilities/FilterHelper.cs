@@ -42,6 +42,11 @@ public static class FilterHelper
             queryable = queryable.Where(m => m.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
         }
         
+        if (!string.IsNullOrEmpty(query.SubCategoryName))
+        {
+            queryable = queryable.Where(m => m.SubCategory!.Name!.ToLower().Trim() == query.SubCategoryName.ToLower().Trim());
+        }
+        
         queryable = BaseFilterHelper.Base(queryable, query);
 
         return queryable;
