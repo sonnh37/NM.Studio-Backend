@@ -35,11 +35,11 @@ public static class FilterHelper
 
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
-        if (query.CategoryId != null) queryable = queryable.Where(m => m.CategoryId == query.CategoryId);
+        if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory.CategoryId == query.CategoryId);
         
         if (!string.IsNullOrEmpty(query.CategoryName))
         {
-            queryable = queryable.Where(m => m.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
+            queryable = queryable.Where(m => m.SubCategory!.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
         }
         
         if (!string.IsNullOrEmpty(query.SubCategoryName))

@@ -32,8 +32,7 @@ public static class IncludeHelper
     {
         queryable = queryable
             .Include(m => m.Size)
-            .Include(m => m.Category).ThenInclude(m => m.SubCategories)
-            .Include(m => m.SubCategory)
+            .Include(m => m.SubCategory).ThenInclude(m => m.Category)
             .Include(m => m.Color)
             .Include(m => m.ProductXPhotos).ThenInclude(m => m.Photo);
 

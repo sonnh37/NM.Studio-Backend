@@ -78,10 +78,7 @@ public partial class StudioContext : BaseDbContext
                 .HasForeignKey(sc => sc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(m => m.Products)
-                .WithOne(m => m.Category)
-                .HasForeignKey(m => m.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+            
         });
 
         modelBuilder.Entity<SubCategory>(entity =>
@@ -94,6 +91,11 @@ public partial class StudioContext : BaseDbContext
             entity.HasOne(sc => sc.Category)
                 .WithMany(c => c.SubCategories)
                 .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(m => m.Products)
+                .WithOne(m => m.SubCategory)
+                .HasForeignKey(m => m.SubCategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

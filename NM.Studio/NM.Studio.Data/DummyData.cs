@@ -141,7 +141,7 @@ public static class DummyData
         var productFaker = new Faker<Product>()
             .RuleFor(o => o.Id, f => Guid.NewGuid())
             .RuleFor(o => o.Sku, f => f.Commerce.Ean13())
-            .RuleFor(o => o.CategoryId, f => f.PickRandom(context.Set<Category>().Select(c => c.Id).ToList()))
+            .RuleFor(o => o.SubCategoryId, f => f.PickRandom(context.Set<SubCategory>().Select(c => c.Id).ToList()))
             .RuleFor(o => o.SizeId, f => f.PickRandom(context.Set<Size>().Select(s => s.Id).ToList()))
             .RuleFor(o => o.ColorId, f => f.PickRandom(context.Set<Color>().Select(c => c.Id).ToList()))
             .RuleFor(o => o.Name, f => f.Commerce.ProductName())
@@ -164,18 +164,18 @@ public static class DummyData
             product.CreatedBy = commonUserEmail;
             product.LastUpdatedBy = commonUserEmail;
 
-            // Lấy danh sách SubCategory tương ứng với CategoryId
-            var subCategories = context.Set<SubCategory>()
-                .Where(sc => sc.CategoryId == product.CategoryId)
-                .Select(sc => sc.Id)
-                .ToList();
-
-            // Chọn ngẫu nhiên SubCategoryId từ danh sách
-            if (subCategories.Any())
-            {
-                var categoryIndex = new Random().Next(0, subCategories.Count);
-                product.SubCategoryId = subCategories[categoryIndex];
-            }
+            // // Lấy danh sách SubCategory tương ứng với CategoryId
+            // var subCategories = context.Set<SubCategory>()
+            //     .Where(sc => sc.CategoryId == product.CategoryId)
+            //     .Select(sc => sc.Id)
+            //     .ToList();
+            //
+            // // Chọn ngẫu nhiên SubCategoryId từ danh sách
+            // if (subCategories.Any())
+            // {
+            //     var categoryIndex = new Random().Next(0, subCategories.Count);
+            //     product.SubCategoryId = subCategories[categoryIndex];
+            // }
         }
 
         context.Set<Product>().AddRange(products);

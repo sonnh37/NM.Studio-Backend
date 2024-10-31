@@ -7,8 +7,6 @@ public class Product : BaseEntity
 {
     public string? Sku { get; set; }
 
-    public Guid? CategoryId { get; set; }
-    
     public Guid? SubCategoryId { get; set; }
 
     public Guid? SizeId { get; set; }
@@ -23,8 +21,6 @@ public class Product : BaseEntity
 
     public virtual Color? Color { get; set; }
 
-    public virtual Category? Category { get; set; }
-    
     public virtual SubCategory? SubCategory { get; set; }
 
     public virtual Size? Size { get; set; }

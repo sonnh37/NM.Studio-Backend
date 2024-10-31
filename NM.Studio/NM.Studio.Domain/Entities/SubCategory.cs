@@ -10,4 +10,5 @@ public class SubCategory : BaseEntity
     
     public virtual Category? Category { get; set; }
     
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

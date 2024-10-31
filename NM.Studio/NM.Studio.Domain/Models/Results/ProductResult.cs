@@ -23,8 +23,6 @@ public class ProductResult : BaseResult
 
     public ColorResult? Color { get; set; }
 
-    public CategoryResult? Category { get; set; }
-    
     public SubCategoryResult? SubCategory { get; set; }
 
     public SizeResult? Size { get; set; }
