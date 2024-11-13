@@ -25,4 +25,10 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public IAlbumXPhotoRepository AlbumXPhotoRepository => GetRepository<IAlbumXPhotoRepository>();
 
     public ICategoryRepository CategoryRepository => GetRepository<ICategoryRepository>();
+    
+    public ISubCategoryRepository SubCategoryRepository => GetRepository<ISubCategoryRepository>();
+    
+    public IColorRepository ColorRepository => GetRepository<IColorRepository>();
+    
+    public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();  
 }

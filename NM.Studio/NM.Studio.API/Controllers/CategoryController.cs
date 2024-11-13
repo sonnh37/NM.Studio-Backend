@@ -1,9 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Products.Categories;
-using NM.Studio.Domain.CQRS.Queries.Products.Categories;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.CQRS.Commands.Categories;
+using NM.Studio.Domain.CQRS.Queries.Categories;
 
 namespace NM.Studio.API.Controllers;
 

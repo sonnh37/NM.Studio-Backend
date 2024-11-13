@@ -1,6 +1,8 @@
-﻿namespace NM.Studio.Domain.Models.Results;
+﻿using NM.Studio.Domain.Models.Results.Bases;
 
-public class SubCategoryResult
+namespace NM.Studio.Domain.Models.Results;
+
+public class SubCategoryResult : BaseResult
 {
     public string? Name { get; set; }
 

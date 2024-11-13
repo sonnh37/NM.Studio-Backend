@@ -136,7 +136,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             if (entity == null) return null;
             _mapper.Map(updateCommand, entity);
             SetBaseEntityUpdate(entity);
-            _baseRepository.Update(entity);
+            _baseRepository.Update(entity); 
         }
         else
         {

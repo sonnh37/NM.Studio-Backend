@@ -15,5 +15,8 @@ public static class ServiceRegistration
         services.AddTransient<IAlbumXPhotoService, AlbumXPhotoService>();
         services.AddTransient<IProductXPhotoService, ProductXPhotoService>();
         services.AddTransient<ICategoryService, CategoryService>();
+        services.AddTransient<ISizeService, SizeService>();
+        services.AddTransient<IColorService, ColorService>();
+        services.AddTransient<ISubCategoryService, SubCategoryService>();
     }
 }

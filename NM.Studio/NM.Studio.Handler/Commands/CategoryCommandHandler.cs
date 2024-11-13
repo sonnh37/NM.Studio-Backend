@@ -1,7 +1,7 @@
 ﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Products.Categories;
 using NM.Studio.Domain.Models.Responses;
 using MediatR;
+using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 

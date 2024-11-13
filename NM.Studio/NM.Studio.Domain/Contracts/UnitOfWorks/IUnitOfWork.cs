@@ -19,4 +19,10 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IAlbumXPhotoRepository AlbumXPhotoRepository { get; }
 
     ICategoryRepository CategoryRepository { get; }
+    
+    ISubCategoryRepository SubCategoryRepository { get; }
+    
+    IColorRepository ColorRepository { get; }
+    
+    ISizeRepository SizeRepository { get; }
 }

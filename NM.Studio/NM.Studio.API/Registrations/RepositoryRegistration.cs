@@ -18,5 +18,8 @@ public static class RepositoryRegistration
         services.AddScoped<IAlbumXPhotoRepository, AlbumXPhotoRepository>();
         services.AddScoped<IProductXPhotoRepository, ProductXPhotoRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ISizeRepository, SizeRepository>();
+        services.AddScoped<IColorRepository, ColorRepository>();
+        services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
     }
 }

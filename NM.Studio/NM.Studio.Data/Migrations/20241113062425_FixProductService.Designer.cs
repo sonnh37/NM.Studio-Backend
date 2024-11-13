@@ -12,8 +12,8 @@ using NM.Studio.Data.Context;
 namespace NM.Studio.Data.Migrations
 {
     [DbContext(typeof(StudioContext))]
-    [Migration("20241031125435_FixProduct")]
-    partial class FixProduct
+    [Migration("20241113062425_FixProductService")]
+    partial class FixProductService
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -240,8 +240,9 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Sku")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("SubCategoryId")
                         .HasColumnType("uniqueidentifier");
@@ -310,12 +311,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("time");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -330,9 +325,6 @@ namespace NM.Studio.Data.Migrations
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18, 2)");
-
-                    b.Property<string>("Promotion")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Src")
                         .HasColumnType("nvarchar(max)");

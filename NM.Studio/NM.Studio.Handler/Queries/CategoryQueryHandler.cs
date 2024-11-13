@@ -1,8 +1,8 @@
 ﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.Products.Categories;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using MediatR;
+using NM.Studio.Domain.CQRS.Queries.Categories;
 
 namespace NM.Studio.Handler.Queries;
 

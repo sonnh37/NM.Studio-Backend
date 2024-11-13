@@ -144,6 +144,7 @@ public static class DummyData
             .RuleFor(o => o.SubCategoryId, f => f.PickRandom(context.Set<SubCategory>().Select(c => c.Id).ToList()))
             .RuleFor(o => o.SizeId, f => f.PickRandom(context.Set<Size>().Select(s => s.Id).ToList()))
             .RuleFor(o => o.ColorId, f => f.PickRandom(context.Set<Color>().Select(c => c.Id).ToList()))
+            .RuleFor(v => v.Status, f => f.PickRandom<ProductStatus>())
             .RuleFor(o => o.Name, f => f.Commerce.ProductName())
             .RuleFor(o => o.Price, f => f.Finance.Amount(50, 500)) // Giá từ 50 đến 500
             .RuleFor(o => o.Description, f => f.Lorem.Paragraph())
@@ -234,13 +235,6 @@ public static class DummyData
                 .RuleFor(s => s.Description, f => f.Lorem.Paragraph())
                 .RuleFor(s => s.Src, f => f.Image.PicsumUrl())
                 .RuleFor(s => s.Price, f => f.Finance.Amount(50)) // giá từ 50 đến 1000
-                .RuleFor(s => s.Duration, f =>
-                {
-                    var randomMinutes = f.Random.Int(30, 240); // thời gian từ 30 phút đến 4 giờ
-                    return TimeSpan.FromMinutes(randomMinutes);
-                })
-                .RuleFor(s => s.Promotion, f => f.Commerce.ProductAdjective()) // Ví dụ như "Giảm giá 20%"
-                .RuleFor(s => s.IsActive, f => f.Random.Bool())
                 .RuleFor(u => u.CreatedDate, f => f.Date.Past(2))
                 .RuleFor(u => u.LastUpdatedDate, f => f.Date.Recent())
                 .RuleFor(u => u.IsDeleted, f => false);

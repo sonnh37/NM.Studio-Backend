@@ -11,10 +11,4 @@ public class Service : BaseEntity
     public string? Src { get; set; }
 
     public decimal? Price { get; set; }
-
-    public TimeSpan? Duration { get; set; }
-
-    public string? Promotion { get; set; }
-
-    public bool IsActive { get; set; }
 }

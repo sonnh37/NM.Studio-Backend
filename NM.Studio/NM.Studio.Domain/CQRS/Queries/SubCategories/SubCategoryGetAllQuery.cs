@@ -1,6 +1,6 @@
 ﻿using NM.Studio.Domain.CQRS.Queries.Base;
 
-namespace NM.Studio.Domain.CQRS.Queries.Products.Categories.SubCategories;
+namespace NM.Studio.Domain.CQRS.Queries.SubCategories;
 
 public class SubCategoryGetAllQuery : GetAllQuery
 {

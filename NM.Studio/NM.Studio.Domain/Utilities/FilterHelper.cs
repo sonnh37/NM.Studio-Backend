@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.CQRS.Queries.Base;
+using NM.Studio.Domain.CQRS.Queries.Categories;
 using NM.Studio.Domain.CQRS.Queries.Products;
-using NM.Studio.Domain.CQRS.Queries.Products.Categories;
 using NM.Studio.Domain.CQRS.Queries.Photos;
 using NM.Studio.Domain.CQRS.Queries.Services;
 using NM.Studio.Domain.CQRS.Queries.Users;
@@ -35,7 +35,7 @@ public static class FilterHelper
 
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
-        if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory.CategoryId == query.CategoryId);
+        if (query.SubCategoryId != null) queryable = queryable.Where(m => m.SubCategoryId == query.SubCategoryId);
         
         if (!string.IsNullOrEmpty(query.CategoryName))
         {
@@ -45,6 +45,11 @@ public static class FilterHelper
         if (!string.IsNullOrEmpty(query.SubCategoryName))
         {
             queryable = queryable.Where(m => m.SubCategory!.Name!.ToLower().Trim() == query.SubCategoryName.ToLower().Trim());
+        }
+        
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
         }
         
         queryable = BaseFilterHelper.Base(queryable, query);

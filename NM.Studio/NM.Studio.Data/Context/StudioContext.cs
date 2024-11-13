@@ -1,6 +1,8 @@
 ﻿using NM.Studio.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
+using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Data.Context;
 
@@ -93,11 +95,10 @@ public partial class StudioContext : BaseDbContext
                 .HasForeignKey(sc => sc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasMany(m => m.Products)
-                .WithOne(m => m.SubCategory)
-                .HasForeignKey(m => m.SubCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+           
         });
+        
+        var statusProduct = new EnumToStringConverter<ProductStatus>();
 
         modelBuilder.Entity<Product>(entity =>
         {
@@ -105,12 +106,20 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
+            
+            entity.Property(x => x.Status)
+                .HasConversion(statusProduct);
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
             entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Product)
                 .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.SubCategory)
+                .WithMany(m => m.Products)
+                .HasForeignKey(m => m.SubCategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

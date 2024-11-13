@@ -49,6 +49,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return await queryable.ToListAsync();
     }
 
+    public DbSet<TEntity> Context()
+    {
+        return DbSet;
+    }
+
     public async Task<bool> IsExistById(Guid id)
     {
         return await DbSet.AnyAsync(t => t.Id.Equals(id));
@@ -159,6 +164,14 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
         return entity;
     }
+    
+    // public virtual async Task<TEntity?> GetByIdNoInclude(Guid id)
+    // {
+    //     var queryable = GetQueryable(x => x.Id == id);
+    //     var entity = await queryable.FirstOrDefaultAsync();
+    //
+    //     return entity;
+    // }
 
     public virtual async Task<IList<TEntity>> GetByIds(IList<Guid> ids)
     {
