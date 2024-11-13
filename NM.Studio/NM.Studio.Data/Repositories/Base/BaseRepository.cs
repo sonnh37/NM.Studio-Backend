@@ -165,13 +165,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return entity;
     }
     
-    // public virtual async Task<TEntity?> GetByIdNoInclude(Guid id)
-    // {
-    //     var queryable = GetQueryable(x => x.Id == id);
-    //     var entity = await queryable.FirstOrDefaultAsync();
-    //
-    //     return entity;
-    // }
+    public virtual async Task<TEntity?> GetByIdNoInclude(Guid id)
+    {
+        var queryable = GetQueryable(x => x.Id == id);
+        var entity = await queryable.FirstOrDefaultAsync();
+    
+        return entity;
+    }
 
     public virtual async Task<IList<TEntity>> GetByIds(IList<Guid> ids)
     {

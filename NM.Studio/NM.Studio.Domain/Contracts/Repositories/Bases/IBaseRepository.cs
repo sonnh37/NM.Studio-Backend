@@ -28,7 +28,7 @@ public interface IBaseRepository<TEntity> : IBaseRepository
 
     Task<TEntity?> GetById(Guid id);
     
-   // Task<TEntity?> GetByIdNoInclude(Guid id);
+    Task<TEntity?> GetByIdNoInclude(Guid id);
 
     Task<IList<TEntity>> GetByIds(IList<Guid> ids);
 

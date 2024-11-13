@@ -132,7 +132,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         TEntity? entity;
         if (createOrUpdateCommand is UpdateCommand updateCommand)
         {
-            entity = await _baseRepository.GetById(updateCommand.Id);
+            entity = await _baseRepository.GetByIdNoInclude(updateCommand.Id);
             if (entity == null) return null;
             _mapper.Map(updateCommand, entity);
             SetBaseEntityUpdate(entity);
