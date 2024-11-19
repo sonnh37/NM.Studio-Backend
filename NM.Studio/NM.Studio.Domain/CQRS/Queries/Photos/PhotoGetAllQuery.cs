@@ -20,6 +20,11 @@ public class PhotoGetAllQuery : GetAllQuery
         get;
         set;
     }
+    
+    public Guid? ProductId {
+        get;
+        set;
+    }
 
     // public virtual ICollection<ProductXPhoto> ProductXPhotos { get; set; } = new List<ProductXPhoto>();
 }

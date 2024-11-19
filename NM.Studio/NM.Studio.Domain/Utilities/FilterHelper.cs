@@ -70,6 +70,9 @@ public static class FilterHelper
         if (query.AlbumId != null) 
             queryable = queryable.Where(m => !m.AlbumsXPhotos.Select(a => a.AlbumId).Contains(query.AlbumId));
 
+        if (query.ProductId != null) 
+            queryable = queryable.Where(m => !m.ProductXPhotos.Select(a => a.ProductId).Contains(query.ProductId));
+
         
         queryable = BaseFilterHelper.Base(queryable, query);
         return queryable;
