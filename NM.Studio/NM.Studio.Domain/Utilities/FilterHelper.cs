@@ -66,6 +66,11 @@ public static class FilterHelper
     
     private static IQueryable<Photo> Photo(IQueryable<Photo> queryable, PhotoGetAllQuery query)
     {
+
+        if (query.AlbumId != null) 
+            queryable = queryable.Where(m => !m.AlbumsXPhotos.Select(a => a.AlbumId).Contains(query.AlbumId));
+
+        
         queryable = BaseFilterHelper.Base(queryable, query);
         return queryable;
     }
