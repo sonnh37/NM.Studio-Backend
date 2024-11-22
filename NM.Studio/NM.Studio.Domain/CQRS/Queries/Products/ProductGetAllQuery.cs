@@ -22,9 +22,12 @@ public class ProductGetAllQuery : GetAllQuery
 
     public ProductStatus Status { get; set; }
     
-    //
+    
     
     public string? CategoryName { get; set; }
     
     public string? SubCategoryName { get; set; }
+    
+    public List<string> Colors { get; set; } = new List<string>();
+    public List<string> Sizes { get; set; } = new List<string>();
 }

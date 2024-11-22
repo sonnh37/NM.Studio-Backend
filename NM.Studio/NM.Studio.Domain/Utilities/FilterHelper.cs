@@ -35,6 +35,16 @@ public static class FilterHelper
 
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
+        if (query.Sizes.Any())
+        {
+            queryable = queryable.Where(m => m.Size!.Name != null && query.Sizes.Contains(m.Size.Name));
+        }
+        
+        if (query.Colors.Any())
+        {
+            queryable = queryable.Where(m => m.Color!.Name != null && query.Colors.Contains(m.Color.Name));
+        }
+
         if (query.SubCategoryId != null) queryable = queryable.Where(m => m.SubCategoryId == query.SubCategoryId);
         
         if (!string.IsNullOrEmpty(query.CategoryName))
