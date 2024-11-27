@@ -21,19 +21,19 @@ public class AlbumCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(AlbumCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _albumService.CreateOrUpdate<AlbumResult>(request);
+        var msgView = await _albumService.Create<AlbumResult>(request);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(AlbumDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id);
+        var msgView = await _albumService.DeleteById(request.Id);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(AlbumUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<AlbumResult>(request);
+        var msgView = await _albumService.Update<AlbumResult>(request);
         return msgView;
     }
 }

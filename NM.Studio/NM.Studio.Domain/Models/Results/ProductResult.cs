@@ -6,6 +6,8 @@ namespace NM.Studio.Domain.Models.Results;
 public class ProductResult : BaseResult
 {
     public string? Sku { get; set; }
+    
+    public string? Slug { get; set; }
 
     public Guid? CategoryId { get; set; }
     

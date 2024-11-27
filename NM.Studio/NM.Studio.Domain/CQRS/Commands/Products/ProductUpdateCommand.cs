@@ -8,6 +8,8 @@ public class ProductUpdateCommand : UpdateCommand
 
     public Guid? SubCategoryId { get; set; }
     
+    public string? Slug { get; set; }
+    
     public Guid? SizeId { get; set; }
 
     public Guid? ColorId { get; set; }

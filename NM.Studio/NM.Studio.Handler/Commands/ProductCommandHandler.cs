@@ -12,28 +12,28 @@ public class ProductCommandHandler : BaseCommandHandler,
     IRequestHandler<ProductUpdateCommand, BusinessResult>,
     IRequestHandler<ProductDeleteCommand, BusinessResult>
 {
-    protected readonly IProductService _serviceProduct;
+    protected readonly IProductService _productService;
 
     public ProductCommandHandler(IProductService serviceProduct) : base(serviceProduct)
     {
-        _serviceProduct = serviceProduct;
+        _productService = serviceProduct;
     }
 
     public async Task<BusinessResult> Handle(ProductCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<ProductResult>(request);
+        var msgView = await _productService.Create<ProductResult>(request);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(ProductDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id);
+        var msgView = await _productService.DeleteById(request.Id);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(ProductUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<ProductResult>(request);
+        var msgView = await _productService.Update<ProductResult>(request);
         return msgView;
     }
 }

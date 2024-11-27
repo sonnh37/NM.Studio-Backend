@@ -13,7 +13,10 @@ public class ProductGetAllQuery : GetAllQuery
     public Guid? SizeId { get; set; }
 
     public Guid? ColorId { get; set; }
-
+    
+    public string? Slug { get; set; }
+    
+    public bool IsNotNullSlug { get; set; }
     public string? Name { get; set; }
 
     public decimal? Price { get; set; }

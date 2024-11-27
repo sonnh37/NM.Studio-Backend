@@ -127,7 +127,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         }
     }
 
-    private async Task<TEntity?> CreateOrUpdateEntity(CreateOrUpdateCommand createOrUpdateCommand)
+    protected async Task<TEntity?> CreateOrUpdateEntity(CreateOrUpdateCommand createOrUpdateCommand)
     {
         TEntity? entity;
         if (createOrUpdateCommand is UpdateCommand updateCommand)

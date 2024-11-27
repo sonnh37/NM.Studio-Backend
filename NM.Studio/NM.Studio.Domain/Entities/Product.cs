@@ -6,6 +6,8 @@ namespace NM.Studio.Domain.Entities;
 public class Product : BaseEntity
 {
     public string? Sku { get; set; }
+    
+    public string? Slug { get; set; }
 
     public Guid? SubCategoryId { get; set; }
 

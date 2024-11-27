@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Entities.Bases;
 
@@ -15,6 +16,7 @@ public interface IBaseRepository<TEntity> : IBaseRepository
     Task<bool> IsExistById(Guid id);
 
     IQueryable<TEntity> GetQueryable(CancellationToken cancellationToken = default);
+    IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate);
 
     Task<long> GetTotalCount();
 

@@ -21,19 +21,19 @@ public class ServiceCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(ServiceCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _serviceService.CreateOrUpdate<ServiceResult>(request);
+        var msgView = await _serviceService.Create<ServiceResult>(request);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(ServiceDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id);
+        var msgView = await _serviceService.DeleteById(request.Id);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(ServiceUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<ServiceResult>(request);
+        var msgView = await _serviceService.Update<ServiceResult>(request);
         return msgView;
     }
 }

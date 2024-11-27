@@ -35,6 +35,11 @@ public static class FilterHelper
 
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
+        if (query.IsNotNullSlug)
+        {
+            queryable = queryable.Where(p => p.Slug != null);
+        }
+        
         if (query.Sizes.Any())
         {
             queryable = queryable.Where(m => m.Size!.Name != null && query.Sizes.Contains(m.Size.Name));
@@ -60,6 +65,11 @@ public static class FilterHelper
         if (!string.IsNullOrEmpty(query.Name))
         {
             queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
+        }
+        
+        if (!string.IsNullOrEmpty(query.Slug))
+        {
+            queryable = queryable.Where(m => m.Slug!.ToLower().Trim() == query.Slug.ToLower().Trim());
         }
         
         queryable = BaseFilterHelper.Base(queryable, query);
@@ -104,9 +114,19 @@ public static class FilterHelper
     
     private static IQueryable<Service> Service(IQueryable<Service> queryable, ServiceGetAllQuery query)
     {
+        if (query.IsNotNullSlug)
+        {
+            queryable = queryable.Where(p => p.Slug != null);
+        }
+        
         if (!string.IsNullOrEmpty(query.Name))
         {
             queryable = queryable.Where(m => m.Name!.ToLower().Trim() == query.Name.ToLower().Trim());
+        }
+        
+        if (!string.IsNullOrEmpty(query.Slug))
+        {
+            queryable = queryable.Where(m => m.Slug!.ToLower().Trim() == query.Slug.ToLower().Trim());
         }
         
         queryable = BaseFilterHelper.Base(queryable, query);
@@ -115,6 +135,11 @@ public static class FilterHelper
     }
     private static IQueryable<Album> Album(IQueryable<Album> queryable, AlbumGetAllQuery query)
     {
+        if (query.IsNotNullSlug)
+        {
+            queryable = queryable.Where(p => p.Slug != null);
+        }
+
         if (!string.IsNullOrEmpty(query.Title))
         {
             var title = SlugHelper.FromSlug(query.Title.ToLower());
@@ -124,6 +149,11 @@ public static class FilterHelper
         if (!string.IsNullOrEmpty(query.Description))
             queryable = queryable.Where(m => m.Description!.ToLower().Contains(query.Description.ToLower()));
 
+        if (!string.IsNullOrEmpty(query.Slug))
+        {
+            queryable = queryable.Where(m => m.Slug!.ToLower().Trim() == query.Slug.ToLower().Trim());
+        }
+        
         queryable = BaseFilterHelper.Base(queryable, query);
 
         return queryable;

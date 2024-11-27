@@ -4,7 +4,7 @@ using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Domain.Contracts.Repositories;
 
-public interface IProductXPhotoRepository : IBaseRepository
+public interface IProductXPhotoRepository : IBaseRepository<ProductXPhoto>
 {
     Task<ProductXPhoto?> GetById(ProductXPhotoDeleteCommand command);
     void Delete(ProductXPhoto entity);

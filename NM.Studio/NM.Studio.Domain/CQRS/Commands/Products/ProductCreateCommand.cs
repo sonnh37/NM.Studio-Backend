@@ -7,6 +7,8 @@ public class ProductCreateCommand : CreateCommand
     public string? Sku { get; set; }
 
     public Guid? SubCategoryId { get; set; }
+    
+    public string? Slug { get; set; }
 
     public Guid? SizeId { get; set; }
 
