@@ -25,4 +25,5 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IColorRepository ColorRepository { get; }
     
     ISizeRepository SizeRepository { get; }
+    IBlogRepository BlogRepository { get; }
 }

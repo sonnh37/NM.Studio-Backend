@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
 using NM.Studio.Domain.Contracts.Services.Bases;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -120,8 +121,19 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
             return ResponseHelper.DeleteData(entity != null);
         }
+        catch (DbUpdateException dbEx)
+        {
+            // Xử lý lỗi liên quan đến ràng buộc khóa ngoại
+            if (dbEx.InnerException?.Message.Contains("FOREIGN KEY") == true)
+            {
+                var errorMessage = "Không thể xóa vì dữ liệu đang được tham chiếu ở bảng khác.";
+                return ResponseHelper.Error(errorMessage);
+            }
+            throw; // Ném lại nếu không phải lỗi khóa ngoại
+        }
         catch (Exception ex)
         {
+            // Xử lý các lỗi khác
             var errorMessage = $"An error occurred while deleting {typeof(TEntity).Name} with ID {id}: {ex.Message}";
             return ResponseHelper.Error(errorMessage);
         }

@@ -18,5 +18,6 @@ public static class ServiceRegistration
         services.AddTransient<ISizeService, SizeService>();
         services.AddTransient<IColorService, ColorService>();
         services.AddTransient<ISubCategoryService, SubCategoryService>();
+        services.AddTransient<IBlogService, BlogService>();
     }
 }

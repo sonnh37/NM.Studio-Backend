@@ -30,5 +30,7 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     
     public IColorRepository ColorRepository => GetRepository<IColorRepository>();
     
-    public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();  
+    public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();
+    
+    public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
 }

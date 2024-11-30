@@ -7,6 +7,8 @@ public class Photo : BaseEntity
     public string? Title { get; set; }
 
     public string? Description { get; set; }
+    
+    public bool IsFeatured { get; set; }
 
     public string? Src { get; set; }
 

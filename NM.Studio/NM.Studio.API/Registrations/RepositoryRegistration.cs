@@ -21,5 +21,6 @@ public static class RepositoryRegistration
         services.AddScoped<ISizeRepository, SizeRepository>();
         services.AddScoped<IColorRepository, ColorRepository>();
         services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
+        services.AddScoped<IBlogRepository, BlogRepository>();
     }
 }

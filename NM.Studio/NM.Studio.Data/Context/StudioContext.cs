@@ -22,6 +22,7 @@ public partial class StudioContext : BaseDbContext
     public virtual DbSet<AlbumXPhoto> AlbumXPhotos { get; set; } = null!;
     public virtual DbSet<Service> Services { get; set; } = null!;
     public virtual DbSet<User> Users { get; set; } = null!;
+    public virtual DbSet<Blog> Blogs { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -41,6 +42,24 @@ public partial class StudioContext : BaseDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("User");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NEWID()");
+        });
+
+        modelBuilder.Entity<Blog>(entity =>
+        {
+            entity.ToTable("Blog");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NEWID()");
+        });
+        
         modelBuilder.Entity<Size>(entity =>
         {
             entity.ToTable("Size");
@@ -74,13 +93,10 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            // Thiết lập mối quan hệ 1-n giữa Category và SubCategory
             entity.HasMany(c => c.SubCategories)
                 .WithOne(sc => sc.Category)
                 .HasForeignKey(sc => sc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            
         });
 
         modelBuilder.Entity<SubCategory>(entity =>
@@ -94,8 +110,6 @@ public partial class StudioContext : BaseDbContext
                 .WithMany(c => c.SubCategories)
                 .HasForeignKey(sc => sc.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
-            
-           
         });
         
         var statusProduct = new EnumToStringConverter<ProductStatus>();
@@ -207,15 +221,7 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
         });
 
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.ToTable("User");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
-        });
-
+       
         OnModelCreatingPartial(modelBuilder);
     }
 

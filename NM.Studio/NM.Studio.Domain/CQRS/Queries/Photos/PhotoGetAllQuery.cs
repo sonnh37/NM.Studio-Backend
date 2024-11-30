@@ -11,6 +11,8 @@ public class PhotoGetAllQuery : GetAllQuery
     public string? Description { get; set; }
 
     public string? Src { get; set; }
+    
+    public bool? IsFeatured { get; set; }
 
     public string? Href { get; set; }
 
