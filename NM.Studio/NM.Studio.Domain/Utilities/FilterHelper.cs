@@ -155,6 +155,11 @@ public static class FilterHelper
     
     private static IQueryable<Blog> Blog(IQueryable<Blog> queryable, BlogGetAllQuery query)
     {
+        if (query.IsFeatured.HasValue)
+        {
+            queryable = queryable.Where(m => m.IsFeatured == query.IsFeatured);
+        }
+        
         if (query.IsNotNullSlug)
         {
             queryable = queryable.Where(p => p.Slug != null);

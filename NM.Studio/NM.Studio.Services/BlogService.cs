@@ -56,7 +56,9 @@ public class BlogService : BaseService<Blog>, IBlogService
         {
             if (updateCommand.IsFeatured)
             {
-                var blogAbout = _blogRepository.GetQueryable(m => !m.IsDeleted && m.IsFeatured).SingleOrDefault();
+                var blogAbout = _blogRepository.GetQueryable(m => !m.IsDeleted && m.IsFeatured
+                                                                               && m.Id != updateCommand.Id
+                ).SingleOrDefault();
                 if(blogAbout != null) return ResponseHelper.Error("About page is already in use:" + blogAbout.Id +"(" + blogAbout.Title + ")");
 
             }
