@@ -106,6 +106,11 @@ public static class FilterHelper
             queryable = queryable.Where(m => m.IsFeatured == query.IsFeatured);
         }
         
+        if (!string.IsNullOrEmpty(query.Title))
+        {
+            queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
+        }
+        
         if (query.AlbumId != null) 
             queryable = queryable.Where(m => !m.AlbumsXPhotos.Select(a => a.AlbumId).Contains(query.AlbumId));
 
@@ -121,8 +126,7 @@ public static class FilterHelper
     {
         if (!string.IsNullOrEmpty(query.Name))
         {
-            // var title = SlugHelper.FromSlug(query.Name.ToLower());
-            queryable = queryable.Where(m => m.Name!.ToLower().Trim() == query.Name.ToLower().Trim());
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
         }
         
         queryable = BaseFilterHelper.Base(queryable, query);
@@ -140,7 +144,7 @@ public static class FilterHelper
         
         if (!string.IsNullOrEmpty(query.Name))
         {
-            queryable = queryable.Where(m => m.Name!.ToLower().Trim() == query.Name.ToLower().Trim());
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
         }
         
         if (!string.IsNullOrEmpty(query.Slug))
@@ -167,7 +171,7 @@ public static class FilterHelper
         
         if (!string.IsNullOrEmpty(query.Title))
         {
-            queryable = queryable.Where(m => m.Title!.ToLower().Trim() == query.Title.ToLower().Trim());
+            queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
         }
         
         if (!string.IsNullOrEmpty(query.Slug))
@@ -189,8 +193,7 @@ public static class FilterHelper
 
         if (!string.IsNullOrEmpty(query.Title))
         {
-            var title = SlugHelper.FromSlug(query.Title.ToLower());
-            queryable = queryable.Where(m => m.Title!.ToLower().Contains(title));
+            queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
         }
 
         if (!string.IsNullOrEmpty(query.Description))
