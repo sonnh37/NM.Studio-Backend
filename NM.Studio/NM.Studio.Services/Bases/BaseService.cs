@@ -153,7 +153,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             entity = await _baseRepository.GetByIdNoInclude(updateCommand.Id);
             if (entity == null) return null;
-            if (updateCommand.IsDeleted.HasValue)
+            if (updateCommand.IsDeleted.HasValue && updateCommand.IsDeleted.Value)
             {
                 entity.IsDeleted = updateCommand.IsDeleted.Value; // Chỉ cập nhật IsDeleted
             }

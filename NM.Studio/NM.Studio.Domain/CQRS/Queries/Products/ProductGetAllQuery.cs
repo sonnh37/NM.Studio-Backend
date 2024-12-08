@@ -24,8 +24,8 @@ public class ProductGetAllQuery : GetAllQuery
     public string? Description { get; set; }
 
     public ProductStatus Status { get; set; }
-    
-    
+
+    public Guid? CategoryId { get; set; }
     
     public string? CategoryName { get; set; }
     
