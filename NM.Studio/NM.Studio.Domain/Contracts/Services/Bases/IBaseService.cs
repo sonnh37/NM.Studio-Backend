@@ -18,8 +18,8 @@ public interface IBaseService
 
     Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult;
 
-    Task<BusinessResult> DeleteById(Guid id);
-
+    Task<BusinessResult> DeleteById(Guid id, bool isPermanent = false);
+    
     Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand) where TResult : BaseResult;
 
 }

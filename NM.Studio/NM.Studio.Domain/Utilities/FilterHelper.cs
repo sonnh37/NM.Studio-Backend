@@ -111,6 +111,11 @@ public static class FilterHelper
             queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
         }
         
+        if (!string.IsNullOrEmpty(query.Href))
+        {
+            queryable = queryable.Where(m => m.Href!.ToLower().Trim().Contains(query.Href.ToLower().Trim()));
+        }
+        
         if (query.AlbumId != null) 
             queryable = queryable.Where(m => !m.AlbumsXPhotos.Select(a => a.AlbumId).Contains(query.AlbumId));
 

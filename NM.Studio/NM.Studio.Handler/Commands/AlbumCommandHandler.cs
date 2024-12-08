@@ -27,7 +27,7 @@ public class AlbumCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(AlbumDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _albumService.DeleteById(request.Id);
+        var msgView = await _albumService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
 

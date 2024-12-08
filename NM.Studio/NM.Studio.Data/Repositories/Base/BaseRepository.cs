@@ -111,6 +111,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         entity.IsDeleted = true;
         DbSet.Update(entity);
     }
+    
+    public void DeletePermanently(TEntity entity)
+    {
+        DbSet.Remove(entity);
+    }
 
     public void DeleteRange(IEnumerable<TEntity> entities)
     {

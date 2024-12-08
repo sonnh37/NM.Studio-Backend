@@ -111,12 +111,19 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         }
     }
 
-    public async Task<BusinessResult> DeleteById(Guid id)
+    public async Task<BusinessResult> DeleteById(Guid id, bool isPermanent = false)
     {
         try
         {
             if (id == Guid.Empty) return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG);
 
+            if (isPermanent)
+            {
+                var isDeleted = await DeleteEntityPermanently(id);
+                
+                return ResponseHelper.DeleteData(isDeleted.HasValue);
+            }
+            
             var entity = await DeleteEntity(id);
 
             return ResponseHelper.DeleteData(entity != null);
@@ -146,7 +153,14 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             entity = await _baseRepository.GetByIdNoInclude(updateCommand.Id);
             if (entity == null) return null;
-            _mapper.Map(updateCommand, entity);
+            if (updateCommand.IsDeleted.HasValue)
+            {
+                entity.IsDeleted = updateCommand.IsDeleted.Value; // Chỉ cập nhật IsDeleted
+            }
+            else
+            {
+                _mapper.Map(updateCommand, entity); // Cập nhật các thuộc tính khác
+            }
             SetBaseEntityUpdate(entity);
             _baseRepository.Update(entity); 
         }
@@ -200,6 +214,17 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
         var saveChanges = await _unitOfWork.SaveChanges();
         return saveChanges ? entity : default;
+    }
+    
+    private async Task<bool?> DeleteEntityPermanently(Guid id)
+    {
+        var entity = await _baseRepository.GetById(id);
+        if (entity == null) return null;
+
+        _baseRepository.DeletePermanently(entity);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        return saveChanges;
     }
 
     #endregion

@@ -27,7 +27,7 @@ public class BlogCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(BlogDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id);
+        var msgView = await _baseService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
 
