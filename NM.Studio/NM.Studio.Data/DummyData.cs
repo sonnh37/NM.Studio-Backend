@@ -9,16 +9,16 @@ public static class DummyData
 {
     public static void SeedDatabase(DbContext context)
     {
-        GenerateUsers(context, 20);
-        GenerateColors(context, 10);
-        GenerateCategories(context, 10);
-        GenerateSizes(context, 10);
-        GenerateProducts(context, 10);
-        GeneratePhotos(context, 200);
-        GenerateAlbums(context, 20);
-        GenerateServices(context, 20);
-        GenerateAlbumXPhotos(context, 150);
-        GenerateProductXPhotos(context, 100);
+        // GenerateUsers(context, 20);
+        // GenerateColors(context, 10);
+        // GenerateCategories(context, 10);
+        // GenerateSizes(context, 10);
+        // GenerateProducts(context, 10);
+        // GeneratePhotos(context, 200);
+        // GenerateAlbums(context, 20);
+        // GenerateServices(context, 20);
+        // GenerateAlbumXPhotos(context, 150);
+        // GenerateProductXPhotos(context, 100);
     }
 
     private static void GenerateColors(DbContext context, int count)

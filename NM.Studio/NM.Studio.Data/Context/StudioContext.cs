@@ -23,6 +23,7 @@ public partial class StudioContext : BaseDbContext
     public virtual DbSet<Service> Services { get; set; } = null!;
     public virtual DbSet<User> Users { get; set; } = null!;
     public virtual DbSet<Blog> Blogs { get; set; } = null!;
+    public virtual DbSet<Booking> Bookings { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -49,6 +50,27 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
+
+            entity.HasMany(m => m.Bookings)
+                .WithOne(m => m.User)
+                .HasForeignKey(m => m.UserId);
+        });
+        
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.ToTable("Booking");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NEWID()");
+
+            entity.HasOne(sc => sc.User)
+                .WithMany(c => c.Bookings)
+                .HasForeignKey(sc => sc.UserId);
+            
+            entity.HasOne(sc => sc.Service)
+                .WithMany(c => c.Bookings)
+                .HasForeignKey(sc => sc.ServiceId);
         });
 
         modelBuilder.Entity<Blog>(entity =>
@@ -219,6 +241,10 @@ public partial class StudioContext : BaseDbContext
                 .HasDefaultValueSql("NEWID()");
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
+            
+            entity.HasMany(m => m.Bookings)
+                .WithOne(m => m.Service)
+                .HasForeignKey(m => m.ServiceId);
         });
 
        

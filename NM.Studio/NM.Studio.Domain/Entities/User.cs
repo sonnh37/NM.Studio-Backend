@@ -30,4 +30,6 @@ public class User : BaseEntity
     public string? Avatar { get; set; }
 
     public UserStatus? Status { get; set; }
+    
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

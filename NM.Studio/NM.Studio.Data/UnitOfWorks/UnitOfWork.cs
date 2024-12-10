@@ -33,4 +33,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();
     
     public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
+    
+    public IBookingRepository BookingRepository => GetRepository<IBookingRepository>();
 }

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NM.Studio.Domain.Models;
 
 DotNetEnv.Env.Load();
 
@@ -73,6 +74,7 @@ builder.Services.AddApplication();
 // builder.Services.AddMediatR(Assembly.GetExecutingAssembly(), handler);
 
 #endregion
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddCustomRepositories();
 builder.Services.AddCustomServices();

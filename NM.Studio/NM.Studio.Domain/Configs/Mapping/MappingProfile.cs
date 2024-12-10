@@ -2,6 +2,7 @@
 using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.CQRS.Commands.AlbumXPhotos;
 using NM.Studio.Domain.CQRS.Commands.Blogs;
+using NM.Studio.Domain.CQRS.Commands.Bookings;
 using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.CQRS.Commands.Colors;
 using NM.Studio.Domain.CQRS.Commands.Photos;
@@ -30,6 +31,7 @@ public class MappingProfile : Profile
         SizeMapping();
         ColorMapping();
         BlogMapping();
+        BookingMapping();
     }
     
     private void AlbumMapping()
@@ -41,6 +43,14 @@ public class MappingProfile : Profile
         CreateMap<AlbumXPhoto, AlbumXPhotoResult>().ReverseMap();
         CreateMap<AlbumXPhoto, AlbumXPhotoCreateCommand>().ReverseMap();
         CreateMap<AlbumXPhoto, AlbumXPhotoUpdateCommand>().ReverseMap();
+    }
+    
+    private void BookingMapping()
+    {
+        CreateMap<Booking, BookingResult>().ReverseMap();
+        CreateMap<Booking, BookingCreateCommand>().ReverseMap();
+        CreateMap<Booking, BookingUpdateCommand>().ReverseMap();
+
     }
     
     private void ProductMapping()

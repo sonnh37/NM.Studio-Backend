@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NM.Studio.Data.Context;
 
@@ -11,9 +12,11 @@ using NM.Studio.Data.Context;
 namespace NM.Studio.Data.Migrations
 {
     [DbContext(typeof(StudioContext))]
-    partial class StudioContextModelSnapshot : ModelSnapshot
+    [Migration("20241210093205_AddBookingTable")]
+    partial class AddBookingTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -588,7 +591,7 @@ namespace NM.Studio.Data.Migrations
             modelBuilder.Entity("NM.Studio.Domain.Entities.Booking", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Service", "Service")
-                        .WithMany("Bookings")
+                        .WithMany()
                         .HasForeignKey("ServiceId");
 
                     b.HasOne("NM.Studio.Domain.Entities.User", "User")
@@ -676,11 +679,6 @@ namespace NM.Studio.Data.Migrations
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
                     b.Navigation("ProductXPhotos");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Size", b =>

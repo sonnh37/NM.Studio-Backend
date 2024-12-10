@@ -7,7 +7,8 @@ public enum Status
 public enum UserStatus
 {
     Active,
-    Inactive
+    Inactive,
+    Suspended
 }
 
 public enum ProductStatus
@@ -29,6 +30,13 @@ public enum ProductStatus
 }
 
 public enum OrderStatus
+{
+    Pending,
+    Completed,
+    Cancelled
+}
+
+public enum BookingStatus
 {
     Pending,
     Completed,

@@ -13,4 +13,7 @@ public class Service : BaseEntity
     public string? Src { get; set; }
 
     public decimal? Price { get; set; }
+    
+    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
 }
