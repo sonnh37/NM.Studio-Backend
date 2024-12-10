@@ -8,7 +8,8 @@ namespace NM.Studio.Handler.Queries;
 
 public class ProductQueryHandler :
     IRequestHandler<ProductGetAllQuery, BusinessResult>,
-    IRequestHandler<ProductGetByIdQuery, BusinessResult>
+    IRequestHandler<ProductGetByIdQuery, BusinessResult>,
+    IRequestHandler<ProductRepresentativeByCategoryQuery, BusinessResult>
 {
     protected readonly IProductService _productService;
 
@@ -27,5 +28,10 @@ public class ProductQueryHandler :
         CancellationToken cancellationToken)
     {
         return await _productService.GetById<ProductResult>(request.Id);
+    }
+
+    public async Task<BusinessResult> Handle(ProductRepresentativeByCategoryQuery request, CancellationToken cancellationToken)
+    {
+        return await _productService.GetRepresentativeByCategory<ProductResult>(request);
     }
 }

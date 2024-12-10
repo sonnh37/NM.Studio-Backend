@@ -197,7 +197,7 @@ public class UserService : BaseService<User>, IUserService
 
         var (token, expiration) = CreateToken(result);
 
-        return ResponseHelper.GetTokenData(token, expiration);
+        return ResponseHelper.GetToken(token, expiration);
     }
 
     public async Task<BusinessResult> AddUser(UserCreateCommand user)
@@ -270,7 +270,7 @@ public class UserService : BaseService<User>, IUserService
         var userResult = _mapper.Map<UserResult>(user);
         var (token, expiration) = CreateToken(userResult);
 
-        return ResponseHelper.GetTokenData(token, expiration);
+        return ResponseHelper.GetToken(token, expiration);
     }
 
     public async Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request)
@@ -339,6 +339,6 @@ public class UserService : BaseService<User>, IUserService
         var userResult = _mapper.Map<UserResult>(_userAdded);
         var (token, expiration) = CreateToken(userResult);
 
-        return ResponseHelper.GetTokenData(token, expiration);
+        return ResponseHelper.GetToken(token, expiration);
     }
 }

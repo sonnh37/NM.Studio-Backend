@@ -23,6 +23,15 @@ public class ProductController : BaseController
 
         return Ok(messageResult);
     }
+    
+    [AllowAnonymous]
+    [HttpGet("representative-by-category")]
+    public async Task<IActionResult> GetRepresentativeByCategory([FromQuery] ProductRepresentativeByCategoryQuery query)
+    {
+        var messageResult = await _mediator.Send(query);
+
+        return Ok(messageResult);
+    }
 
     [AllowAnonymous]
     [HttpGet("{id:guid}")]

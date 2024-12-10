@@ -9,8 +9,6 @@ public class ProductResult : BaseResult
     
     public string? Slug { get; set; }
 
-    public Guid? CategoryId { get; set; }
-    
     public Guid? SubCategoryId { get; set; }
 
     public Guid? SizeId { get; set; }
@@ -32,4 +30,21 @@ public class ProductResult : BaseResult
     public ProductStatus Status { get; set; }
 
     public List<ProductXPhotoResult> ProductXPhotos { get; set; } = new();
+}
+
+public class ProductRepresentativeByCategoryResult
+{
+    public CategoryResult? Category { get; set; }
+
+    public ProductRepresentativeResult? Product { get; set; }
+
+}
+
+public class ProductRepresentativeResult : BaseResult
+{
+    public string? Sku { get; set; }
+    
+    public string? Slug { get; set; }
+
+    public string? Src { get; set; }
 }

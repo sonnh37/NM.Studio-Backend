@@ -32,7 +32,7 @@ public class ServiceService : BaseService<Service>, IServiceService
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.SaveData(result);
+            var msg = ResponseHelper.Save(result);
             
             return msg;
         }
@@ -63,7 +63,7 @@ public class ServiceService : BaseService<Service>, IServiceService
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.SaveData(result);
+            var msg = ResponseHelper.Save(result);
             
             return msg;
         }

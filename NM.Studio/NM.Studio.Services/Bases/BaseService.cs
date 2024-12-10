@@ -39,7 +39,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await _baseRepository.GetById(id);
             var result = _mapper.Map<TResult>(entity);
-            return ResponseHelper.GetData(result);
+            return ResponseHelper.GetOne(result);
         }
         catch (Exception ex)
         {
@@ -54,7 +54,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entities = await _baseRepository.GetAll();
             var results = _mapper.Map<List<TResult>>(entities);
-            return ResponseHelper.GetDatas(results);
+            return ResponseHelper.GetAll(results);
         }
         catch (Exception ex)
         {
@@ -74,14 +74,14 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             {
                 var allData = await _baseRepository.GetAll(x);
                 results = _mapper.Map<List<TResult>?>(allData);
-                return ResponseHelper.GetDatas(results);
+                return ResponseHelper.GetAll(results);
             }
 
             var tuple = await _baseRepository.GetPaged(x);
             results = _mapper.Map<List<TResult>?>(tuple.Item1);
             totalItems = tuple.Item2;
 
-            return ResponseHelper.GetPaginatedDatas((results, totalItems), x);
+            return ResponseHelper.GetAllPaginated((results, totalItems), x);
         }
         catch (Exception ex)
         {
@@ -100,7 +100,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.SaveData(result);
+            var msg = ResponseHelper.Save(result);
             
             return msg;
         }
@@ -121,12 +121,12 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             {
                 var isDeleted = await DeleteEntityPermanently(id);
                 
-                return ResponseHelper.DeleteData(isDeleted.HasValue);
+                return ResponseHelper.Delete(isDeleted.HasValue);
             }
             
             var entity = await DeleteEntity(id);
 
-            return ResponseHelper.DeleteData(entity != null);
+            return ResponseHelper.Delete(entity != null);
         }
         catch (DbUpdateException dbEx)
         {

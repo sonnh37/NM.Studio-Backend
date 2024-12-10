@@ -24,15 +24,15 @@ public class AlbumXPhotoService : BaseService<AlbumXPhoto>, IAlbumXPhotoService
     public async Task<BusinessResult> DeleteById(AlbumXPhotoDeleteCommand command)
     {
         if (command.AlbumId == Guid.Empty || command.PhotoId == Guid.Empty)
-            return ResponseHelper.DeleteData(false);
+            return ResponseHelper.Delete(false);
 
         var entity = await _albumXPhotoRepository.GetById(command);
-        if (entity == null) return ResponseHelper.DeleteData(false);
+        if (entity == null) return ResponseHelper.Delete(false);
         _albumXPhotoRepository.Delete(entity);
         var saveChanges = await _unitOfWork.SaveChanges();
 
-        if (!saveChanges) return ResponseHelper.DeleteData(false);
+        if (!saveChanges) return ResponseHelper.Delete(false);
 
-        return ResponseHelper.DeleteData(true);
+        return ResponseHelper.Delete(true);
     }
 }

@@ -8,7 +8,7 @@ public static class ResponseHelper
 {
     #region Queries
     
-    public static BusinessResult GetData<TResult>(TResult? result)
+    public static BusinessResult GetOne<TResult>(TResult? result)
         where TResult : BaseResult
     {
         if (result == null)
@@ -19,10 +19,10 @@ public static class ResponseHelper
         return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, result);
     }
 
-    public static BusinessResult GetDatas<TResult>(List<TResult>? results)
-        where TResult : BaseResult
+    public static BusinessResult GetAll<TResult>(List<TResult>? results)
+        where TResult : class
     {
-        if (results == null || !results.Any())
+        if (results == null || results.Count == 0)
         {
             var response = new ResultsResponse<TResult>(results);
             return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, response);
@@ -31,12 +31,12 @@ public static class ResponseHelper
         var res = new ResultsResponse<TResult>(results);
         return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, res);
     }
-
-    public static BusinessResult GetPaginatedDatas<TResult>((List<TResult>? List, int? TotalCount) item,
+    
+    public static BusinessResult GetAllPaginated<TResult>((List<TResult>? List, int? TotalCount) item,
         GetQueryableQuery pagedQuery)
         where TResult : BaseResult  
     {
-        if (item.List == null || !item.List.Any())
+        if (item.List == null || item.List.Count == 0)
         {
             var response = new PagedResponse<TResult>(pagedQuery);
             return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG, response);
@@ -51,7 +51,7 @@ public static class ResponseHelper
         return new BusinessResult(Const.ERROR_EXCEPTION_CODE, e);
     }
 
-    public static BusinessResult GetTokenData(string? token, string? expiration, string? msg = null)
+    public static BusinessResult GetToken(string? token, string? expiration, string? msg = null)
     {
         if (token == null && expiration == null && msg != null)
         {
@@ -65,7 +65,7 @@ public static class ResponseHelper
     #endregion
     
     #region Commands
-    public static BusinessResult SaveData<TResult>(TResult? result)
+    public static BusinessResult Save<TResult>(TResult? result)
         where TResult : BaseResult
     {
         if (result == null)
@@ -76,7 +76,7 @@ public static class ResponseHelper
         return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_SAVE_MSG, result);
     }
     
-    public static BusinessResult DeleteData(bool isDeleted)
+    public static BusinessResult Delete(bool isDeleted)
     {
         if (!isDeleted)
         {

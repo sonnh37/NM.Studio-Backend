@@ -24,15 +24,15 @@ public class ProductXPhotoService : BaseService<ProductXPhoto>, IProductXPhotoSe
     public async Task<BusinessResult> DeleteById(ProductXPhotoDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.PhotoId == Guid.Empty)
-            return ResponseHelper.DeleteData(false);
+            return ResponseHelper.Delete(false);
 
         var entity = await _productXPhotoRepository.GetById(command);
-        if (entity == null) return ResponseHelper.DeleteData(false);
+        if (entity == null) return ResponseHelper.Delete(false);
         _productXPhotoRepository.Delete(entity);
         var saveChanges = await _unitOfWork.SaveChanges();
 
-        if (!saveChanges) return ResponseHelper.DeleteData(false);
+        if (!saveChanges) return ResponseHelper.Delete(false);
 
-        return ResponseHelper.DeleteData(true);
+        return ResponseHelper.Delete(true);
     }
 }
