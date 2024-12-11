@@ -45,47 +45,47 @@ public class Const
 {
     #region Error Codes
 
-    public static int ERROR_EXCEPTION_CODE = -4;
+    public const int ERROR_EXCEPTION_CODE = -4;
 
 
     #endregion
 
     #region Success Codes
 
-    public static int SUCCESS_CODE = 1;
-    public static string SUCCESS_SAVE_MSG = "Save data success";
-    public static string SUCCESS_READ_MSG = "Get data success";
-    public static string SUCCESS_READ_GOOGLE_TOKEN_MSG = "Email is verified";
-    public static string SUCCESS_DELETE_MSG = "Delete data success";
-    public static string SUCCESS_LOGIN_MSG = "Login success";
+    public const int SUCCESS_CODE = 1;
+    public const string SUCCESS_SAVE_MSG = "Save data success";
+    public const string SUCCESS_READ_MSG = "Get data success";
+    public const string SUCCESS_READ_GOOGLE_TOKEN_MSG = "Email is verified";
+    public const string SUCCESS_DELETE_MSG = "Delete data success";
+    public const string SUCCESS_LOGIN_MSG = "Login success";
 
 
     #endregion
 
     #region Fail code
 
-    public static int FAIL_CODE = -1;
-    public static string FAIL_SAVE_MSG = "Save data fail";
-    public static string FAIL_READ_GOOGLE_TOKEN_MSG = "Invalid Google Token";
-    public static string FAIL_READ_MSG = "Get data fail";
-    public static string FAIL_DELETE_MSG = "Delete data fail";
+    public const int FAIL_CODE = -1;
+    public const string FAIL_SAVE_MSG = "Save data fail";
+    public const string FAIL_READ_GOOGLE_TOKEN_MSG = "Invalid Google Token";
+    public const string FAIL_READ_MSG = "Get data fail";
+    public const string FAIL_DELETE_MSG = "Delete data fail";
 
     #endregion
 
     #region Warning Code
 
-    public static int WARNING_NO_DATA_CODE = 4;
-    public static string WARNING_NO_DATA_MSG = "No data";
+    public const int WARNING_NO_DATA_CODE = 4;
+    public const string WARNING_NO_DATA_MSG = "No data";
 
     #endregion
 
     #region Not Found Codes
 
-    public static int NOT_FOUND_CODE = -2;
-    public static string NOT_FOUND_MSG = "Not found";
-    public static string NOT_FOUND_USER_LOGIN_BY_GOOGLE_MSG = "Not found user that login by google";
-    public static string NOT_USERNAME_MSG = "Not found username";
-    public static string NOT_PASSWORD_MSG = "Not match password";
+    public const int NOT_FOUND_CODE = -2;
+    public const string NOT_FOUND_MSG = "Not found";
+    public const string NOT_FOUND_USER_LOGIN_BY_GOOGLE_MSG = "Not found user that login by google";
+    public const string NOT_USERNAME_MSG = "Not found username";
+    public const string NOT_PASSWORD_MSG = "Not match password";
 
     #endregion
 }

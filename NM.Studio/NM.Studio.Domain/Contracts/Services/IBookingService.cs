@@ -8,4 +8,6 @@ namespace NM.Studio.Domain.Contracts.Services;
 public interface IBookingService : IBaseService
 {
     Task<BusinessResult> Create<TResult>(BookingCreateCommand createCommand) where TResult : BaseResult;
+
+    Task<BusinessResult> Cancel<TResult>(BookingCancelCommand cancelCommand) where TResult : BaseResult;
 }

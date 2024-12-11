@@ -67,7 +67,7 @@ public class ProductService : BaseService<Product>, IProductService
                 })
                 .ToListAsync();
 
-            return ResponseHelper.GetAll(groupedCategories);
+            return ResponseHelper.Success(groupedCategories);
         }
         catch (Exception ex)
         {
@@ -87,7 +87,7 @@ public class ProductService : BaseService<Product>, IProductService
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
+            var msg = ResponseHelper.Success(result);
             
             return msg;
         }
@@ -118,7 +118,7 @@ public class ProductService : BaseService<Product>, IProductService
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
+            var msg = ResponseHelper.Success(result);
             
             return msg;
         }

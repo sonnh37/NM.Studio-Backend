@@ -41,7 +41,7 @@ public class ResultsResponse<TResult> where TResult : class
 
     public ResultsResponse(List<TResult>? results = null)
     {
-        Results = results;
+        Results = results ?? [];
         TotalRecords = results?.Count ?? 0;
     }
 

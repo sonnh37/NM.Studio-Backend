@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class BookingCommandHandler : BaseCommandHandler,
     IRequestHandler<BookingUpdateCommand, BusinessResult>,
     IRequestHandler<BookingDeleteCommand, BusinessResult>,
-    IRequestHandler<BookingCreateCommand, BusinessResult>
+    IRequestHandler<BookingCreateCommand, BusinessResult>,
+    IRequestHandler<BookingCancelCommand, BusinessResult>
 {
     protected readonly IBookingService _bookingService;
 
@@ -34,6 +35,12 @@ public class BookingCommandHandler : BaseCommandHandler,
     public async Task<BusinessResult> Handle(BookingUpdateCommand request, CancellationToken cancellationToken)
     {
         var msgView = await _baseService.CreateOrUpdate<BookingResult>(request);
+        return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(BookingCancelCommand request, CancellationToken cancellationToken)
+    {
+        var msgView = await _bookingService.Cancel<BookingResult>(request);
         return msgView;
     }
 }

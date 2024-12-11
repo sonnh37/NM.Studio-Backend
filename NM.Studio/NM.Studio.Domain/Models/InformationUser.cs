@@ -2,7 +2,11 @@
 
 namespace NM.Studio.Domain.Models;
 
-public class InformationUser
+public static class InformationUser
 {
     public static User? User { get; set; }
+    
+    public static string? Origin { get; set; }
+    
+    public static string? Referer { get; set; }
 }

@@ -22,6 +22,10 @@ public class RequestTokenUserMiddleware
     public async Task InvokeAsync(HttpContext context)
     {
         InformationUser.User = null;
+        var origin = context.Request.Headers["Origin"].ToString(); 
+        var referer = context.Request.Headers["Referer"].ToString(); 
+        InformationUser.Origin = origin;
+        InformationUser.Referer = referer;
         if (context.Request.Headers.ContainsKey("Authorization"))
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();

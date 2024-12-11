@@ -4,6 +4,8 @@ using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Bookings;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Enums;
+using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -25,23 +27,25 @@ public class BookingService : BaseService<Booking>, IBookingService
         _bookingRepository = _unitOfWork.BookingRepository;
         _serviceRepository = _unitOfWork.ServiceRepository;
     }
-    
+
     public async Task<BusinessResult> Create<TResult>(BookingCreateCommand createCommand) where TResult : BaseResult
     {
         try
         {
+            var frontendUrl = InformationUser.Origin;
+            createCommand.Status = BookingStatus.Pending;
             var entity = await CreateOrUpdateEntity(createCommand);
             if (entity == null) return ResponseHelper.Error("Error creating booking");
-            
+
             // get service
             if (entity.ServiceId == null) return ResponseHelper.Error("Error creating booking by serviceId null ");
-            
+
             var service = _serviceRepository.GetById(entity.ServiceId.Value).Result;
             if (service == null) return ResponseHelper.Error("Error creating booking by service null ");
-            
+
             // Gửi email
             // Tạo nội dung email dạng HTML
-            var cancelLink = $"https://yourdomain.com/cancel-booking?bookingId={entity.Id}"; // Link cancel booking
+            var cancelLink = $"{frontendUrl}/cancel-booking/{entity.Id}"; // Link cancel booking
 
             var emailBody = $@"
     <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
@@ -63,7 +67,37 @@ public class BookingService : BaseService<Booking>, IBookingService
             await _emailService.SendEmailAsync(entity.Email, "Booking Confirmation", emailBody);
 
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
+            var msg = ResponseHelper.Success(result);
+
+            return msg;
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"An error occurred while updating {typeof(BookingCreateCommand).Name}: {ex.Message}";
+            return ResponseHelper.Error(errorMessage);
+        }
+    }
+
+    public async Task<BusinessResult> Cancel<TResult>(BookingCancelCommand cancelCommand) where TResult : BaseResult
+    {
+        try
+        {
+            //check and set status cancelled
+            var booking = await _bookingRepository.GetByIdNoInclude(cancelCommand.Id);
+                
+            if (booking == null) return ResponseHelper.NotFound();
+            
+            booking.Status = BookingStatus.Cancelled;
+            
+            _bookingRepository.Update(booking);
+            var saveChanges = await _unitOfWork.SaveChanges();
+            if (!saveChanges) return ResponseHelper.Error("Error saving changes");
+            
+            var result = _mapper.Map<TResult>(booking);
+            
+            if (result == null) return ResponseHelper.Warning(result);
+
+            var msg = ResponseHelper.Success(result);
 
             return msg;
         }

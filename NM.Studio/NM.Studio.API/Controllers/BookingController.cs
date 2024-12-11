@@ -52,6 +52,14 @@ public class BookingController : BaseController
 
         return Ok(messageView);
     }
+    
+    [HttpPut("cancel")]
+    public async Task<IActionResult> Cancel([FromBody] BookingCancelCommand command)
+    {
+        var messageView = await _mediator.Send(command);
+
+        return Ok(messageView);
+    }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] BookingDeleteCommand bookingDeleteCommand)

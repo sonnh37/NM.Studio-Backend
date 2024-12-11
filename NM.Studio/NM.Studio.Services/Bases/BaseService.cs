@@ -33,13 +33,15 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
     #region Queries
 
- public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
+    public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
     {
         try
         {
             var entity = await _baseRepository.GetById(id);
             var result = _mapper.Map<TResult>(entity);
-            return ResponseHelper.GetOne(result);
+            if (result == null) return ResponseHelper.Warning<TResult>(result);
+            
+            return ResponseHelper.Success(result);
         }
         catch (Exception ex)
         {
@@ -54,11 +56,13 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entities = await _baseRepository.GetAll();
             var results = _mapper.Map<List<TResult>>(entities);
-            return ResponseHelper.GetAll(results);
+            if (results.Count == 0) return ResponseHelper.Warning<TResult>(results);
+
+            return ResponseHelper.Success(results);
         }
         catch (Exception ex)
         {
-            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}"; 
+            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
             return ResponseHelper.Error(errorMessage);
         }
     }
@@ -73,15 +77,17 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             if (!x.IsPagination)
             {
                 var allData = await _baseRepository.GetAll(x);
-                results = _mapper.Map<List<TResult>?>(allData);
-                return ResponseHelper.GetAll(results);
+                results = _mapper.Map<List<TResult>>(allData);
+                if (results.Count == 0) return ResponseHelper.Warning<TResult>(results);
+
+                return ResponseHelper.Success(results);
             }
 
             var tuple = await _baseRepository.GetPaged(x);
             results = _mapper.Map<List<TResult>?>(tuple.Item1);
             totalItems = tuple.Item2;
 
-            return ResponseHelper.GetAllPaginated((results, totalItems), x);
+            return ResponseHelper.Success((results, totalItems), x);
         }
         catch (Exception ex)
         {
@@ -94,14 +100,17 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
     #region Commands
 
-    public async Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand) where TResult : BaseResult
+    public async Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand)
+        where TResult : BaseResult
     {
         try
         {
             var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
-            
+            if (result == null) return ResponseHelper.Warning();
+
+            var msg = ResponseHelper.Success(result);
+
             return msg;
         }
         catch (Exception ex)
@@ -115,32 +124,30 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     {
         try
         {
-            if (id == Guid.Empty) return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG);
+            if (id == Guid.Empty) return ResponseHelper.NotFound("Not found id");
 
             if (isPermanent)
             {
                 var isDeleted = await DeleteEntityPermanently(id);
-                
-                return ResponseHelper.Delete(isDeleted.HasValue);
+                return isDeleted ? ResponseHelper.Success() : ResponseHelper.Warning();
             }
-            
+
             var entity = await DeleteEntity(id);
 
-            return ResponseHelper.Delete(entity != null);
+            return entity != null ? ResponseHelper.Success() : ResponseHelper.Warning();
         }
         catch (DbUpdateException dbEx)
         {
-            // Xử lý lỗi liên quan đến ràng buộc khóa ngoại
             if (dbEx.InnerException?.Message.Contains("FOREIGN KEY") == true)
             {
                 var errorMessage = "Không thể xóa vì dữ liệu đang được tham chiếu ở bảng khác.";
                 return ResponseHelper.Error(errorMessage);
             }
-            throw; // Ném lại nếu không phải lỗi khóa ngoại
+
+            throw;
         }
         catch (Exception ex)
         {
-            // Xử lý các lỗi khác
             var errorMessage = $"An error occurred while deleting {typeof(TEntity).Name} with ID {id}: {ex.Message}";
             return ResponseHelper.Error(errorMessage);
         }
@@ -153,7 +160,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             entity = await _baseRepository.GetByIdNoInclude(updateCommand.Id);
             if (entity == null) return null;
-            if (updateCommand.IsDeleted.HasValue && updateCommand.IsDeleted.Value)
+            if (updateCommand.IsDeleted.HasValue)
             {
                 entity.IsDeleted = updateCommand.IsDeleted.Value; // Chỉ cập nhật IsDeleted
             }
@@ -161,8 +168,9 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             {
                 _mapper.Map(updateCommand, entity); // Cập nhật các thuộc tính khác
             }
+
             SetBaseEntityUpdate(entity);
-            _baseRepository.Update(entity); 
+            _baseRepository.Update(entity);
         }
         else
         {
@@ -193,7 +201,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         entity.LastUpdatedBy = user.Email;
     }
 
-    private static void SetBaseEntityUpdate(TEntity? entity)
+    protected static void SetBaseEntityUpdate(TEntity? entity)
     {
         if (entity == null) return;
 
@@ -215,11 +223,11 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         var saveChanges = await _unitOfWork.SaveChanges();
         return saveChanges ? entity : default;
     }
-    
-    private async Task<bool?> DeleteEntityPermanently(Guid id)
+
+    private async Task<bool> DeleteEntityPermanently(Guid id)
     {
         var entity = await _baseRepository.GetById(id);
-        if (entity == null) return null;
+        if (entity == null) return false;
 
         _baseRepository.DeletePermanently(entity);
 

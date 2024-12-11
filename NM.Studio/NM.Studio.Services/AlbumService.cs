@@ -33,7 +33,7 @@ public class AlbumService : BaseService<Album>, IAlbumService
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
+            var msg = ResponseHelper.Success(result);
             
             return msg;
         }
@@ -64,7 +64,7 @@ public class AlbumService : BaseService<Album>, IAlbumService
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Save(result);
+            var msg = ResponseHelper.Success(result);
             
             return msg;
         }
