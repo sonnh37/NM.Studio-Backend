@@ -7,7 +7,7 @@ using NM.Studio.API.Controllers.Base;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("albums")]
 public class AlbumController : BaseController
 {
@@ -15,10 +15,11 @@ public class AlbumController : BaseController
     {
     }
 
-    [AllowAnonymous]
+    // [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery albumGetAllQuery)
     {
+        var accessToken = Request.Cookies["accessToken"];
         var messageResult = await _mediator.Send(albumGetAllQuery);
 
         return Ok(messageResult);

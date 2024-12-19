@@ -32,4 +32,6 @@ public class User : BaseEntity
     public UserStatus? Status { get; set; }
     
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    
+    public virtual ICollection<UserRefreshToken> UserRefreshTokens { get; set; } = new List<UserRefreshToken>();
 }

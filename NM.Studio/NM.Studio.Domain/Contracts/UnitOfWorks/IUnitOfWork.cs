@@ -29,4 +29,6 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IBlogRepository BlogRepository { get; }
     
     IBookingRepository BookingRepository { get; }
+    
+    IUserRefreshTokenRepository UserRefreshTokenRepository { get; }
 }

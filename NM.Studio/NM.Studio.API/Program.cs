@@ -91,19 +91,33 @@ builder.Services.AddAuthentication(x =>
         options.SaveToken = true;
         options.RequireHttpsMetadata = true;
 
+        // Cấu hình kiểm tra token
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = false, // Bật nếu muốn kiểm tra Issuer
+            ValidateAudience = false, // Bật nếu muốn kiểm tra Audience
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = false,
+            ValidateIssuerSigningKey = true, // Bật kiểm tra Signing Key
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 builder.Configuration.GetValue<string>("Appsettings:Token"))),
             ClockSkew = TimeSpan.Zero
         };
-        options.Configuration = new OpenIdConnectConfiguration();
-    });
 
+        // Đọc token từ cookie
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Lấy token từ cookie "accessToken"
+                var accessToken = context.Request.Cookies["accessToken"];
+                if (!string.IsNullOrEmpty(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
 builder.Services.AddAuthorization();
 
 #endregion
@@ -112,11 +126,14 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
+    var frontendDomain = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN");
+
     options.AddDefaultPolicy(policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendDomain)
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -135,13 +152,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<RequestTokenUserMiddleware>();
+app.UseMiddleware<AuthenticationMiddleware>();
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<StudioContext>();
-    DummyData.SeedDatabase(context);
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var context = scope.ServiceProvider.GetRequiredService<StudioContext>();
+//     DummyData.SeedDatabase(context);
+// }
 
 app.UseRouting();
 

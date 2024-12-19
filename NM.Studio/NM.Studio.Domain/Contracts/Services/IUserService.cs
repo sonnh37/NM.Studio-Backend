@@ -20,8 +20,14 @@ public interface IUserService : IBaseService
     BusinessResult SendEmail(string email);
 
     BusinessResult ValidateOtp(string email, string otpInput);
+    
     Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request);
+    
     Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request);
+    
     Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request);
+    
     Task<BusinessResult> GetByUsernameOrEmail(string key);
+    
+    Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request);
 }

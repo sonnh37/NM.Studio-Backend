@@ -54,6 +54,10 @@ public partial class StudioContext : BaseDbContext
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId);
+            
+            entity.HasMany(m => m.UserRefreshTokens)
+                .WithOne(m => m.User)
+                .HasForeignKey(m => m.UserId);
         });
         
         modelBuilder.Entity<Booking>(entity =>
@@ -71,6 +75,19 @@ public partial class StudioContext : BaseDbContext
             entity.HasOne(sc => sc.Service)
                 .WithMany(c => c.Bookings)
                 .HasForeignKey(sc => sc.ServiceId);
+        });
+        
+        modelBuilder.Entity<UserRefreshToken>(entity =>
+        {
+            entity.ToTable("UserRefreshToken");
+
+            entity.Property(e => e.Id)
+                .ValueGeneratedOnAdd()
+                .HasDefaultValueSql("NEWID()");
+
+            entity.HasOne(sc => sc.User)
+                .WithMany(c => c.UserRefreshTokens)
+                .HasForeignKey(sc => sc.UserId);
         });
 
         modelBuilder.Entity<Blog>(entity =>

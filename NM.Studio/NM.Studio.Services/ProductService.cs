@@ -32,9 +32,8 @@ public class ProductService : BaseService<Product>, IProductService
     {
         try
         {
-            // Truy vấn danh mục
             var categories = _categoryRepository.GetQueryable(c => !c.IsDeleted)
-                .OrderBy(m => m.LastUpdatedDate)
+                .OrderByDescending(m => m.LastUpdatedDate)
                 .Include(c => c.SubCategories)
                 .ThenInclude(sc => sc.Products)
                 .ThenInclude(p => p.ProductXPhotos)

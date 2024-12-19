@@ -2,9 +2,11 @@
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -18,6 +20,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using NM.Studio.Domain.Enums;
 using NM.Studio.Domain.Models;
+using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Services.Bases;
 using OtpNet;
 
@@ -27,19 +30,19 @@ public class UserService : BaseService<User>, IUserService
 {
     private readonly IConfiguration configuration;
     private readonly IUserRepository _userRepository;
-    private readonly DateTime _expirationTime = ConstantHelper.ExpirationLogin;
+    private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
+    private readonly DateTime _expirationTime = DateTime.Now.AddMinutes(30);
     private readonly Dictionary<string, string> _otpStorage = new(); // Lưu OTP
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
-    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration) : base(mapper, unitOfWork)
+    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration)
+        : base(mapper, unitOfWork)
     {
         _userRepository = _unitOfWork.UserRepository;
+        _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
         configuration = _configuration;
-        _clientId = configuration["Authentication:Google:ClientId"];
-
     }
-
     private string GenerateSecretKey(int length)
     {
         byte[] secretKey = KeyGeneration.GenerateRandomKey(length);
@@ -161,14 +164,13 @@ public class UserService : BaseService<User>, IUserService
     {
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role.ToString()),
-            new Claim(ClaimTypes.Expiration, new DateTimeOffset(_expirationTime).ToUnixTimeSeconds().ToString())
+            new Claim("Id", user.Id.ToString()),
+            new Claim("Role", user.Role.ToString()),
+            new Claim("Expiration", new DateTimeOffset(_expirationTime).ToUnixTimeSeconds().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            configuration.GetSection("JWT:Token").Value!));
+            configuration.GetSection("AppSettings:Token").Value!));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
@@ -181,7 +183,18 @@ public class UserService : BaseService<User>, IUserService
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return (jwt, _expirationTime.ToString("o")); // Trả về token và thời gian hết hạn
+        return (jwt, _expirationTime.ToString("o"));
+    }
+    
+    private string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomNumber);
+        }
+
+        return Convert.ToBase64String(randomNumber);
     }
     public async Task<BusinessResult> Login(AuthQuery query)
     {
@@ -197,7 +210,25 @@ public class UserService : BaseService<User>, IUserService
 
         var (token, expiration) = CreateToken(result);
 
-        return ResponseHelper.GetToken(token, expiration);
+        var refreshToken = GenerateRefreshToken();
+
+        await SaveRefreshToken(user.Id, refreshToken);
+
+        return new BusinessResult(1, "", new TokenResult{ Token = token, RefreshToken = refreshToken });
+    }
+    
+    private async Task SaveRefreshToken(Guid userId, string refreshToken)
+    {
+        var expirationDate = DateTime.UtcNow.AddMonths(1); // Refresh token expires in 1 month
+
+        var refreshTokenEntity = new UserRefreshToken
+        {
+            UserId = userId,
+            RefreshToken = refreshToken,
+            ExpirationDate = expirationDate
+        };
+        _userRefreshTokenRepository.Add(refreshTokenEntity);
+        await _unitOfWork.SaveChanges();
     }
 
     public async Task<BusinessResult> AddUser(UserCreateCommand user)
@@ -221,6 +252,29 @@ public class UserService : BaseService<User>, IUserService
             null => new BusinessResult(Const.FAIL_CODE, Const.NOT_FOUND_MSG, userResult),
             _ => new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, userResult)
         };
+    }
+
+    public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
+    {
+        if (request.RefreshToken == null) return ResponseHelper.Warning("Refresh token could not be retrieved");
+        var refreshToken = request.RefreshToken;
+
+        // Validate refresh token from request
+        var storedRefreshToken = await _userRefreshTokenRepository.GetByRefreshTokenAsync(refreshToken);
+
+        if (storedRefreshToken == null || storedRefreshToken.ExpirationDate < DateTime.UtcNow)
+        {
+            return ResponseHelper.Warning("Refresh token is expired.");
+        }
+
+        // Get user info from the refresh token
+        var user = await _userRepository.GetById(storedRefreshToken.UserId);
+        var userResult = _mapper.Map<UserResult>(user);
+
+        // Create new access token
+        var (token, expiration) = CreateToken(userResult);
+        
+        return new BusinessResult(1, "", new TokenResult{ Token = token, RefreshToken = refreshToken });
     }
 
     #endregion
