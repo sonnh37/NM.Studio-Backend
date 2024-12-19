@@ -1,10 +1,13 @@
 ﻿using NM.Studio.Domain.CQRS.Commands.AlbumXPhotos;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.API.Controllers;
 
+[Authorize(Roles = "Admin,Staff")]
 [Route("albums/albumXPhotos")]
 public class AlbumXPhotoController : BaseController
 {

@@ -15,7 +15,7 @@ public class AlbumController : BaseController
     {
     }
 
-    // [AllowAnonymous]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery albumGetAllQuery)
     {

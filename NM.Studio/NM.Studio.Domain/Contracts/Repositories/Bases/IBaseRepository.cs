@@ -35,11 +35,20 @@ public interface IBaseRepository<TEntity> : IBaseRepository
     Task<IList<TEntity>> GetByIds(IList<Guid> ids);
 
     void Add(TEntity entity);
+    
     void AddRange(IEnumerable<TEntity> entities);
+    
     void Update(TEntity entity);
+    
     void UpdateRange(IEnumerable<TEntity> entities);
+    
     void Delete(TEntity entity);
+    
     void DeletePermanently(TEntity entity);
+    
     void DeleteRange(IEnumerable<TEntity> entities);
+    
     void CheckCancellationToken(CancellationToken cancellationToken = default);
+
+    void DeleteRangePermanently(IEnumerable<TEntity> entities);
 }

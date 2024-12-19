@@ -36,8 +36,8 @@ public class UserService : BaseService<User>, IUserService
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
-    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration)
-        : base(mapper, unitOfWork)
+    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _userRepository = _unitOfWork.UserRepository;
         _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;

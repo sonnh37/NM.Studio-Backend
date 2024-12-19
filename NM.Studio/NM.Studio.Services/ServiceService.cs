@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -16,8 +17,8 @@ public class ServiceService : BaseService<Service>, IServiceService
     private readonly IServiceRepository _serviceRepository;
 
     public ServiceService(IMapper mapper,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _serviceRepository = _unitOfWork.ServiceRepository;
     }

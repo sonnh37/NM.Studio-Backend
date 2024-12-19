@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
 using NM.Studio.Domain.Contracts.Services.Bases;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Queries.Base;
+using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Entities.Bases;
 using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
@@ -23,14 +25,40 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     private readonly IBaseRepository<TEntity> _baseRepository;
     protected readonly IMapper _mapper;
     protected readonly IUnitOfWork _unitOfWork;
+    protected readonly IHttpContextAccessor _httpContextAccessor;
 
-    protected BaseService(IMapper mapper, IUnitOfWork unitOfWork)
+    protected BaseService(IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor? httpContextAccessor = null)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _baseRepository = _unitOfWork.GetRepositoryByEntity<TEntity>();
+        _httpContextAccessor ??= new HttpContextAccessor();
     }
+    
+    public User? GetUser()
+    {
+        try
+        {
+            if (_httpContextAccessor?.HttpContext == null || !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                return null;
 
+            // Lấy thông tin UserId từ Claims
+            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return null;
+
+            // Lấy thêm thông tin User từ database nếu cần
+            var userId = Guid.Parse(userIdClaim);
+            var user = _unitOfWork.UserRepository.GetById(userId).Result;
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            // Log lỗi nếu cần thiết
+            return null;
+        }
+    }
     #region Queries
 
     public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
@@ -169,7 +197,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
                 _mapper.Map(updateCommand, entity); // Cập nhật các thuộc tính khác
             }
 
-            SetBaseEntityUpdate(entity);
+            InitializeBaseEntityForUpdate(entity);
             _baseRepository.Update(entity);
         }
         else
@@ -177,7 +205,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             entity = _mapper.Map<TEntity>(createOrUpdateCommand);
             if (entity == null) return null;
             entity.Id = Guid.NewGuid();
-            SetBaseEntityCreate(entity);
+            InitializeBaseEntityForCreate(entity);
             _baseRepository.Add(entity);
         }
 
@@ -186,11 +214,11 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     }
 
 
-    private static void SetBaseEntityCreate(TEntity? entity)
+    private void InitializeBaseEntityForCreate(TEntity? entity)
     {
         if (entity == null) return;
 
-        var user = InformationUser.User;
+        var user = GetUser();
 
         entity.CreatedDate = DateTime.Now;
         entity.LastUpdatedDate = DateTime.Now;
@@ -201,11 +229,11 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         entity.LastUpdatedBy = user.Email;
     }
 
-    protected static void SetBaseEntityUpdate(TEntity? entity)
+    protected void InitializeBaseEntityForUpdate(TEntity? entity)
     {
         if (entity == null) return;
 
-        var user = InformationUser.User;
+        var user = GetUser();
 
         entity.LastUpdatedDate = DateTime.Now;
 

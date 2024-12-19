@@ -21,65 +21,47 @@ public class AuthenticationMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        InformationUser.User = null;
-        var origin = context.Request.Headers["Origin"].ToString(); 
-        var referer = context.Request.Headers["Referer"].ToString(); 
-        InformationUser.Origin = origin;
-        InformationUser.Referer = referer;
-        // if (context.Request.Headers.ContainsKey("Authorization"))
-        // {
-        //     var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-        //     if (!string.IsNullOrEmpty(token) && token != "null")
-        //     {
-        //         var id = GetUserIdFromToken(token);
-        //         if (id != Guid.Empty)
-        //         {
-        //             using (var scope = _serviceScopeFactory.CreateScope())
-        //             {
+        // InformationUser.User = null;
+        // var origin = context.Request.Headers["Origin"].ToString(); 
+        // var referer = context.Request.Headers["Referer"].ToString(); 
+        // InformationUser.Origin = origin;
+        // InformationUser.Referer = referer;
+        
+        
+        // Lấy token từ cookies
+        // var token = context.Request.Cookies["accessToken"];
         //
-        //                 var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-        //                 var userRepository = unitOfWork.UserRepository;
-        //                 var user = await userRepository.GetById(id);
-        //                 InformationUser.User = user;
-        //             }
+        // if (!string.IsNullOrEmpty(token) && token != "null")
+        // {
+        //     var id = GetUserIdFromToken(token);
+        //     if (id != Guid.Empty)
+        //     {
+        //         using (var scope = _serviceScopeFactory.CreateScope())
+        //         {
+        //             var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        //             var userRepository = unitOfWork.UserRepository;
+        //             var user = await userRepository.GetById(id);
+        //             InformationUser.User = user;
         //         }
         //     }
         // }
-        
-        // Lấy token từ cookies
-        var token = context.Request.Cookies["accessToken"];
-
-        if (!string.IsNullOrEmpty(token) && token != "null")
-        {
-            var id = GetUserIdFromToken(token);
-            if (id != Guid.Empty)
-            {
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-                    var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-                    var userRepository = unitOfWork.UserRepository;
-                    var user = await userRepository.GetById(id);
-                    InformationUser.User = user;
-                }
-            }
-        }
 
         await _next(context);
     }
 
-    private Guid GetUserIdFromToken(string token)
-    {
-        try
-        {
-            var handler = new JwtSecurityTokenHandler();
-            var jwtToken = handler.ReadJwtToken(token);
-            var id = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-            return Guid.Parse(id);
-        }
-        catch (Exception ex)
-        {
-            // Log exception if necessary
-            return Guid.Empty;
-        }
-    }
+    // private Guid GetUserIdFromToken(string token)
+    // {
+    //     try
+    //     {
+    //         var handler = new JwtSecurityTokenHandler();
+    //         var jwtToken = handler.ReadJwtToken(token);
+    //         var id = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
+    //         return Guid.Parse(id);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         // Log exception if necessary
+    //         return Guid.Empty;
+    //     }
+    // }
 }

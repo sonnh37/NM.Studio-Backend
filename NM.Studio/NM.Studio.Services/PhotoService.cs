@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -12,8 +13,8 @@ public class PhotoService : BaseService<Photo>, IPhotoService
     private readonly IPhotoRepository _photoRepository;
 
     public PhotoService(IMapper mapper,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _photoRepository = _unitOfWork.PhotoRepository;
     }

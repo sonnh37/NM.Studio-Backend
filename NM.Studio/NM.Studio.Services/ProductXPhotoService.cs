@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -15,8 +16,8 @@ public class ProductXPhotoService : BaseService<ProductXPhoto>, IProductXPhotoSe
     private readonly IProductXPhotoRepository _productXPhotoRepository;
 
     public ProductXPhotoService(IMapper mapper,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _productXPhotoRepository = _unitOfWork.ProductXPhotoRepository;
     }

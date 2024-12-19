@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
@@ -21,8 +22,8 @@ public class ProductService : BaseService<Product>, IProductService
     private readonly ICategoryRepository _categoryRepository;
 
     public ProductService(IMapper mapper,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _categoryRepository = _unitOfWork.CategoryRepository;
         _productRepository = _unitOfWork.ProductRepository;

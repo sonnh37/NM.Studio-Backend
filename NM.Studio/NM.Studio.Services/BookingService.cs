@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -20,8 +21,8 @@ public class BookingService : BaseService<Booking>, IBookingService
     private readonly IEmailService _emailService;
 
     public BookingService(IMapper mapper, IEmailService emailService,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _emailService = emailService;
         _bookingRepository = _unitOfWork.BookingRepository;
@@ -32,7 +33,7 @@ public class BookingService : BaseService<Booking>, IBookingService
     {
         try
         {
-            var frontendUrl = InformationUser.Origin;
+            var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
             createCommand.Status = BookingStatus.Pending;
             var entity = await CreateOrUpdateEntity(createCommand);
             if (entity == null) return ResponseHelper.Error("Error creating booking");

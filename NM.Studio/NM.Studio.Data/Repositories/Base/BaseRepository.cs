@@ -116,6 +116,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     {
         DbSet.Remove(entity);
     }
+    
+    public void DeleteRangePermanently(IEnumerable<TEntity> entities)
+    {
+        DbSet.RemoveRange(entities);
+    }
 
     public void DeleteRange(IEnumerable<TEntity> entities)
     {

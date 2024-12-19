@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -17,8 +18,8 @@ public class AlbumService : BaseService<Album>, IAlbumService
     private readonly IAlbumRepository _albumRepository;
 
     public AlbumService(IMapper mapper,
-        IUnitOfWork unitOfWork)
-        : base(mapper, unitOfWork)
+        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        : base(mapper, unitOfWork, httpContextAccessor)
     {
         _albumRepository = _unitOfWork.AlbumRepository;
     }
