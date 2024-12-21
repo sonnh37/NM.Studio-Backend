@@ -9,6 +9,12 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IUserService : IBaseService
 {
+    Task<BusinessResult> UpdatePassword(UserPasswordCommand userPasswordCommand);
+
+    Task<BusinessResult> Create(UserCreateCommand createCommand);
+
+    Task<BusinessResult> Update(UserUpdateCommand updateCommand);
+    
     Task<BusinessResult> Login(AuthQuery authQuery);
 
     Task<BusinessResult> AddUser(UserCreateCommand user);
@@ -30,4 +36,6 @@ public interface IUserService : IBaseService
     Task<BusinessResult> GetByUsernameOrEmail(string key);
     
     Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request);
+
+    Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand);
 }

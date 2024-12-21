@@ -12,7 +12,9 @@ public class UserCommandHandler : BaseCommandHandler,
     IRequestHandler<UserDeleteCommand, BusinessResult>,
     IRequestHandler<UserCreateCommand, BusinessResult>,
     IRequestHandler<UserCreateByGoogleTokenCommand, BusinessResult>,
-    IRequestHandler<UserRefreshTokenCommand, BusinessResult>
+    IRequestHandler<UserRefreshTokenCommand, BusinessResult>,
+    IRequestHandler<UserLogoutCommand, BusinessResult>,
+    IRequestHandler<UserPasswordCommand, BusinessResult>
 {
     private readonly IUserService _userService;
 
@@ -23,19 +25,19 @@ public class UserCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(UserCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _userService.CreateOrUpdate<UserResult>(request);
+        var msgView = await _userService.Create(request);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(UserDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _userService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(UserUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<UserResult>(request);
+        var msgView = await _userService.Update(request);
         return msgView;
     }
 
@@ -47,5 +49,15 @@ public class UserCommandHandler : BaseCommandHandler,
     public async Task<BusinessResult> Handle(UserRefreshTokenCommand request, CancellationToken cancellationToken)
     {
         return await _userService.RefreshToken(request);
+    }
+
+    public async Task<BusinessResult> Handle(UserLogoutCommand request, CancellationToken cancellationToken)
+    {
+        return await _userService.Logout(request);
+    }
+
+    public async Task<BusinessResult> Handle(UserPasswordCommand request, CancellationToken cancellationToken)
+    {
+        return await _userService.UpdatePassword(request);
     }
 }

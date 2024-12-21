@@ -40,6 +40,15 @@ public class UserController : BaseController
 
         return Ok(messageResult);
     }
+    
+    
+    [HttpGet("info")]
+    public async Task<IActionResult> GetUser()
+    {
+        var messageResult = await GetCurrentUser();
+        
+        return Ok(messageResult);
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserCreateCommand userCreateCommand)
@@ -50,7 +59,15 @@ public class UserController : BaseController
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromQuery] UserUpdateCommand userUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] UserUpdateCommand userUpdateCommand)
+    {
+        var messageView = await _mediator.Send(userUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UserPasswordCommand userUpdateCommand)
     {
         var messageView = await _mediator.Send(userUpdateCommand);
 
@@ -103,6 +120,31 @@ public class UserController : BaseController
             Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
             Response.Cookies.Append("refreshToken", _object.RefreshToken, refreshTokenOptions);      
             return Ok(ResponseHelper.GetToken(_object.Token, ""));
+        }
+        catch (Exception ex)
+        {
+            return Ok(ResponseHelper.Error(ex.Message));
+        }
+    }
+    
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        try
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            var userLogoutCommand = new UserLogoutCommand
+            {
+                RefreshToken = refreshToken
+            };
+            var messageView = await _mediator.Send(userLogoutCommand);
+    
+            if(messageView.Status != 1) return Ok(messageView);
+            
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
+
+            return Ok(messageView);
         }
         catch (Exception ex)
         {

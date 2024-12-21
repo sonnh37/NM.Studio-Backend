@@ -36,21 +36,73 @@ public class UserService : BaseService<User>, IUserService
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
-    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration, IHttpContextAccessor httpContextAccessor)
+    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration,
+        IHttpContextAccessor httpContextAccessor)
         : base(mapper, unitOfWork, httpContextAccessor)
     {
         _userRepository = _unitOfWork.UserRepository;
         _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
         configuration = _configuration;
     }
+
     private string GenerateSecretKey(int length)
     {
         byte[] secretKey = KeyGeneration.GenerateRandomKey(length);
         return Base32Encoding.ToString(secretKey);
     }
 
+    public async Task<BusinessResult> UpdatePassword(UserPasswordCommand userPasswordCommand)
+    {
+        try
+        {
+            var userCurrent = GetUser();
+            if (userCurrent == null) return ResponseHelper.Warning("Vui lòng đăng nhập lại");
+            userCurrent.Password = userPasswordCommand.Password;
+            InitializeBaseEntityForUpdate(userCurrent);
+            _userRepository.Update(userCurrent);
+            var res = await _unitOfWork.SaveChanges();
+            
+            return res ? ResponseHelper.Success() : ResponseHelper.Error();
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"An error occurred while updating {typeof(UserPasswordCommand).Name}: {ex.Message}";
+            return ResponseHelper.Error(errorMessage);
+        }
+    }
+    
+    public async Task<BusinessResult> Create(UserCreateCommand createCommand)
+    {
+        try
+        {
+            var entity = await CreateOrUpdateEntity(createCommand);
+            
+            return entity != null ? ResponseHelper.Success() : ResponseHelper.Error();
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"An error occurred while updating {typeof(UserCreateCommand).Name}: {ex.Message}";
+            return ResponseHelper.Error(errorMessage);
+        }
+    }
+    
+    public async Task<BusinessResult> Update(UserUpdateCommand updateCommand)
+    {
+        try
+        {
+            var entity = await CreateOrUpdateEntity(updateCommand);
+            
+            return entity != null ? ResponseHelper.Success() : ResponseHelper.Error();
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"An error occurred while updating {typeof(UserCreateCommand).Name}: {ex.Message}";
+            return ResponseHelper.Error(errorMessage);
+        }
+    }
 
     #region Business
+
     public BusinessResult SendEmail(string email)
     {
         try
@@ -75,11 +127,11 @@ public class UserService : BaseService<User>, IUserService
             };
 
             using (var message = new MailMessage(fromAddress, toAddress)
-            {
-                Subject = subject,
-                Body = otp,
-                IsBodyHtml = false,
-            })
+                   {
+                       Subject = subject,
+                       Body = otp,
+                       IsBodyHtml = false,
+                   })
             {
                 smtp.Send(message);
                 _otpStorage[email] = otp; // Lưu trữ OTP cho email
@@ -96,20 +148,22 @@ public class UserService : BaseService<User>, IUserService
 
     private string GenerateOTP(string secret)
     {
-        var key = Base32Encoding.ToBytes(secret); 
+        var key = Base32Encoding.ToBytes(secret);
         var totp = new Totp(key);
         return totp.ComputeTotp(); // Tạo OTP
     }
 
     public BusinessResult ValidateOtp(string email, string otpInput)
     {
-        if (_otpStorage.TryGetValue(email, out string storedOtp) && _expiryStorage.TryGetValue(email, out DateTime expiry))
+        if (_otpStorage.TryGetValue(email, out string storedOtp) &&
+            _expiryStorage.TryGetValue(email, out DateTime expiry))
         {
             if (expiry > DateTime.UtcNow && storedOtp == otpInput)
             {
                 return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG);
             }
         }
+
         return new BusinessResult(Const.FAIL_CODE, Const.FAIL_READ_MSG);
     }
 
@@ -129,6 +183,7 @@ public class UserService : BaseService<User>, IUserService
             return new BusinessResult(Const.FAIL_CODE, "Username khong ton tai", userResult);
         }
     }
+
     public BusinessResult DecodeToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
@@ -160,6 +215,7 @@ public class UserService : BaseService<User>, IUserService
 
         return new BusinessResult(Const.SUCCESS_CODE, "Decoded to get user", decodedToken);
     }
+
     private (string token, string expiration) CreateToken(UserResult user)
     {
         var claims = new List<Claim>
@@ -185,7 +241,7 @@ public class UserService : BaseService<User>, IUserService
 
         return (jwt, _expirationTime.ToString("o"));
     }
-    
+
     private string GenerateRefreshToken()
     {
         var randomNumber = new byte[32];
@@ -196,12 +252,13 @@ public class UserService : BaseService<User>, IUserService
 
         return Convert.ToBase64String(randomNumber);
     }
+
     public async Task<BusinessResult> Login(AuthQuery query)
     {
         var user = await _userRepository.FindUsernameOrEmail(query.Account);
         var result = _mapper.Map<UserResult>(user);
         //check username 
-        if (user == null) 
+        if (user == null)
             return new BusinessResult(Const.WARNING_NO_DATA_CODE, "Not found account", null);
 
         //check password
@@ -214,9 +271,9 @@ public class UserService : BaseService<User>, IUserService
 
         await SaveRefreshToken(user.Id, refreshToken);
 
-        return new BusinessResult(1, "", new TokenResult{ Token = token, RefreshToken = refreshToken });
+        return new BusinessResult(1, "", new TokenResult { Token = token, RefreshToken = refreshToken });
     }
-    
+
     private async Task SaveRefreshToken(Guid userId, string refreshToken)
     {
         var expirationDate = DateTime.UtcNow.AddMonths(1); // Refresh token expires in 1 month
@@ -239,6 +296,26 @@ public class UserService : BaseService<User>, IUserService
             null => await base.CreateOrUpdate<UserResult>(user),
             _ => new BusinessResult(Const.FAIL_CODE, "Account existed")
         };
+    }
+
+    public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
+    {
+        try
+        {
+            var userRefreshToken = await _userRefreshTokenRepository
+                .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
+            if (userRefreshToken == null) return ResponseHelper.NotFound("Not found refresh token");
+            _userRefreshTokenRepository.DeletePermanently(userRefreshToken);
+        
+            var isSaved = await _unitOfWork.SaveChanges();
+            if (!isSaved) throw new Exception();
+
+            return ResponseHelper.Success();
+        }
+        catch (Exception e)
+        {
+            return ResponseHelper.Error(e.Message);
+        }
     }
 
     public async Task<BusinessResult> GetByUsernameOrEmail(string key)
@@ -273,8 +350,8 @@ public class UserService : BaseService<User>, IUserService
 
         // Create new access token
         var (token, expiration) = CreateToken(userResult);
-        
-        return new BusinessResult(1, "", new TokenResult{ Token = token, RefreshToken = refreshToken });
+
+        return new BusinessResult(1, "", new TokenResult { Token = token, RefreshToken = refreshToken });
     }
 
     #endregion
@@ -292,9 +369,8 @@ public class UserService : BaseService<User>, IUserService
 
     public async Task<BusinessResult> VerifyGoogleTokenAsync(VerifyGoogleTokenRequest request)
     {
-
         var payload = await VerifyGoogleToken(request.Token!);
-        
+
         return payload switch
         {
             null => new BusinessResult(Const.FAIL_CODE, Const.FAIL_READ_GOOGLE_TOKEN_MSG),
@@ -305,7 +381,6 @@ public class UserService : BaseService<User>, IUserService
 
     public async Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request)
     {
-
         var response = VerifyGoogleTokenAsync(request).Result;
 
         if (response.Status != Const.SUCCESS_CODE)
@@ -329,7 +404,6 @@ public class UserService : BaseService<User>, IUserService
 
     public async Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request)
     {
-
         var verifyGoogleToken = new VerifyGoogleTokenRequest
         {
             Token = request.Token

@@ -76,7 +76,7 @@ public static class ResponseHelper
     #endregion
 
     #region Error
-    public static BusinessResult Error(string e)
+    public static BusinessResult Error(string? e = "Error system")
     {
         return new BusinessResult(Const.ERROR_EXCEPTION_CODE, e);
     }

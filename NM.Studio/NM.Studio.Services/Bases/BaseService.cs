@@ -135,7 +135,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
             var result = _mapper.Map<TResult>(entity);
-            if (result == null) return ResponseHelper.Warning();
+            if (result == null) return ResponseHelper.Error();
 
             var msg = ResponseHelper.Success(result);
 
