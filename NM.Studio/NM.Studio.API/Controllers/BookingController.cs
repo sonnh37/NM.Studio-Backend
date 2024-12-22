@@ -7,7 +7,6 @@ using NM.Studio.Domain.CQRS.Queries.Bookings;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
 [Route("bookings")]
 public class BookingController : BaseController
 {
@@ -15,7 +14,7 @@ public class BookingController : BaseController
     {
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin,Staff")]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] BookingGetAllQuery bookingGetAllQuery)
     {
@@ -24,7 +23,7 @@ public class BookingController : BaseController
         return Ok(messageResult);
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin,Staff,Customer")]
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
@@ -49,6 +48,14 @@ public class BookingController : BaseController
     public async Task<IActionResult> Update([FromBody] BookingUpdateCommand bookingUpdateCommand)
     {
         var messageView = await _mediator.Send(bookingUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] BookingRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

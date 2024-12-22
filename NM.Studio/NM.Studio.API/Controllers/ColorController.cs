@@ -9,7 +9,7 @@ using NM.Studio.Domain.CQRS.Queries.Colors;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("colors")]
 public class ColorController : BaseController
 {
@@ -51,6 +51,14 @@ public class ColorController : BaseController
     public async Task<IActionResult> Update([FromBody] ColorUpdateCommand colorUpdateCommand)
     {
         var messageView = await _mediator.Send(colorUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] ColorRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

@@ -6,4 +6,8 @@ public class ColorGetAllQuery : GetAllQuery
 {
     public string? Name { get; set; }
 
+    public Guid? ProductId {
+        get;
+        set;
+    }
 }

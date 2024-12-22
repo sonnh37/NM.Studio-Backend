@@ -22,4 +22,6 @@ public interface IBaseService
     
     Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand) where TResult : BaseResult;
 
+    Task<BusinessResult> Restore<TResult>(UpdateCommand updateCommand) where TResult : BaseResult;
+
 }

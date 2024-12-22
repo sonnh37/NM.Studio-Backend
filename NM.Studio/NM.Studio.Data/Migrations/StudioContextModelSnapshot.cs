@@ -177,8 +177,8 @@ namespace NM.Studio.Data.Migrations
                     b.Property<Guid?>("ServiceId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -304,9 +304,6 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWID()");
 
-                    b.Property<Guid?>("ColorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -331,9 +328,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<Guid?>("SizeId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Sku")
                         .HasColumnType("nvarchar(max)");
 
@@ -349,13 +343,48 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ColorId");
-
-                    b.HasIndex("SizeId");
-
                     b.HasIndex("SubCategoryId");
 
                     b.ToTable("Product", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXColor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ColorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColorId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("ProductXColors");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
@@ -393,6 +422,45 @@ namespace NM.Studio.Data.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("ProductXPhoto", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXSize", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SizeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SizeId");
+
+                    b.ToTable("ProductXSizes");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
@@ -530,10 +598,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Gender")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
@@ -554,11 +619,14 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Role")
-                        .HasColumnType("int");
+                    b.Property<string>("Preferences")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")
                         .HasColumnType("nvarchar(max)");
@@ -610,13 +678,11 @@ namespace NM.Studio.Data.Migrations
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Album", "Album")
                         .WithMany("AlbumXPhotos")
-                        .HasForeignKey("AlbumId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("AlbumId");
 
                     b.HasOne("NM.Studio.Domain.Entities.Photo", "Photo")
                         .WithMany("AlbumsXPhotos")
-                        .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("PhotoId");
 
                     b.Navigation("Album");
 
@@ -640,51 +706,63 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
-                    b.HasOne("NM.Studio.Domain.Entities.Color", "Color")
-                        .WithMany("Products")
-                        .HasForeignKey("ColorId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("NM.Studio.Domain.Entities.Size", "Size")
-                        .WithMany("Products")
-                        .HasForeignKey("SizeId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("NM.Studio.Domain.Entities.SubCategory", "SubCategory")
                         .WithMany("Products")
-                        .HasForeignKey("SubCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("SubCategoryId");
+
+                    b.Navigation("SubCategory");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXColor", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Color", "Color")
+                        .WithMany("ProductXColors")
+                        .HasForeignKey("ColorId");
+
+                    b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
+                        .WithMany("ProductXColors")
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Color");
 
-                    b.Navigation("Size");
-
-                    b.Navigation("SubCategory");
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Photo", "Photo")
                         .WithMany("ProductXPhotos")
-                        .HasForeignKey("PhotoId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("PhotoId");
 
                     b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
                         .WithMany("ProductXPhotos")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("ProductId");
 
                     b.Navigation("Photo");
 
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXSize", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
+                        .WithMany("ProductXSizes")
+                        .HasForeignKey("ProductId");
+
+                    b.HasOne("NM.Studio.Domain.Entities.Size", "Size")
+                        .WithMany("ProductXSizes")
+                        .HasForeignKey("SizeId");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Size");
+                });
+
             modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
                         .WithMany("SubCategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });
@@ -712,7 +790,7 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Color", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("ProductXColors");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
@@ -724,7 +802,11 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
+                    b.Navigation("ProductXColors");
+
                     b.Navigation("ProductXPhotos");
+
+                    b.Navigation("ProductXSizes");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
@@ -734,7 +816,7 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Size", b =>
                 {
-                    b.Navigation("Products");
+                    b.Navigation("ProductXSizes");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>

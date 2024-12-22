@@ -24,6 +24,8 @@ public partial class StudioContext : BaseDbContext
     public virtual DbSet<User> Users { get; set; } = null!;
     public virtual DbSet<Blog> Blogs { get; set; } = null!;
     public virtual DbSet<Booking> Bookings { get; set; } = null!;
+    public virtual DbSet<ProductXSize> ProductXSizes { get; set; } = null!;
+    public virtual DbSet<ProductXColor> ProductXColors { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -50,16 +52,25 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
+            
+            entity.Property(x => x.Status)
+                .HasConversion(new EnumToStringConverter<UserStatus>());
+            
+            entity.Property(x => x.Gender)
+                .HasConversion(new EnumToStringConverter<Gender>());
+            
+            entity.Property(x => x.Role)
+                .HasConversion(new EnumToStringConverter<Role>());
 
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId);
-            
+
             entity.HasMany(m => m.UserRefreshTokens)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId);
         });
-        
+
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.ToTable("Booking");
@@ -67,16 +78,19 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
+            
+            entity.Property(x => x.Status)
+                .HasConversion(new EnumToStringConverter<BookingStatus>());
 
             entity.HasOne(sc => sc.User)
                 .WithMany(c => c.Bookings)
                 .HasForeignKey(sc => sc.UserId);
-            
+
             entity.HasOne(sc => sc.Service)
                 .WithMany(c => c.Bookings)
                 .HasForeignKey(sc => sc.ServiceId);
         });
-        
+
         modelBuilder.Entity<UserRefreshToken>(entity =>
         {
             entity.ToTable("UserRefreshToken");
@@ -98,7 +112,7 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
         });
-        
+
         modelBuilder.Entity<Size>(entity =>
         {
             entity.ToTable("Size");
@@ -106,10 +120,9 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasMany(m => m.Products)
+            entity.HasMany(m => m.ProductXSizes)
                 .WithOne(m => m.Size)
-                .HasForeignKey(m => m.SizeId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(m => m.SizeId);
         });
 
         modelBuilder.Entity<Color>(entity =>
@@ -119,10 +132,9 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
 
-            entity.HasMany(m => m.Products)
+            entity.HasMany(m => m.ProductXColors)
                 .WithOne(m => m.Color)
-                .HasForeignKey(m => m.ColorId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(m => m.ColorId);
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -134,8 +146,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(c => c.SubCategories)
                 .WithOne(sc => sc.Category)
-                .HasForeignKey(sc => sc.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(sc => sc.CategoryId);
         });
 
         modelBuilder.Entity<SubCategory>(entity =>
@@ -147,11 +158,8 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasOne(sc => sc.Category)
                 .WithMany(c => c.SubCategories)
-                .HasForeignKey(sc => sc.CategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(sc => sc.CategoryId);
         });
-        
-        var statusProduct = new EnumToStringConverter<ProductStatus>();
 
         modelBuilder.Entity<Product>(entity =>
         {
@@ -159,21 +167,27 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("NEWID()");
-            
+
             entity.Property(x => x.Status)
-                .HasConversion(statusProduct);
+                .HasConversion(new EnumToStringConverter<ProductStatus>());
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
             entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
+                .HasForeignKey(m => m.ProductId);
+
+            entity.HasMany(m => m.ProductXColors)
+                .WithOne(m => m.Product)
+                .HasForeignKey(m => m.ProductId);
+
+            entity.HasMany(m => m.ProductXSizes)
+                .WithOne(m => m.Product)
+                .HasForeignKey(m => m.ProductId);
+
             entity.HasOne(m => m.SubCategory)
                 .WithMany(m => m.Products)
-                .HasForeignKey(m => m.SubCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(m => m.SubCategoryId);
         });
 
         modelBuilder.Entity<Album>(entity =>
@@ -186,8 +200,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(m => m.AlbumXPhotos)
                 .WithOne(m => m.Album)
-                .HasForeignKey(m => m.AlbumId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(m => m.AlbumId);
         });
 
         modelBuilder.Entity<Photo>(entity =>
@@ -200,13 +213,11 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(m => m.AlbumsXPhotos)
                 .WithOne(m => m.Photo)
-                .HasForeignKey(photo => photo.AlbumId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.AlbumId);
 
             entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Photo)
-                .HasForeignKey(photo => photo.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.ProductId);
         });
 
 
@@ -220,13 +231,11 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasOne(m => m.Album)
                 .WithMany(m => m.AlbumXPhotos)
-                .HasForeignKey(photo => photo.AlbumId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.AlbumId);
 
             entity.HasOne(m => m.Photo)
                 .WithMany(m => m.AlbumsXPhotos)
-                .HasForeignKey(photo => photo.PhotoId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.PhotoId);
         });
 
         modelBuilder.Entity<ProductXPhoto>(entity =>
@@ -239,15 +248,12 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasOne(m => m.Product)
                 .WithMany(m => m.ProductXPhotos)
-                .HasForeignKey(photo => photo.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.ProductId);
 
             entity.HasOne(m => m.Photo)
                 .WithMany(m => m.ProductXPhotos)
-                .HasForeignKey(photo => photo.PhotoId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(photo => photo.PhotoId);
         });
-
 
         modelBuilder.Entity<Service>(entity =>
         {
@@ -258,13 +264,12 @@ public partial class StudioContext : BaseDbContext
                 .HasDefaultValueSql("NEWID()");
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
-            
+
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.Service)
                 .HasForeignKey(m => m.ServiceId);
         });
-
-       
+        
         OnModelCreatingPartial(modelBuilder);
     }
 

@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class PhotoCommandHandler : BaseCommandHandler,
     IRequestHandler<PhotoUpdateCommand, BusinessResult>,
     IRequestHandler<PhotoDeleteCommand, BusinessResult>,
-    IRequestHandler<PhotoCreateCommand, BusinessResult>
+    IRequestHandler<PhotoCreateCommand, BusinessResult>,
+    IRequestHandler<PhotoRestoreCommand, BusinessResult>
 {
     private readonly IPhotoService _photoService;
 
@@ -35,5 +36,11 @@ public class PhotoCommandHandler : BaseCommandHandler,
     {
         var msgView = await _baseService.CreateOrUpdate<PhotoResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(PhotoRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _photoService.Restore<PhotoResult>(request);
+        return businessResult;
     }
 }

@@ -14,7 +14,8 @@ public class UserCommandHandler : BaseCommandHandler,
     IRequestHandler<UserCreateByGoogleTokenCommand, BusinessResult>,
     IRequestHandler<UserRefreshTokenCommand, BusinessResult>,
     IRequestHandler<UserLogoutCommand, BusinessResult>,
-    IRequestHandler<UserPasswordCommand, BusinessResult>
+    IRequestHandler<UserPasswordCommand, BusinessResult>,
+    IRequestHandler<UserRestoreCommand, BusinessResult>
 {
     private readonly IUserService _userService;
 
@@ -59,5 +60,11 @@ public class UserCommandHandler : BaseCommandHandler,
     public async Task<BusinessResult> Handle(UserPasswordCommand request, CancellationToken cancellationToken)
     {
         return await _userService.UpdatePassword(request);
+    }
+
+    public async Task<BusinessResult> Handle(UserRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _userService.Restore<UserResult>(request);
+        return businessResult;
     }
 }

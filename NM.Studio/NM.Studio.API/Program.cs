@@ -18,7 +18,7 @@ using Quartz;
 DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddLogging(); 
+builder.Services.AddLogging();
 builder.Services.AddQuartz(q =>
 {
     q.UseMicrosoftDependencyInjectionJobFactory();
@@ -91,6 +91,7 @@ builder.Services.AddApplication();
 // builder.Services.AddMediatR(Assembly.GetExecutingAssembly(), handler);
 
 #endregion
+
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddCustomRepositories();
@@ -117,7 +118,8 @@ builder.Services.AddAuthentication(x =>
             ValidateIssuerSigningKey = true, // Bật kiểm tra Signing Key
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 builder.Configuration.GetValue<string>("Appsettings:Token"))),
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = "Role"
         };
 
         // Đọc token từ cookie
@@ -131,8 +133,9 @@ builder.Services.AddAuthentication(x =>
                 {
                     context.Token = accessToken;
                 }
+
                 return Task.CompletedTask;
-            }
+            },
         };
     });
 builder.Services.AddAuthorization();

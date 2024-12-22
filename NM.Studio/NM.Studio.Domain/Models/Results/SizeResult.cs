@@ -6,5 +6,5 @@ public class SizeResult : BaseResult
 {
     public string? Name { get; set; }
 
-    public List<ProductResult> Products { get; set; } = new();
+    public List<ProductXSizeResult> ProductXSizes { get; set; } = new List<ProductXSizeResult>();
 }

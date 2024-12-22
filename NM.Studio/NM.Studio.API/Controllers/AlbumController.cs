@@ -7,7 +7,7 @@ using NM.Studio.API.Controllers.Base;
 
 namespace NM.Studio.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("albums")]
 public class AlbumController : BaseController
 {
@@ -50,6 +50,14 @@ public class AlbumController : BaseController
     public async Task<IActionResult> Update([FromBody] AlbumUpdateCommand albumUpdateCommand)
     {
         var messageView = await _mediator.Send(albumUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] AlbumRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

@@ -27,7 +27,7 @@ public class GetQueryableQuery : BaseQuery
 
     public string? LastUpdatedBy { get; set; }
 
-    public List<bool?>? IsDeleted { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public int PageNumber { get; set; } = ConstantHelper.PageNumberDefault;
 

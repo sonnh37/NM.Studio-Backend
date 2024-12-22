@@ -7,7 +7,9 @@ using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.CQRS.Commands.Colors;
 using NM.Studio.Domain.CQRS.Commands.Photos;
 using NM.Studio.Domain.CQRS.Commands.Products;
+using NM.Studio.Domain.CQRS.Commands.ProductXColors;
 using NM.Studio.Domain.CQRS.Commands.ProductXPhotos;
+using NM.Studio.Domain.CQRS.Commands.ProductXSizes;
 using NM.Studio.Domain.CQRS.Commands.Services;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
 using NM.Studio.Domain.CQRS.Commands.SubCategories;
@@ -62,6 +64,14 @@ public class MappingProfile : Profile
         CreateMap<ProductXPhoto, ProductXPhotoResult>().ReverseMap();
         CreateMap<ProductXPhoto, ProductXPhotoCreateCommand>().ReverseMap();
         CreateMap<ProductXPhoto, ProductXPhotoUpdateCommand>().ReverseMap();
+        
+        CreateMap<ProductXColor, ProductXColorResult>().ReverseMap();
+        CreateMap<ProductXColor, ProductXColorCreateCommand>().ReverseMap();
+        CreateMap<ProductXColor, ProductXColorUpdateCommand>().ReverseMap();
+        
+        CreateMap<ProductXSize, ProductXSizeResult>().ReverseMap();
+        CreateMap<ProductXSize, ProductXSizeCreateCommand>().ReverseMap();
+        CreateMap<ProductXSize, ProductXSizeUpdateCommand>().ReverseMap();
     }
     
     private void ServiceMapping()

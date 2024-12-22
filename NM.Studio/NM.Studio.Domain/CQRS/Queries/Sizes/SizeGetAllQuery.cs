@@ -7,4 +7,8 @@ public class SizeGetAllQuery : GetAllQuery
 {
     public string? Name { get; set; }
 
+    public Guid? ProductId {
+        get;
+        set;
+    }
 }

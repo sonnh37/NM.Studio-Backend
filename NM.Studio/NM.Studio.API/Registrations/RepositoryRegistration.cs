@@ -1,6 +1,8 @@
 ﻿using NM.Studio.Data.Repositories;
 using NM.Studio.Data.UnitOfWorks;
+using NM.Studio.Domain.Contracts;
 using NM.Studio.Domain.Contracts.Repositories;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 
 namespace NM.Studio.API.Registrations;
@@ -24,5 +26,7 @@ public static class RepositoryRegistration
         services.AddScoped<IBlogRepository, BlogRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
+        services.AddScoped<IProductXColorRepository, ProductXColorRepository>();
+        services.AddScoped<IProductXSizeRepository, ProductXSizeRepository>();
     }
 }

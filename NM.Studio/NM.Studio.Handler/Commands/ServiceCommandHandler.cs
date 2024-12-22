@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class ServiceCommandHandler : BaseCommandHandler,
     IRequestHandler<ServiceUpdateCommand, BusinessResult>,
     IRequestHandler<ServiceDeleteCommand, BusinessResult>,
-    IRequestHandler<ServiceCreateCommand, BusinessResult>
+    IRequestHandler<ServiceCreateCommand, BusinessResult>,
+    IRequestHandler<ServiceRestoreCommand, BusinessResult>
 {
     private readonly IServiceService _serviceService;
 
@@ -35,5 +36,11 @@ public class ServiceCommandHandler : BaseCommandHandler,
     {
         var msgView = await _serviceService.Update<ServiceResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(ServiceRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _serviceService.Restore<ServiceResult>(request);
+        return businessResult;
     }
 }

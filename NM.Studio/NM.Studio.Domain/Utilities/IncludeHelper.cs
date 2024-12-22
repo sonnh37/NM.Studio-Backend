@@ -16,6 +16,10 @@ public static class IncludeHelper
             IQueryable<Service> services => Service(services) as IQueryable<TEntity>,
             IQueryable<Category> categories => Category(categories) as IQueryable<TEntity>,
             IQueryable<Photo> photos => Photo(photos) as IQueryable<TEntity>,
+            IQueryable<Color> colors => Color(colors) as IQueryable<TEntity>,
+            IQueryable<Size> sizes => Size(sizes) as IQueryable<TEntity>,
+            IQueryable<ProductXColor> productXColors => ProductXColor(productXColors) as IQueryable<TEntity>,
+            IQueryable<ProductXSize> productXSizes => ProductXSize(productXSizes) as IQueryable<TEntity>,
             _ => queryable
         })!;
     }
@@ -31,10 +35,12 @@ public static class IncludeHelper
     private static IQueryable<Product> Product(IQueryable<Product> queryable)
     {
         queryable = queryable
-            .Include(m => m.Size)
+            // .Include(m => m.Size)
             .Include(m => m.SubCategory).ThenInclude(m => m.Category)
-            .Include(m => m.Color)
-            .Include(m => m.ProductXPhotos).ThenInclude(m => m.Photo);
+            // .Include(m => m.Color)
+            .Include(m => m.ProductXPhotos).ThenInclude(m => m.Photo)
+            .Include(m => m.ProductXColors).ThenInclude(m => m.Color)
+            .Include(m => m.ProductXSizes).ThenInclude(m => m.Size);
 
         return queryable;
     }
@@ -58,6 +64,40 @@ public static class IncludeHelper
         queryable = queryable
             .Include(m => m.ProductXPhotos).ThenInclude(m => m.Product)
             .Include(m => m.AlbumsXPhotos).ThenInclude(m => m.Album);
+
+        return queryable;
+    }
+    
+    private static IQueryable<Size> Size(IQueryable<Size> queryable)
+    {
+        queryable = queryable
+            .Include(m => m.ProductXSizes).ThenInclude(m => m.Product);
+
+        return queryable;
+    }
+    
+    private static IQueryable<ProductXSize> ProductXSize(IQueryable<ProductXSize> queryable)
+    {
+        queryable = queryable
+            .Include(m => m.Product)
+            .Include(m => m.Size);
+
+        return queryable;
+    }
+    
+    private static IQueryable<ProductXColor> ProductXColor(IQueryable<ProductXColor> queryable)
+    {
+        queryable = queryable
+            .Include(m => m.Product)
+            .Include(m => m.Color);
+        
+        return queryable;
+    }
+    
+    private static IQueryable<Color> Color(IQueryable<Color> queryable)
+    {
+        queryable = queryable
+            .Include(m => m.ProductXColors).ThenInclude(m => m.Product);
 
         return queryable;
     }

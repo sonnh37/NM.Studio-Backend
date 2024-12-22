@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class ProductCommandHandler : BaseCommandHandler,
     IRequestHandler<ProductCreateCommand, BusinessResult>,
     IRequestHandler<ProductUpdateCommand, BusinessResult>,
-    IRequestHandler<ProductDeleteCommand, BusinessResult>
+    IRequestHandler<ProductDeleteCommand, BusinessResult>,
+    IRequestHandler<ProductRestoreCommand, BusinessResult>
 {
     protected readonly IProductService _productService;
 
@@ -35,5 +36,11 @@ public class ProductCommandHandler : BaseCommandHandler,
     {
         var msgView = await _productService.Update<ProductResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(ProductRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _productService.Restore<ProductResult>(request);
+        return businessResult;
     }
 }

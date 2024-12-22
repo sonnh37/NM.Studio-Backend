@@ -84,7 +84,7 @@ public class BookingService : BaseService<Booking>, IBookingService
         try
         {
             //check and set status cancelled
-            var booking = await _bookingRepository.GetByIdNoInclude(cancelCommand.Id);
+            var booking = await _bookingRepository.GetById(cancelCommand.Id);
                 
             if (booking == null) return ResponseHelper.NotFound();
             

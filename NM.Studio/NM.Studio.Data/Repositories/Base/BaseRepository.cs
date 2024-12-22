@@ -160,16 +160,17 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         var queryable = GetQueryable();
         queryable = IncludeHelper.Apply(queryable);
         queryable = FilterHelper.Apply(queryable, query);
+        queryable = Sort(queryable, query);
         
         var results = await queryable.ToListAsync();
 
         return results;
     }
 
-    public virtual async Task<TEntity?> GetById(Guid id)
+    public virtual async Task<TEntity?> GetById(Guid id, bool isInclude = false)
     {
         var queryable = GetQueryable(x => x.Id == id);
-        queryable = IncludeHelper.Apply(queryable);
+        queryable = isInclude ? IncludeHelper.Apply(queryable) : queryable;
         var entity = await queryable.FirstOrDefaultAsync();
 
         return entity;

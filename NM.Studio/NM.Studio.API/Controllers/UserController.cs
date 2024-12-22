@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.Enums;
 using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Results.Bases;
@@ -11,7 +12,7 @@ using NM.Studio.Domain.Utilities;
 
 namespace NM.Studio.API.Controllers;
 
-[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("users")]
 public class UserController : BaseController
 {
@@ -62,6 +63,14 @@ public class UserController : BaseController
     public async Task<IActionResult> Update([FromBody] UserUpdateCommand userUpdateCommand)
     {
         var messageView = await _mediator.Send(userUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] UserRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

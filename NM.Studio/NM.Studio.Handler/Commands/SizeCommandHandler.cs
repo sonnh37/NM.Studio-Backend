@@ -11,7 +11,8 @@ namespace NM.Studio.Handler.Commands;
 public class SizeCommandHandler : BaseCommandHandler,
     IRequestHandler<SizeUpdateCommand, BusinessResult>,
     IRequestHandler<SizeDeleteCommand, BusinessResult>,
-    IRequestHandler<SizeCreateCommand, BusinessResult>
+    IRequestHandler<SizeCreateCommand, BusinessResult>,
+    IRequestHandler<SizeRestoreCommand, BusinessResult>
 {
     protected readonly ISizeService _sizeService;
 
@@ -36,5 +37,11 @@ public class SizeCommandHandler : BaseCommandHandler,
     {
         var msgView = await _baseService.CreateOrUpdate<SizeResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(SizeRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _sizeService.Restore<SizeResult>(request);
+        return businessResult;
     }
 }

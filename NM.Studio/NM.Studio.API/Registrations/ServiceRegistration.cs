@@ -21,5 +21,7 @@ public static class ServiceRegistration
         services.AddTransient<IBlogService, BlogService>();
         services.AddTransient<IBookingService, BookingService>();
         services.AddTransient<IEmailService, EmailService>();
+        services.AddTransient<IProductXColorService, ProductXColorService>();
+        services.AddTransient<IProductXSizeService, ProductXSizeService>();
     }
 }

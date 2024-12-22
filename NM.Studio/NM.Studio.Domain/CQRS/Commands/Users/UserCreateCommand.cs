@@ -9,7 +9,7 @@ public class UserCreateCommand : CreateCommand
 
     public string? LastName { get; set; }
 
-    public string? ImageUrl { get; set; }
+    public string? Avatar  { get; set; }
 
     public string? Email { get; set; }
 
@@ -27,7 +27,7 @@ public class UserCreateCommand : CreateCommand
 
     public Role? Role { get; set; }
 
-    public string? Avatar { get; set; }
-
     public UserStatus? Status { get; set; }
+    
+    public string? Preferences { get; set; } 
 }

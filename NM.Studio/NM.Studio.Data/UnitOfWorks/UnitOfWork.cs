@@ -1,5 +1,7 @@
 ﻿using NM.Studio.Data.Context;
+using NM.Studio.Domain.Contracts;
 using NM.Studio.Domain.Contracts.Repositories;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 
 namespace NM.Studio.Data.UnitOfWorks;
@@ -37,4 +39,8 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public IBookingRepository BookingRepository => GetRepository<IBookingRepository>();
     
     public IUserRefreshTokenRepository UserRefreshTokenRepository => GetRepository<IUserRefreshTokenRepository>();
+    
+    public IProductXSizeRepository ProductXSizeRepository => GetRepository<IProductXSizeRepository>();
+    
+    public IProductXColorRepository ProductXColorRepository => GetRepository<IProductXColorRepository>();
 }

@@ -9,7 +9,7 @@ using NM.Studio.Domain.CQRS.Queries.Sizes;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("sizes")]
 public class SizeController : BaseController
 {
@@ -51,6 +51,14 @@ public class SizeController : BaseController
     public async Task<IActionResult> Update([FromBody] SizeUpdateCommand sizeUpdateCommand)
     {
         var messageView = await _mediator.Send(sizeUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] SizeRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

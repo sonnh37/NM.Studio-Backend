@@ -11,7 +11,8 @@ namespace NM.Studio.Handler.Commands;
 public class ColorCommandHandler : BaseCommandHandler,
     IRequestHandler<ColorUpdateCommand, BusinessResult>,
     IRequestHandler<ColorDeleteCommand, BusinessResult>,
-    IRequestHandler<ColorCreateCommand, BusinessResult>
+    IRequestHandler<ColorCreateCommand, BusinessResult>,
+    IRequestHandler<ColorRestoreCommand, BusinessResult>
 {
     protected readonly IColorService _colorService;
 
@@ -36,5 +37,11 @@ public class ColorCommandHandler : BaseCommandHandler,
     {
         var msgView = await _baseService.CreateOrUpdate<ColorResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(ColorRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _colorService.Restore<ColorResult>(request);
+        return businessResult;
     }
 }

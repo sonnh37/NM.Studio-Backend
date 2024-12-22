@@ -7,7 +7,7 @@ using NM.Studio.API.Controllers.Base;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("products")]
 public class ProductController : BaseController
 {
@@ -59,6 +59,14 @@ public class ProductController : BaseController
     public async Task<IActionResult> Update([FromBody] ProductUpdateCommand productUpdateCommand)
     {
         var messageView = await _mediator.Send(productUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] ProductRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

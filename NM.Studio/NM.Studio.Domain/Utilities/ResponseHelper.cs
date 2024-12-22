@@ -102,12 +102,7 @@ public static class ResponseHelper
 
     public static BusinessResult Delete(bool isDeleted)
     {
-        if (!isDeleted)
-        {
-            return new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG);
-        }
-
-        return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_DELETE_MSG);
+        return !isDeleted ? new BusinessResult(Const.WARNING_NO_DATA_CODE, Const.WARNING_NO_DATA_MSG) : new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_DELETE_MSG);
     }
 
     #endregion

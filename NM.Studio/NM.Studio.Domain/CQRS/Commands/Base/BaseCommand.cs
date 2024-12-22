@@ -19,11 +19,7 @@ public class CreateCommand : CreateOrUpdateCommand
 
 public class UpdateCommand : CreateOrUpdateCommand
 {
-    [DefaultValue(typeof(Guid), "00000000-0000-0000-0000-000000000000")]
     public Guid Id { get; set; }
-
-    [DefaultValue(null)]
-    public bool? IsDeleted { get; set; }
 }
 
 public class DeleteCommand : BaseCommand, IRequest<BusinessResult>

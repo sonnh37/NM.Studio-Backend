@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class BlogCommandHandler : BaseCommandHandler,
     IRequestHandler<BlogUpdateCommand, BusinessResult>,
     IRequestHandler<BlogDeleteCommand, BusinessResult>,
-    IRequestHandler<BlogCreateCommand, BusinessResult>
+    IRequestHandler<BlogCreateCommand, BusinessResult>,
+    IRequestHandler<BlogRestoreCommand, BusinessResult>
 {
     protected readonly IBlogService _blogService;
 
@@ -35,5 +36,11 @@ public class BlogCommandHandler : BaseCommandHandler,
     {
         var msgView = await _blogService.Update<BlogResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(BlogRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _blogService.Restore<BlogResult>(request);
+        return businessResult;
     }
 }

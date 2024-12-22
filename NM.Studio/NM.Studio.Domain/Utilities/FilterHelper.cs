@@ -3,9 +3,13 @@ using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.CQRS.Queries.Blogs;
 using NM.Studio.Domain.CQRS.Queries.Categories;
+using NM.Studio.Domain.CQRS.Queries.Colors;
 using NM.Studio.Domain.CQRS.Queries.Products;
 using NM.Studio.Domain.CQRS.Queries.Photos;
+using NM.Studio.Domain.CQRS.Queries.ProductXColors;
+using NM.Studio.Domain.CQRS.Queries.ProductXSizes;
 using NM.Studio.Domain.CQRS.Queries.Services;
+using NM.Studio.Domain.CQRS.Queries.Sizes;
 using NM.Studio.Domain.CQRS.Queries.SubCategories;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Entities;
@@ -37,6 +41,14 @@ public static class FilterHelper
                 Album((queryable as IQueryable<Album>)!, albumQuery) as IQueryable<TEntity>,
             UserGetAllQuery userQuery => 
                 User((queryable as IQueryable<User>)!, userQuery) as IQueryable<TEntity>,
+            ProductXColorGetAllQuery productXColorQuery => 
+                ProductXColor((queryable as IQueryable<ProductXColor>)!, productXColorQuery) as IQueryable<TEntity>,
+            ProductXSizeGetAllQuery productXSizeQuery => 
+                ProductXSize((queryable as IQueryable<ProductXSize>)!, productXSizeQuery) as IQueryable<TEntity>,
+            SizeGetAllQuery sizeQuery => 
+                Size((queryable as IQueryable<Size>)!, sizeQuery) as IQueryable<TEntity>,
+            ColorGetAllQuery colorQuery => 
+                Color((queryable as IQueryable<Color>)!, colorQuery) as IQueryable<TEntity>,
             
             _ => BaseFilterHelper.Base(queryable, query)
         };
@@ -44,19 +56,19 @@ public static class FilterHelper
 
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
-        if (query.IsNotNullSlug)
-        {
-            queryable = queryable.Where(p => p.Slug != null);
-        }
         
+        // Lọc theo Size
         if (query.Sizes.Any())
         {
-            queryable = queryable.Where(m => m.Size!.Name != null && query.Sizes.Contains(m.Size.Name));
+            queryable = queryable.Where(product => 
+                product.ProductXSizes.Any(size => query.Sizes.Contains(size.Size!.Name!)));
         }
-        
+
+        // Lọc theo Color
         if (query.Colors.Any())
         {
-            queryable = queryable.Where(m => m.Color!.Name != null && query.Colors.Contains(m.Color.Name));
+            queryable = queryable.Where(product => 
+                product.ProductXColors.Any(color => query.Colors.Contains(color.Color!.Name!)));
         }
 
         if (query.SubCategoryId != null) queryable = queryable.Where(m => m.SubCategoryId == query.SubCategoryId);
@@ -131,6 +143,34 @@ public static class FilterHelper
         queryable = BaseFilterHelper.Base(queryable, query);
         return queryable;
     }
+    
+    private static IQueryable<Size> Size(IQueryable<Size> queryable, SizeGetAllQuery query)
+    {
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
+        }
+        
+        if (query.ProductId != null) 
+            queryable = queryable.Where(m => !m.ProductXSizes.Select(a => a.ProductId).Contains(query.ProductId));
+
+        queryable = BaseFilterHelper.Base(queryable, query);
+        return queryable;
+    }
+    
+    private static IQueryable<Color> Color(IQueryable<Color> queryable, ColorGetAllQuery query)
+    {
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));
+        }
+        
+        if (query.ProductId != null) 
+            queryable = queryable.Where(m => !m.ProductXColors.Select(a => a.ProductId).Contains(query.ProductId));
+
+        queryable = BaseFilterHelper.Base(queryable, query);
+        return queryable;
+    }
 
     private static IQueryable<Category> Category(IQueryable<Category> queryable, CategoryGetAllQuery query)
     {
@@ -147,10 +187,6 @@ public static class FilterHelper
     
     private static IQueryable<Service> Service(IQueryable<Service> queryable, ServiceGetAllQuery query)
     {
-        if (query.IsNotNullSlug)
-        {
-            queryable = queryable.Where(p => p.Slug != null);
-        }
         
         if (!string.IsNullOrEmpty(query.Name))
         {
@@ -174,11 +210,6 @@ public static class FilterHelper
             queryable = queryable.Where(m => m.IsFeatured == query.IsFeatured);
         }
         
-        if (query.IsNotNullSlug)
-        {
-            queryable = queryable.Where(p => p.Slug != null);
-        }
-        
         if (!string.IsNullOrEmpty(query.Title))
         {
             queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
@@ -196,10 +227,6 @@ public static class FilterHelper
     
     private static IQueryable<Album> Album(IQueryable<Album> queryable, AlbumGetAllQuery query)
     {
-        if (query.IsNotNullSlug)
-        {
-            queryable = queryable.Where(p => p.Slug != null);
-        }
 
         if (!string.IsNullOrEmpty(query.Title))
         {
@@ -245,6 +272,40 @@ public static class FilterHelper
 
         if (!string.IsNullOrEmpty(query.Phone))
             queryable = queryable.Where(e => e.Phone.Contains(query.Phone));
+        
+        queryable = BaseFilterHelper.Base(queryable, query);
+
+        return queryable;
+    }
+    
+    private static IQueryable<ProductXSize>? ProductXSize(IQueryable<ProductXSize> queryable, ProductXSizeGetAllQuery query)
+    {
+        if (query.ProductId != null)
+        {
+            queryable = queryable.Where(m => m.ProductId == query.ProductId);
+        }
+
+        if (query.IsActive.HasValue)
+        {
+            queryable = queryable.Where(m => m.IsActive == query.IsActive);
+        }
+        
+        queryable = BaseFilterHelper.Base(queryable, query);
+
+        return queryable;
+    }
+    
+    private static IQueryable<ProductXColor>? ProductXColor(IQueryable<ProductXColor> queryable, ProductXColorGetAllQuery query)
+    {
+        if (query.ProductId != null)
+        {
+            queryable = queryable.Where(m => m.ProductId == query.ProductId);
+        }
+        
+        if (query.IsActive.HasValue)
+        {
+            queryable = queryable.Where(m => m.IsActive == query.IsActive);
+        }
         
         queryable = BaseFilterHelper.Base(queryable, query);
 

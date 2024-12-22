@@ -13,7 +13,5 @@ public class ServiceGetAllQuery : GetAllQuery
     
     public string? Slug { get; set; }
     
-    public bool IsNotNullSlug { get; set; }
-
     public decimal? Price { get; set; }
 }

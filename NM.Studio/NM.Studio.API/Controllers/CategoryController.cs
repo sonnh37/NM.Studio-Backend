@@ -7,7 +7,7 @@ using NM.Studio.Domain.CQRS.Queries.Categories;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("categories")]
 public class CategoryController : BaseController
 {
@@ -49,6 +49,14 @@ public class CategoryController : BaseController
     public async Task<IActionResult> Update([FromBody] CategoryUpdateCommand categoryUpdateCommand)
     {
         var messageView = await _mediator.Send(categoryUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] CategoryRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

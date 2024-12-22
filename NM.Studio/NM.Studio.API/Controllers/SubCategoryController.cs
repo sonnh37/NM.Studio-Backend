@@ -8,6 +8,7 @@ using NM.Studio.Domain.CQRS.Queries.SubCategories;
 
 namespace NM.Studio.API.Controllers
 {
+    [Authorize(Roles = "Admin,Staff")]
     [Route("subcategories")]
     public class SubCategoryController : BaseController
     {
@@ -49,6 +50,14 @@ namespace NM.Studio.API.Controllers
         public async Task<IActionResult> Update([FromBody] SubCategoryUpdateCommand subCategoryUpdateCommand)
         {
             var messageView = await _mediator.Send(subCategoryUpdateCommand);
+
+            return Ok(messageView);
+        }
+        
+        [HttpPut("restore")]
+        public async Task<IActionResult> UpdateIsDeleted([FromBody] SubCategoryRestoreCommand command)
+        {
+            var messageView = await _mediator.Send(command);
 
             return Ok(messageView);
         }

@@ -9,8 +9,6 @@ public class AlbumGetAllQuery : GetAllQuery
     
     public string? Slug { get; set; }
     
-    public bool IsNotNullSlug { get; set; }
-    
     public string? Description { get; set; }
 
     public string? Background { get; set; }

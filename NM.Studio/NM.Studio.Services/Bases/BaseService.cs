@@ -34,12 +34,13 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         _baseRepository = _unitOfWork.GetRepositoryByEntity<TEntity>();
         _httpContextAccessor ??= new HttpContextAccessor();
     }
-    
+
     public User? GetUser()
     {
         try
         {
-            if (_httpContextAccessor?.HttpContext == null || !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+            if (_httpContextAccessor?.HttpContext == null ||
+                !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
                 return null;
 
             // Lấy thông tin UserId từ Claims
@@ -59,16 +60,17 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             return null;
         }
     }
+
     #region Queries
 
     public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
     {
         try
         {
-            var entity = await _baseRepository.GetById(id);
+            var entity = await _baseRepository.GetById(id, true);
             var result = _mapper.Map<TResult>(entity);
             if (result == null) return ResponseHelper.Warning<TResult>(result);
-            
+
             return ResponseHelper.Success(result);
         }
         catch (Exception ex)
@@ -148,6 +150,26 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         }
     }
 
+    public async Task<BusinessResult> Restore<TResult>(UpdateCommand updateCommand)
+        where TResult : BaseResult
+    {
+        try
+        {
+            var entity = await RestoreEntity(updateCommand);
+            var result = _mapper.Map<TResult>(entity);
+            if (result == null) return ResponseHelper.Error();
+
+            var msg = ResponseHelper.Success(result);
+
+            return msg;
+        }
+        catch (Exception ex)
+        {
+            var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
+            return ResponseHelper.Error(errorMessage);
+        }
+    }
+
     public async Task<BusinessResult> DeleteById(Guid id, bool isPermanent = false)
     {
         try
@@ -186,16 +208,10 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         TEntity? entity;
         if (createOrUpdateCommand is UpdateCommand updateCommand)
         {
-            entity = await _baseRepository.GetByIdNoInclude(updateCommand.Id);
+            entity = await _baseRepository.GetById(updateCommand.Id);
             if (entity == null) return null;
-            if (updateCommand.IsDeleted.HasValue)
-            {
-                entity.IsDeleted = updateCommand.IsDeleted.Value; // Chỉ cập nhật IsDeleted
-            }
-            else
-            {
-                _mapper.Map(updateCommand, entity); // Cập nhật các thuộc tính khác
-            }
+
+            _mapper.Map(updateCommand, entity);
 
             InitializeBaseEntityForUpdate(entity);
             _baseRepository.Update(entity);
@@ -208,6 +224,24 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             InitializeBaseEntityForCreate(entity);
             _baseRepository.Add(entity);
         }
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        return saveChanges ? entity : default;
+    }
+
+    private async Task<TEntity?> RestoreEntity(UpdateCommand updateCommand)
+    {
+        TEntity? entity;
+
+        entity = await _baseRepository.GetById(updateCommand.Id);
+        if (entity == null) return null;
+
+        // update isdeleted
+        entity.IsDeleted = false;
+
+        InitializeBaseEntityForUpdate(entity);
+        _baseRepository.Update(entity);
+
 
         var saveChanges = await _unitOfWork.SaveChanges();
         return saveChanges ? entity : default;

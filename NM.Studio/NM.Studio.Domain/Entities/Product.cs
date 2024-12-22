@@ -6,14 +6,10 @@ namespace NM.Studio.Domain.Entities;
 public class Product : BaseEntity
 {
     public string? Sku { get; set; }
-    
+
     public string? Slug { get; set; }
 
     public Guid? SubCategoryId { get; set; }
-
-    public Guid? SizeId { get; set; }
-
-    public Guid? ColorId { get; set; }
 
     public string? Name { get; set; }
 
@@ -21,13 +17,13 @@ public class Product : BaseEntity
 
     public string? Description { get; set; }
 
-    public virtual Color? Color { get; set; }
-
     public virtual SubCategory? SubCategory { get; set; }
-
-    public virtual Size? Size { get; set; }
 
     public ProductStatus Status { get; set; }
 
     public virtual ICollection<ProductXPhoto> ProductXPhotos { get; set; } = new List<ProductXPhoto>();
+
+    public virtual ICollection<ProductXColor> ProductXColors { get; set; } = new List<ProductXColor>();
+
+    public virtual ICollection<ProductXSize> ProductXSizes { get; set; } = new List<ProductXSize>();
 }

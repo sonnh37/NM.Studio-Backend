@@ -18,9 +18,9 @@ public static class BaseFilterHelper
         if (!string.IsNullOrEmpty(query.LastUpdatedBy))
             queryable = queryable.Where(m => m.LastUpdatedBy != null && m.LastUpdatedBy.Contains(query.LastUpdatedBy));
 
-        if (query.IsDeleted != null && query.IsDeleted.Any())
+        if (query.IsDeleted != null)
         {
-            queryable = queryable.Where(m => query.IsDeleted.Contains(m.IsDeleted));
+            queryable = queryable.Where(m => query.IsDeleted.Value == m.IsDeleted);
         }
 
         queryable = FromDateToDate(queryable, query);

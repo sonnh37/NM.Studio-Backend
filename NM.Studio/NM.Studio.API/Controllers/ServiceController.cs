@@ -4,10 +4,11 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.CQRS.Commands.Albums;
 
 namespace NM.Studio.API.Controllers;
 
-//[Authorize]
+[Authorize(Roles = "Admin,Staff")]
 [Route("services")]
 public class ServiceController : BaseController
 {
@@ -49,6 +50,14 @@ public class ServiceController : BaseController
     public async Task<IActionResult> Update([FromBody] ServiceUpdateCommand serviceUpdateCommand)
     {
         var messageView = await _mediator.Send(serviceUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] ServiceRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

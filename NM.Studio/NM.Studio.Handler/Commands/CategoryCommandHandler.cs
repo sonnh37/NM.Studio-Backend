@@ -10,7 +10,8 @@ namespace NM.Studio.Handler.Commands;
 public class CategoryCommandHandler : BaseCommandHandler,
     IRequestHandler<CategoryUpdateCommand, BusinessResult>,
     IRequestHandler<CategoryDeleteCommand, BusinessResult>,
-    IRequestHandler<CategoryCreateCommand, BusinessResult>
+    IRequestHandler<CategoryCreateCommand, BusinessResult>,
+    IRequestHandler<CategoryRestoreCommand, BusinessResult>
 {
     protected readonly ICategoryService _categoryService;
 
@@ -35,5 +36,11 @@ public class CategoryCommandHandler : BaseCommandHandler,
     {
         var msgView = await _baseService.CreateOrUpdate<CategoryResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(CategoryRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _categoryService.Restore<CategoryResult>(request);
+        return businessResult;
     }
 }

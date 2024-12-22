@@ -1,4 +1,5 @@
 ﻿using NM.Studio.Domain.Contracts.Repositories;
+using NM.Studio.Domain.Contracts.Services;
 
 namespace NM.Studio.Domain.Contracts.UnitOfWorks;
 
@@ -31,4 +32,8 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IBookingRepository BookingRepository { get; }
     
     IUserRefreshTokenRepository UserRefreshTokenRepository { get; }
+    
+    IProductXSizeRepository ProductXSizeRepository { get; }
+    
+    IProductXColorRepository ProductXColorRepository { get; }
 }

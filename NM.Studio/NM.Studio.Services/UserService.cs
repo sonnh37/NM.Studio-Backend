@@ -459,7 +459,7 @@ public class UserService : BaseService<User>, IUserService
             FirstName = payload.GivenName,
             LastName = payload.FamilyName,
             Role = Role.Customer,
-            ImageUrl = payload.Picture
+            Avatar = payload.Picture
         };
 
         var _response = await AddUser(_user);

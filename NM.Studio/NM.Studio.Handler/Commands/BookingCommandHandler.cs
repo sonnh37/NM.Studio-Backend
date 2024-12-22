@@ -11,7 +11,8 @@ public class BookingCommandHandler : BaseCommandHandler,
     IRequestHandler<BookingUpdateCommand, BusinessResult>,
     IRequestHandler<BookingDeleteCommand, BusinessResult>,
     IRequestHandler<BookingCreateCommand, BusinessResult>,
-    IRequestHandler<BookingCancelCommand, BusinessResult>
+    IRequestHandler<BookingCancelCommand, BusinessResult>,
+    IRequestHandler<BookingRestoreCommand, BusinessResult>
 {
     protected readonly IBookingService _bookingService;
 
@@ -42,5 +43,11 @@ public class BookingCommandHandler : BaseCommandHandler,
     {
         var msgView = await _bookingService.Cancel<BookingResult>(request);
         return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(BookingRestoreCommand request, CancellationToken cancellationToken)
+    {
+        var businessResult = await _bookingService.Restore<BookingResult>(request);
+        return businessResult;
     }
 }

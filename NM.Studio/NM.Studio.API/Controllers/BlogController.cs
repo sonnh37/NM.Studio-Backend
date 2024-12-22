@@ -7,6 +7,7 @@ using NM.Studio.Domain.CQRS.Queries.Blogs;
 
 namespace NM.Studio.API.Controllers;
 
+[Authorize(Roles = "Admin,Staff")]
 [Route("blogs")]
 public class BlogController : BaseController
 {
@@ -48,6 +49,14 @@ public class BlogController : BaseController
     public async Task<IActionResult> Update([FromBody] BlogUpdateCommand blogUpdateCommand)
     {
         var messageView = await _mediator.Send(blogUpdateCommand);
+
+        return Ok(messageView);
+    }
+    
+    [HttpPut("restore")]
+    public async Task<IActionResult> UpdateIsDeleted([FromBody] BlogRestoreCommand command)
+    {
+        var messageView = await _mediator.Send(command);
 
         return Ok(messageView);
     }

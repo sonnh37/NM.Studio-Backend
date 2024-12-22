@@ -8,8 +8,6 @@ public class BlogGetAllQuery : GetAllQuery
     
     public string? Slug { get; set; }
     
-    public bool IsNotNullSlug { get; set; }
-    
     public string? Content { get; set; }  
     
     public bool? IsFeatured { get; set; }  
