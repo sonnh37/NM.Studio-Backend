@@ -254,8 +254,8 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
         var user = GetUser();
 
-        entity.CreatedDate = DateTime.Now;
-        entity.LastUpdatedDate = DateTime.Now;
+        entity.CreatedDate = DateTime.UtcNow;
+        entity.LastUpdatedDate = DateTime.UtcNow;
         entity.IsDeleted = false;
 
         if (user == null) return;
@@ -269,7 +269,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
         var user = GetUser();
 
-        entity.LastUpdatedDate = DateTime.Now;
+        entity.LastUpdatedDate = DateTime.UtcNow;
 
         if (user == null) return;
         entity.LastUpdatedBy = user.Email;

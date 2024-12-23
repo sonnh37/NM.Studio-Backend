@@ -45,13 +45,15 @@ public partial class StudioContext : BaseDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
+        
         modelBuilder.Entity<User>(entity =>
         {
             entity.ToTable("User");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
             
             entity.Property(x => x.Status)
                 .HasConversion(new EnumToStringConverter<UserStatus>());
@@ -64,11 +66,13 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.User)
-                .HasForeignKey(m => m.UserId);
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(m => m.UserRefreshTokens)
                 .WithOne(m => m.User)
-                .HasForeignKey(m => m.UserId);
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Booking>(entity =>
@@ -77,7 +81,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
             
             entity.Property(x => x.Status)
                 .HasConversion(new EnumToStringConverter<BookingStatus>());
@@ -97,7 +101,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasOne(sc => sc.User)
                 .WithMany(c => c.UserRefreshTokens)
@@ -110,7 +114,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
         });
 
         modelBuilder.Entity<Size>(entity =>
@@ -118,11 +122,11 @@ public partial class StudioContext : BaseDbContext
             entity.ToTable("Size");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasMany(m => m.ProductXSizes)
                 .WithOne(m => m.Size)
-                .HasForeignKey(m => m.SizeId);
+                .HasForeignKey(m => m.SizeId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Color>(entity =>
@@ -130,11 +134,12 @@ public partial class StudioContext : BaseDbContext
             entity.ToTable("Color");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasMany(m => m.ProductXColors)
                 .WithOne(m => m.Color)
-                .HasForeignKey(m => m.ColorId);
+                .HasForeignKey(m => m.ColorId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Category>(entity =>
@@ -142,11 +147,12 @@ public partial class StudioContext : BaseDbContext
             entity.ToTable("Category");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasMany(c => c.SubCategories)
                 .WithOne(sc => sc.Category)
-                .HasForeignKey(sc => sc.CategoryId);
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<SubCategory>(entity =>
@@ -154,7 +160,7 @@ public partial class StudioContext : BaseDbContext
             entity.ToTable("SubCategory");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasOne(sc => sc.Category)
                 .WithMany(c => c.SubCategories)
@@ -166,7 +172,7 @@ public partial class StudioContext : BaseDbContext
             entity.ToTable("Product");
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.Property(x => x.Status)
                 .HasConversion(new EnumToStringConverter<ProductStatus>());
@@ -175,15 +181,18 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId);
+                .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(m => m.ProductXColors)
                 .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId);
+                .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasMany(m => m.ProductXSizes)
                 .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId);
+                .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasOne(m => m.SubCategory)
                 .WithMany(m => m.Products)
@@ -196,11 +205,12 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasMany(m => m.AlbumXPhotos)
                 .WithOne(m => m.Album)
-                .HasForeignKey(m => m.AlbumId);
+                .HasForeignKey(m => m.AlbumId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Photo>(entity =>
@@ -209,7 +219,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasMany(m => m.AlbumsXPhotos)
                 .WithOne(m => m.Photo)
@@ -217,7 +227,8 @@ public partial class StudioContext : BaseDbContext
 
             entity.HasMany(m => m.ProductXPhotos)
                 .WithOne(m => m.Photo)
-                .HasForeignKey(photo => photo.ProductId);
+                .HasForeignKey(photo => photo.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
 
@@ -227,7 +238,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasOne(m => m.Album)
                 .WithMany(m => m.AlbumXPhotos)
@@ -244,7 +255,7 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasOne(m => m.Product)
                 .WithMany(m => m.ProductXPhotos)
@@ -261,13 +272,14 @@ public partial class StudioContext : BaseDbContext
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("NEWID()");
+                .HasDefaultValueSql("gen_random_uuid()");
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.Service)
-                .HasForeignKey(m => m.ServiceId);
+                .HasForeignKey(m => m.ServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         
         OnModelCreatingPartial(modelBuilder);
