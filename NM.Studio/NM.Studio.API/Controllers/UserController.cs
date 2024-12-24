@@ -195,7 +195,7 @@ public class UserController : BaseController
 
             if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
             {
-                return Unauthorized(new { message = "Token not found" });
+                return Ok(ResponseHelper.Warning("Token not found"));
             }
 
             var res = new TokenResponse { AccessToken = accessToken, RefreshToken = refreshToken };
