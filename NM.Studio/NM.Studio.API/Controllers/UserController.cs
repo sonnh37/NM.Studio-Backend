@@ -108,20 +108,16 @@ public class UserController : BaseController
             var messageResult = await _mediator.Send(authQuery);
             if(messageResult.Status != 1) return Ok(messageResult);
             var _object = messageResult.Data as TokenResult;
-            var frontendDomain = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN");
 
             var accessTokenOptions = new CookieOptions
             {
-                Domain = frontendDomain,
                 HttpOnly = false,
-                Secure = true, // Set true khi chạy trên HTTPS
-                SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
+                Secure = false, // Set true khi chạy trên HTTPS
                 Expires = DateTime.UtcNow.AddMinutes(30)
             };
 
             var refreshTokenOptions = new CookieOptions
             {
-                Domain = frontendDomain,
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
@@ -178,9 +174,8 @@ public class UserController : BaseController
         var accessTokenOptions = new CookieOptions
         {
             HttpOnly = false,
-            Secure = true, // Set true khi chạy trên HTTPS
-            SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-            Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
+            Secure = false, // Set true khi chạy trên HTTPS
+            Expires = DateTime.UtcNow.AddMinutes(30)
         };
 
         Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
