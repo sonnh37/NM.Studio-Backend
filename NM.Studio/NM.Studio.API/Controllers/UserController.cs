@@ -108,21 +108,24 @@ public class UserController : BaseController
             var messageResult = await _mediator.Send(authQuery);
             if(messageResult.Status != 1) return Ok(messageResult);
             var _object = messageResult.Data as TokenResult;
+            var frontendDomain = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN");
+
             var accessTokenOptions = new CookieOptions
             {
+                Domain = "nhu-my-wedding-nextjs-web.vercel.app",
                 HttpOnly = false,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
+                Expires = DateTime.UtcNow.AddMinutes(30)
             };
 
-            // Cấu hình cookie cho RefreshToken (thời gian sống dài hơn)
             var refreshTokenOptions = new CookieOptions
             {
+                Domain = "nhu-my-wedding-nextjs-web.vercel.app",
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(7),
+                Expires = DateTime.UtcNow.AddDays(7)
             };
             
 
