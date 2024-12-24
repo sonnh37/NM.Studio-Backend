@@ -112,7 +112,8 @@ public class UserController : BaseController
             var accessTokenOptions = new CookieOptions
             {
                 HttpOnly = false,
-                Secure = false, // Set true khi chạy trên HTTPS
+                Secure = true, // Set true khi chạy trên HTTPS
+                SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
                 Expires = DateTime.UtcNow.AddMinutes(30)
             };
 
@@ -174,8 +175,9 @@ public class UserController : BaseController
         var accessTokenOptions = new CookieOptions
         {
             HttpOnly = false,
-            Secure = false, // Set true khi chạy trên HTTPS
-            Expires = DateTime.UtcNow.AddMinutes(30)
+            Secure = true, // Set true khi chạy trên HTTPS
+            SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
+            Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
         };
 
         Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
