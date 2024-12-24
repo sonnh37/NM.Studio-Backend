@@ -113,8 +113,7 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddMinutes(30),
-                Domain = "nhu-my-wedding-nextjs-web.vercel.app"
+                Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
             };
 
             // Cấu hình cookie cho RefreshToken (thời gian sống dài hơn)
@@ -123,8 +122,7 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(7), // RefreshToken có thể hết hạn sau 7 ngày
-                Domain = "nhu-my-wedding-nextjs-web.vercel.app"
+                Expires = DateTime.UtcNow.AddDays(7) // RefreshToken có thể hết hạn sau 7 ngày
             };
 
             // Set cookies vào HttpContext
