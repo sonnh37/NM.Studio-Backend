@@ -35,6 +35,10 @@ public class BookingService : BaseService<Booking>, IBookingService
         {
             var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
             createCommand.Status = BookingStatus.Pending;
+            // Giả sử BookingDate gốc là giờ UTC nhưng không có Kind
+            if (createCommand.BookingDate != null)
+                createCommand.BookingDate = DateTime.SpecifyKind(createCommand.BookingDate.Value, DateTimeKind.Utc);
+
             var entity = await CreateOrUpdateEntity(createCommand);
             if (entity == null) return ResponseHelper.Error("Error creating booking");
 

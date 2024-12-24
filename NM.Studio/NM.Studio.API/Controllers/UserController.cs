@@ -113,7 +113,8 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
+                Expires = DateTime.UtcNow.AddMinutes(30),
+                Domain = "nhu-my-wedding-nextjs-web.vercel.app"
             };
 
             // Cấu hình cookie cho RefreshToken (thời gian sống dài hơn)
@@ -122,7 +123,8 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(7) // RefreshToken có thể hết hạn sau 7 ngày
+                Expires = DateTime.UtcNow.AddDays(7), // RefreshToken có thể hết hạn sau 7 ngày
+                Domain = "nhu-my-wedding-nextjs-web.vercel.app"
             };
 
             // Set cookies vào HttpContext
@@ -183,22 +185,21 @@ public class UserController : BaseController
         return Ok(ResponseHelper.GetToken(_object.Token, ""));
     }
     
-    [HttpPost("check-access")]
-    public IActionResult CheckAccess()
+    [HttpGet("get-token")]
+    public IActionResult GetToken()
     {
         try
         {
-            // Lấy thông tin từ token
-            var userId = User.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
-            var role = User.Claims.FirstOrDefault(c => c.Type == "Role")?.Value;
+            var accessToken = Request.Cookies["accessToken"];
+            var refreshToken = Request.Cookies["refreshToken"];
 
-            if (role == Role.Admin.ToString() || role == Role.Staff.ToString())
+            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
             {
-                return Ok(ResponseHelper.Success("Bạn có quyền truy cập."));
+                return Unauthorized(new { message = "Token not found" });
             }
 
-            // Trả về lỗi nếu không có quyền
-            return Ok(ResponseHelper.Error("Bạn không có quyền truy cập."));
+            var res = new TokenResponse { AccessToken = accessToken, RefreshToken = refreshToken };
+            return Ok(ResponseHelper.Success<TokenResponse>(res));
         }
         catch (Exception ex)
         {

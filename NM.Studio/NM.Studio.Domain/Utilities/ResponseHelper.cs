@@ -21,7 +21,7 @@ public static class ResponseHelper
     }
 
     public static BusinessResult Success<TResult>(TResult? result)
-        where TResult : BaseResult
+        where TResult : class
     {
         return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, result);
     }
