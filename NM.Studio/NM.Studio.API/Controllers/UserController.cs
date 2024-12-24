@@ -110,7 +110,7 @@ public class UserController : BaseController
             var _object = messageResult.Data as TokenResult;
             var accessTokenOptions = new CookieOptions
             {
-                HttpOnly = true,
+                HttpOnly = false,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
                 Expires = DateTime.UtcNow.AddMinutes(30) // AccessToken có thể hết hạn sau 1 giờ
@@ -122,8 +122,9 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(7) // RefreshToken có thể hết hạn sau 7 ngày
+                Expires = DateTime.UtcNow.AddDays(7),
             };
+            
 
             // Set cookies vào HttpContext
             Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
