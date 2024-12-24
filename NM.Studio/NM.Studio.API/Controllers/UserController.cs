@@ -112,7 +112,7 @@ public class UserController : BaseController
 
             var accessTokenOptions = new CookieOptions
             {
-                Domain = "nhu-my-wedding-nextjs-web.vercel.app",
+                Domain = frontendDomain,
                 HttpOnly = false,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
@@ -121,7 +121,7 @@ public class UserController : BaseController
 
             var refreshTokenOptions = new CookieOptions
             {
-                Domain = "nhu-my-wedding-nextjs-web.vercel.app",
+                Domain = frontendDomain,
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
