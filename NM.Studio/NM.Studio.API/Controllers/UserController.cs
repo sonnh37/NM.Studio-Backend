@@ -127,7 +127,7 @@ public class UserController : BaseController
             
 
             // Set cookies vào HttpContext
-            Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
+            Response.Cookies.Append("accessToken", _object.Token);
             Response.Cookies.Append("refreshToken", _object.RefreshToken, refreshTokenOptions);      
             return Ok(ResponseHelper.GetToken(_object.Token, ""));
         }
@@ -180,7 +180,7 @@ public class UserController : BaseController
             Expires = DateTime.UtcNow.AddMinutes(30), // AccessToken có thể hết hạn sau 1 giờ
         };
 
-        Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
+        Response.Cookies.Append("accessToken", _object.Token);
         return Ok(ResponseHelper.GetToken(_object.Token, ""));
     }
     
