@@ -148,12 +148,12 @@ builder.Services.AddCors(options =>
 {
     var frontendDomain = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN");
 
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowSpecificOrigins", builder =>
     {
-        policy.WithOrigins(frontendDomain)
+        builder.WithOrigins(frontendDomain) // Thêm các domain của frontend
+            .AllowCredentials() // Cho phép gửi cookie
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyMethod();
     });
 });
 
@@ -180,11 +180,11 @@ app.UseMiddleware<AuthenticationMiddleware>();
 //     DummyData.SeedDatabase(context);
 // }
 
+app.UseHttpsRedirection();
 app.UseRouting();
 
-app.UseHttpsRedirection();
 
-app.UseCors();
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 
