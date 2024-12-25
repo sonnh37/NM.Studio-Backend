@@ -190,15 +190,16 @@ public class UserController : BaseController
     {
         try
         {
+            // because [authorize] => accessToken chắc chắn có nếu ko tự động trả veef 401 và refresh-token hàm ở trên
             var accessToken = Request.Cookies["accessToken"];
             var refreshToken = Request.Cookies["refreshToken"];
 
-            if (string.IsNullOrEmpty(accessToken) || string.IsNullOrEmpty(refreshToken))
+            if (string.IsNullOrEmpty(refreshToken))
             {
-                return Ok(ResponseHelper.Warning("Token not found"));
+                return Ok(ResponseHelper.Warning("Hết phiên đăng nhập."));
             }
 
-            var res = new TokenResponse { AccessToken = accessToken, RefreshToken = refreshToken };
+            var res = new TokenResponse { AccessToken = accessToken, RefreshToken = null };
             return Ok(ResponseHelper.Success<TokenResponse>(res));
         }
         catch (Exception ex)
