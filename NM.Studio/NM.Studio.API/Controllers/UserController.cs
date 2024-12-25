@@ -115,7 +115,6 @@ public class UserController : BaseController
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
                 Expires = DateTime.UtcNow.AddMinutes(30),
-                Path = "/",
             };
 
             var refreshTokenOptions = new CookieOptions
@@ -123,7 +122,6 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Path = "/",
                 Expires = DateTime.UtcNow.AddDays(7)
             };
             
@@ -180,7 +178,6 @@ public class UserController : BaseController
             Secure = true, // Set true khi chạy trên HTTPS
             SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
             Expires = DateTime.UtcNow.AddMinutes(30), // AccessToken có thể hết hạn sau 1 giờ
-            Path = "/",
         };
 
         Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
