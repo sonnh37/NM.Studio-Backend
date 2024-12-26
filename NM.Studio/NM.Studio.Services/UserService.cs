@@ -331,6 +331,16 @@ public class UserService : BaseService<User>, IUserService
         };
     }
 
+    public async Task<BusinessResult> GetByRefreshToken(UserGetByRefreshTokenQuery request)
+    {
+        if (request.RefreshToken == null) return ResponseHelper.NotFound("Refresh token is null");
+        var user = await _userRefreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+
+        var userRefreshToken = _mapper.Map<UserRefreshToken>(user);
+        
+        return userRefreshToken != null ? ResponseHelper.Success(userRefreshToken) : ResponseHelper.NotFound("Not found refresh token");
+    }
+
     public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
     {
         if (request.RefreshToken == null) return ResponseHelper.Warning("Refresh token could not be retrieved");

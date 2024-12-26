@@ -30,6 +30,17 @@ public class UserResult : BaseResult
     public string? Preferences { get; set; } 
 }
 
+public class UserAccountResult : BaseResult
+{
+    public string? Avatar  { get; set; }
+
+    public string? Email { get; set; }
+
+    public string? Username { get; set; }
+
+    public Role? Role { get; set; }
+}
+
 public class UserLoginResult
 {
     public string? Username { get; set; }

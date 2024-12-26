@@ -42,7 +42,7 @@ public class UserController : BaseController
         return Ok(messageResult);
     }
     
-    
+    [AllowAnonymous]
     [HttpGet("info")]
     public async Task<IActionResult> GetUser()
     {
@@ -137,6 +137,7 @@ public class UserController : BaseController
         }
     }
     
+    [AllowAnonymous]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -184,22 +185,39 @@ public class UserController : BaseController
         return Ok(ResponseHelper.GetToken(_object.Token, ""));
     }
     
-    [HttpGet("get-token")]
-    public IActionResult GetToken()
+    // [HttpGet("get-token")]
+    // public Task<IActionResult> GetToken()
+    // {
+    //     try
+    //     {
+    //         // because [authorize] => accessToken chắc chắn có nếu ko tự động trả veef 401 và refresh-token hàm ở trên
+    //         var accessToken = Request.Cookies["accessToken"];
+    //         var refreshToken = Request.Cookies["refreshToken"];
+    //         var userRefreshToken = new UserGetByRefreshTokenQuery
+    //         {
+    //             RefreshToken = refreshToken
+    //         };
+    //         var message = _mediator.Send(userRefreshToken).Result;
+    //         if(message.Status != 1) return Ok(message);
+    //
+    //         var res = new TokenResponse { AccessToken = accessToken, RefreshToken = null };
+    //         return Ok(ResponseHelper.Success<TokenResponse>(res));
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return Ok(ResponseHelper.Error("Error system."));
+    //     }
+    // }
+    
+    [AllowAnonymous]
+    [HttpGet("is-logged-in")]
+    public async Task<IActionResult> IsLogged()
     {
         try
         {
-            // because [authorize] => accessToken chắc chắn có nếu ko tự động trả veef 401 và refresh-token hàm ở trên
-            var accessToken = Request.Cookies["accessToken"];
-            var refreshToken = Request.Cookies["refreshToken"];
-
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                return Ok(ResponseHelper.Warning("Hết phiên đăng nhập."));
-            }
-
-            var res = new TokenResponse { AccessToken = accessToken, RefreshToken = null };
-            return Ok(ResponseHelper.Success<TokenResponse>(res));
+            // check refreshToken is exist db
+            var message = await IsLoggedIn();
+            return Ok(message);
         }
         catch (Exception ex)
         {

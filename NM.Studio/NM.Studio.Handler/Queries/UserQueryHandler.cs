@@ -17,7 +17,8 @@ public class UserQueryHandler :
     IRequestHandler<UserSendEmailQuery, BusinessResult>,
     IRequestHandler<VerifyOTPQuery, BusinessResult>,
     IRequestHandler<UserGetByGoogleTokenQuery, BusinessResult>,
-    IRequestHandler<AuthByGoogleTokenQuery, BusinessResult>
+    IRequestHandler<AuthByGoogleTokenQuery, BusinessResult>,
+    IRequestHandler<UserGetByRefreshTokenQuery, BusinessResult>
 {
     protected readonly IUserService _userService;
 
@@ -72,5 +73,9 @@ public class UserQueryHandler :
         return await _userService.LoginByGoogleTokenAsync(new VerifyGoogleTokenRequest{ Token = request.Token!});
     }
 
-    
+
+    public async Task<BusinessResult> Handle(UserGetByRefreshTokenQuery request, CancellationToken cancellationToken)
+    {
+        return await _userService.GetByRefreshToken(request);
+    }
 }
