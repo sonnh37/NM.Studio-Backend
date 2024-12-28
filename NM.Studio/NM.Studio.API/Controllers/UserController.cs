@@ -3,6 +3,7 @@ using NM.Studio.Domain.CQRS.Queries.Users;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.Enums;
@@ -12,11 +13,10 @@ using NM.Studio.Domain.Utilities;
 
 namespace NM.Studio.API.Controllers;
 
-[Authorize(Roles = "Admin,Staff")]
 [Route("users")]
 public class UserController : BaseController
 {
-    public UserController(IMediator mediator) : base(mediator)
+    public UserController(IMediator mediator, IOptions<TokenSetting> tokenSetting) : base(mediator, tokenSetting)
     {
     }
 
@@ -41,16 +41,67 @@ public class UserController : BaseController
 
         return Ok(messageResult);
     }
-    
+
     [AllowAnonymous]
     [HttpGet("info")]
-    public async Task<IActionResult> GetUser()
+    public async Task<IActionResult> GetUserForLimitRoles()
     {
-        var messageResult = await GetCurrentUser();
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (refreshToken == null)
+        {
+            // refreshToken is unvalid
+            return Ok(ResponseHelper.NotFound("refreshToken not found"));
+        }
+        
+        // check refreshToken is valid
+        var message = IsLoggedIn(refreshToken).Result;
+        if (message.Status != 1)
+        {
+            // refreshToken is unvalid to auto refresh call again 
+            return Unauthorized(message);
+        }
+        
+        // check AccessToken is valid
+        var accessToken = Request.Cookies["accessToken"];
+        if (accessToken != null)
+        {
+            // accessToken và refreshToken is available
+            var msg = await GetCurrentUser();
+        
+            return Ok(msg);
+        }
+        
+        var userRefresh = new UserRefreshTokenCommand
+        {
+            // accessToken is unvalid
+            RefreshToken = refreshToken
+        };
+        var message_ = await _mediator.Send(userRefresh);
+        if(message_.Status != 1) return Ok(message_); 
+        var _object = message_.Data as TokenResult;
+        var accessTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, 
+            SameSite = SameSiteMode.None, 
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+        };
+
+        Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
+        
+        // Get info user 
+        if (string.IsNullOrEmpty(_object.Token))
+        {
+            return Ok("Access token is error");
+        }
+        
+        // accessToken và refreshToken is available
+        var messageResult = await GetCurrentUser(_object.Token);
         
         return Ok(messageResult);
     }
-
+    
+    [Authorize(Roles = "Admin,Staff")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserCreateCommand userCreateCommand)
     {
@@ -59,6 +110,7 @@ public class UserController : BaseController
         return Ok(messageView);
     }
 
+    [Authorize(Roles = "Admin,Staff")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UserUpdateCommand userUpdateCommand)
     {
@@ -67,6 +119,7 @@ public class UserController : BaseController
         return Ok(messageView);
     }
     
+    [Authorize(Roles = "Admin,Staff")]
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] UserRestoreCommand command)
     {
@@ -83,6 +136,7 @@ public class UserController : BaseController
         return Ok(messageView);
     }
 
+    [Authorize(Roles = "Admin,Staff")]
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] UserDeleteCommand userDeleteCommand)
     {
@@ -91,6 +145,7 @@ public class UserController : BaseController
         return Ok(messageView);
     }
     
+    [Authorize(Roles = "Admin,Staff")]
     [HttpGet("account")]
     [AllowAnonymous]
     public async Task<IActionResult> GetAccount([FromQuery] UserGetByAccountQuery request)
@@ -114,7 +169,7 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
             };
 
             var refreshTokenOptions = new CookieOptions
@@ -122,7 +177,7 @@ public class UserController : BaseController
                 HttpOnly = true,
                 Secure = true, // Set true khi chạy trên HTTPS
                 SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(7)
+                Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
             };
             
 
@@ -167,22 +222,8 @@ public class UserController : BaseController
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] UserRefreshTokenCommand request)
     {
-        var refreshToken = Request.Cookies["refreshToken"];
-        
-        request.RefreshToken = refreshToken;
-        var messageResult = await _mediator.Send(request);
-        if(messageResult.Status != 1) return Ok(messageResult);
-        var _object = messageResult.Data as TokenResult;
-        var accessTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true, // Set true khi chạy trên HTTPS
-            SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-            Expires = DateTime.UtcNow.AddMinutes(30), // AccessToken có thể hết hạn sau 1 giờ
-        };
-
-        Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
-        return Ok(ResponseHelper.GetToken(_object.Token, ""));
+        var msg = await base.RefreshToken();
+        return Ok(msg);
     }
     
     // [HttpGet("get-token")]
@@ -215,8 +256,13 @@ public class UserController : BaseController
     {
         try
         {
+            var refreshToken = Request.Cookies["refreshToken"];
+            if (refreshToken == null)
+            {
+                return Unauthorized();
+            }
             // check refreshToken is exist db
-            var message = await IsLoggedIn();
+            var message = await IsLoggedIn(refreshToken);
             return Ok(message);
         }
         catch (Exception ex)

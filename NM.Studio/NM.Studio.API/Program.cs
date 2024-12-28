@@ -98,6 +98,7 @@ builder.Services.AddCustomRepositories();
 builder.Services.AddCustomServices();
 
 #region Config-Authentication_Authorization
+builder.Services.Configure<TokenSetting>(builder.Configuration.GetSection("TokenSetting"));
 
 builder.Services.AddAuthentication(x =>
     {
@@ -158,6 +159,8 @@ builder.Services.AddCors(options =>
 });
 
 #endregion
+
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

@@ -28,21 +28,23 @@ namespace NM.Studio.Services;
 
 public class UserService : BaseService<User>, IUserService
 {
-    private readonly IConfiguration configuration;
+    private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
     private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
-    private readonly DateTime _expirationTime = DateTime.Now.AddMinutes(30);
+    private readonly int _expirationMinutes;
     private readonly Dictionary<string, string> _otpStorage = new(); // Lưu OTP
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
-    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration _configuration,
+    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration configuration,
         IHttpContextAccessor httpContextAccessor)
         : base(mapper, unitOfWork, httpContextAccessor)
     {
         _userRepository = _unitOfWork.UserRepository;
         _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
-        configuration = _configuration;
+        _configuration = configuration;
+        
+        _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
     }
 
     private string GenerateSecretKey(int length)
@@ -222,24 +224,24 @@ public class UserService : BaseService<User>, IUserService
         {
             new Claim("Id", user.Id.ToString()),
             new Claim("Role", user.Role.ToString()),
-            new Claim("Expiration", new DateTimeOffset(_expirationTime).ToUnixTimeSeconds().ToString())
+            new Claim("Expiration", new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            configuration.GetSection("AppSettings:Token").Value!));
+            _configuration.GetSection("AppSettings:Token").Value!));
 
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
 
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: _expirationTime,
+            expires: DateTime.Now.AddMinutes(_expirationMinutes),
             signingCredentials: creds
         );
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return (jwt, _expirationTime.ToString("o"));
+        return (jwt, DateTime.Now.AddMinutes(_expirationMinutes).ToString("o"));
     }
 
     private string GenerateRefreshToken()
