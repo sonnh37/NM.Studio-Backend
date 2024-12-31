@@ -147,11 +147,11 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddCors(options =>
 {
-    var frontendDomain = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN");
+    var frontendDomains = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN")?.Split(',');
 
     options.AddPolicy("AllowSpecificOrigins", builder =>
     {
-        builder.WithOrigins(frontendDomain) // Thêm các domain của frontend
+        builder.WithOrigins(frontendDomains) // Thêm các domain của frontend
             .AllowCredentials() // Cho phép gửi cookie
             .AllowAnyHeader()
             .AllowAnyMethod();
