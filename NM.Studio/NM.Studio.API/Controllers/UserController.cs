@@ -57,8 +57,11 @@ public class UserController : BaseController
         var message = IsLoggedIn(refreshToken).Result;
         if (message.Status != 1)
         {
+            // delete tokens make sure
+            Response.Cookies.Delete("accessToken");
+            Response.Cookies.Delete("refreshToken");
             // refreshToken is unvalid to auto refresh call again 
-            return Unauthorized(message);
+            return Ok(message);
         }
         
         // check AccessToken is valid
