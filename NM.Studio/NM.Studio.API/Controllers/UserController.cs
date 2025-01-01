@@ -58,8 +58,8 @@ public class UserController : BaseController
         if (message.Status != 1)
         {
             // delete tokens make sure
-            Response.Cookies.Delete("accessToken");
-            Response.Cookies.Delete("refreshToken");
+            // Response.Cookies.Delete("accessToken");
+            // Response.Cookies.Delete("refreshToken");
             // refreshToken is unvalid to auto refresh call again 
             return Ok(message);
         }
