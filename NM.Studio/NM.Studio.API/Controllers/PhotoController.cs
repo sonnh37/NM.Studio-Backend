@@ -19,9 +19,9 @@ public class PhotoController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] PhotoGetAllQuery photoGetAllQuery)
     {
-        var messageResult = await _mediator.Send(photoGetAllQuery);
+        var businessResult = await _mediator.Send(photoGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -32,41 +32,41 @@ public class PhotoController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(photoGetByIdQuery);
+        var businessResult = await _mediator.Send(photoGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] PhotoCreateCommand photoCreateCommand)
     {
-        var messageView = await _mediator.Send(photoCreateCommand);
+        var businessResult = await _mediator.Send(photoCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] PhotoUpdateCommand photoUpdateCommand)
     {
-        var messageView = await _mediator.Send(photoUpdateCommand);
+        var businessResult = await _mediator.Send(photoUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] PhotoRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] PhotoDeleteCommand photoDeleteCommand)
     {
-        var messageView = await _mediator.Send(photoDeleteCommand);
+        var businessResult = await _mediator.Send(photoDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

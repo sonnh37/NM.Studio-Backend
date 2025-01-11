@@ -18,9 +18,9 @@ public class BookingController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] BookingGetAllQuery bookingGetAllQuery)
     {
-        var messageResult = await _mediator.Send(bookingGetAllQuery);
+        var businessResult = await _mediator.Send(bookingGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [Authorize(Roles = "Admin,Staff,Customer")]
@@ -31,48 +31,48 @@ public class BookingController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(bookingGetByIdQuery);
+        var businessResult = await _mediator.Send(bookingGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] BookingCreateCommand bookingCreateCommand)
     {
-        var messageView = await _mediator.Send(bookingCreateCommand);
+        var businessResult = await _mediator.Send(bookingCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] BookingUpdateCommand bookingUpdateCommand)
     {
-        var messageView = await _mediator.Send(bookingUpdateCommand);
+        var businessResult = await _mediator.Send(bookingUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] BookingRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("cancel")]
     public async Task<IActionResult> Cancel([FromBody] BookingCancelCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] BookingDeleteCommand bookingDeleteCommand)
     {
-        var messageView = await _mediator.Send(bookingDeleteCommand);
+        var businessResult = await _mediator.Send(bookingDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

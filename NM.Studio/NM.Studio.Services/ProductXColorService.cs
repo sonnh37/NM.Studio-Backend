@@ -30,19 +30,35 @@ public class ProductXColorService : BaseService<ProductXColor>, IProductXColorSe
     public async Task<BusinessResult> DeleteById(ProductXColorDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.ColorId == Guid.Empty)
-            return ResponseHelper.Delete(false);
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage(Const.NOT_FOUND_MSG)
+                .Build();
+        var queryable =
+            _productXColorRepository.GetQueryable(x =>
+                x.ProductId == command.ProductId && x.ColorId == command.ColorId);
+        var entity = await queryable.FirstOrDefaultAsync();
 
-        var queryable = _productXColorRepository.GetQueryable(x => x.ProductId == command.ProductId && x.ColorId == command.ColorId);
-        var entity = await queryable.FirstOrDefaultAsync();      
-        
-        if (entity == null) return ResponseHelper.Delete(false);
-        
+        if (entity == null)
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage(Const.NOT_FOUND_MSG)
+                .Build();
+
         _productXColorRepository.DeletePermanently(entity);
         var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(Const.FAIL_DELETE_MSG)
+                .Build();
 
-        return ResponseHelper.Delete(saveChanges);
+        return new ResponseBuilder()
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_DELETE_MSG)
+            .Build();
     }
-    
+
     public async Task<BusinessResult> Update<TResult>(ProductXColorUpdateCommand updateCommand)
         where TResult : BaseResult
     {
@@ -53,18 +69,24 @@ public class ProductXColorService : BaseService<ProductXColor>, IProductXColorSe
                 .GetQueryable(m => m.ProductId == updateCommand.ProductId && m.ColorId == updateCommand.ColorId)
                 .SingleOrDefault();
 
-            if (product == null) throw new Exception();
+            if (product == null)
+                return new ResponseBuilder()
+                    .WithStatus(Const.NOT_FOUND_CODE)
+                    .WithMessage(Const.NOT_FOUND_MSG)
+                    .Build();
+
             updateCommand.Id = product.Id;
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
 
-            return msg;
+            return new ResponseBuilder()
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ProductUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 }

@@ -28,8 +28,8 @@ public class ProductService : BaseService<Product>, IProductService
         _categoryRepository = _unitOfWork.CategoryRepository;
         _productRepository = _unitOfWork.ProductRepository;
     }
-    
-    public async Task<BusinessResult> GetRepresentativeByCategory<TResult>(ProductRepresentativeByCategoryQuery query) where TResult : BaseResult
+
+    public async Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query)
     {
         try
         {
@@ -67,65 +67,87 @@ public class ProductService : BaseService<Product>, IProductService
                 })
                 .ToListAsync();
 
-            return ResponseHelper.Success(groupedCategories);
+            return new ResponseBuilder<ProductRepresentativeByCategoryResult>()
+                .WithData(groupedCategories)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}"; 
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 
-    
+
     public async Task<BusinessResult> Create<TResult>(ProductCreateCommand createCommand) where TResult : BaseResult
     {
         try
         {
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Name);
             var product = _productRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (product != null) return ResponseHelper.Error("Name is already in use"); 
-            
+            if (product != null)
+                return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage("The product with name already exists.")
+                    .Build();
+
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
-            
-            return msg;
+            if (result == null)
+                return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage(Const.FAIL_SAVE_MSG)
+                    .Build();
+
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ProductCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
-    
+
     public async Task<BusinessResult> Update<TResult>(ProductUpdateCommand updateCommand) where TResult : BaseResult
     {
         try
         {
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Name);
-            var product = _productRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();            
-            
-            if (product == null) throw new Exception();
-            
+            var product = _productRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
+
+            if (product == null) return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage(Const.NOT_FOUND_MSG)
+                .Build();
+
             // check if update input slug != current slug
             if (updateCommand.Slug != product?.Slug)
             {
                 // continue check if input slug == any slug
                 var product_ = _productRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (product_ != null) return ResponseHelper.Error("Name is already in use"); 
+                if (product_ != null)
+                    return new ResponseBuilder()
+                        .WithStatus(Const.FAIL_CODE)
+                        .WithMessage("The product with name already exists.")
+                        .Build();
             }
-            
+
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
-            
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ProductUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 }

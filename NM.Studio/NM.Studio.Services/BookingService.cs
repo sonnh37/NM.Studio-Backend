@@ -39,14 +39,17 @@ public class BookingService : BaseService<Booking>, IBookingService
             if (createCommand.BookingDate != null)
                 createCommand.BookingDate = DateTime.SpecifyKind(createCommand.BookingDate.Value, DateTimeKind.Utc);
 
+            var service = _serviceRepository.GetById(createCommand.ServiceId!.Value).Result;
+            if (service == null) return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Error creating booking by serviceId null")
+                .Build();
+            
             var entity = await CreateOrUpdateEntity(createCommand);
-            if (entity == null) return ResponseHelper.Error("Error creating booking");
-
-            // get service
-            if (entity.ServiceId == null) return ResponseHelper.Error("Error creating booking by serviceId null ");
-
-            var service = _serviceRepository.GetById(entity.ServiceId.Value).Result;
-            if (service == null) return ResponseHelper.Error("Error creating booking by service null ");
+            if (entity == null) return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(Const.FAIL_SAVE_MSG)
+                .Build();
 
             // Gửi email
             // Tạo nội dung email dạng HTML
@@ -72,14 +75,20 @@ public class BookingService : BaseService<Booking>, IBookingService
             await _emailService.SendEmailAsync(entity.Email, "Booking Confirmation", emailBody);
 
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
 
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage("Send email successfully.")
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(BookingCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -90,26 +99,33 @@ public class BookingService : BaseService<Booking>, IBookingService
             //check and set status cancelled
             var booking = await _bookingRepository.GetById(cancelCommand.Id);
                 
-            if (booking == null) return ResponseHelper.NotFound();
-            
+            if (booking == null) return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage(Const.NOT_FOUND_MSG)
+                .Build();
             booking.Status = BookingStatus.Cancelled;
             
             _bookingRepository.Update(booking);
             var saveChanges = await _unitOfWork.SaveChanges();
-            if (!saveChanges) return ResponseHelper.Error("Error saving changes");
-            
+            if (!saveChanges) return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(Const.FAIL_SAVE_MSG)
+                .Build();
             var result = _mapper.Map<TResult>(booking);
             
-            if (result == null) return ResponseHelper.Warning(result);
-
-            var msg = ResponseHelper.Success(result);
-
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(BookingCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 }

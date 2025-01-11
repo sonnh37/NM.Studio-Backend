@@ -17,24 +17,24 @@ public class ProductXPhotoController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ProductXPhotoCreateCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ProductXPhotoUpdateCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ProductXPhotoDeleteCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

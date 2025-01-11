@@ -1,9 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.CQRS.Queries.Albums;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.CQRS.Commands.Albums;
+using NM.Studio.Domain.CQRS.Queries.Albums;
 
 namespace NM.Studio.API.Controllers;
 
@@ -20,9 +20,9 @@ public class AlbumController : BaseController
     public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery albumGetAllQuery)
     {
         var accessToken = Request.Cookies["accessToken"];
-        var messageResult = await _mediator.Send(albumGetAllQuery);
+        var businessResult = await _mediator.Send(albumGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -33,40 +33,40 @@ public class AlbumController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(albumGetByIdQuery);
+        var businessResult = await _mediator.Send(albumGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] AlbumCreateCommand albumCreateCommand)
     {
-        var messageView = await _mediator.Send(albumCreateCommand);
+        var businessResult = await _mediator.Send(albumCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] AlbumUpdateCommand albumUpdateCommand)
     {
-        var messageView = await _mediator.Send(albumUpdateCommand);
+        var businessResult = await _mediator.Send(albumUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] AlbumRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] AlbumDeleteCommand albumDeleteCommand)
     {
-        var messageView = await _mediator.Send(albumDeleteCommand);
+        var businessResult = await _mediator.Send(albumDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

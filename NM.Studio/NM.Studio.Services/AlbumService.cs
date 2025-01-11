@@ -30,18 +30,27 @@ public class AlbumService : BaseService<Album>, IAlbumService
         {
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
             var album = _albumRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (album != null) return ResponseHelper.Error("Title is already in use"); 
+            if (album != null) return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Title already exists")
+                .Build();
             
             var entity = await CreateOrUpdateEntity(createCommand);
-            var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
+            var result = _mapper.Map<TResult>(entity); 
             
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
     
@@ -60,19 +69,27 @@ public class AlbumService : BaseService<Album>, IAlbumService
                 // continue check if input slug == any slug
                 var album_ = _albumRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (album_ != null) return ResponseHelper.Error("Title is already in use"); 
+                if (album_ != null) return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage("Title already exists")
+                    .Build();
             }
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
-            
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 

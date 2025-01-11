@@ -20,9 +20,9 @@ public class ServiceController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] ServiceGetAllQuery serviceGetAllQuery)
     {
-        var messageResult = await _mediator.Send(serviceGetAllQuery);
+        var businessResult = await _mediator.Send(serviceGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -33,40 +33,40 @@ public class ServiceController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(serviceGetByIdQuery);
+        var businessResult = await _mediator.Send(serviceGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ServiceCreateCommand serviceCreateCommand)
     {
-        var messageView = await _mediator.Send(serviceCreateCommand);
+        var businessResult = await _mediator.Send(serviceCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ServiceUpdateCommand serviceUpdateCommand)
     {
-        var messageView = await _mediator.Send(serviceUpdateCommand);
+        var businessResult = await _mediator.Send(serviceUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] ServiceRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ServiceDeleteCommand serviceDeleteCommand)
     {
-        var messageView = await _mediator.Send(serviceDeleteCommand);
+        var businessResult = await _mediator.Send(serviceDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

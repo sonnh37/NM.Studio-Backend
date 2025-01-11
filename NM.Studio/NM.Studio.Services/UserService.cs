@@ -32,7 +32,7 @@ public class UserService : BaseService<User>, IUserService
     private readonly IUserRepository _userRepository;
     private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
     private readonly int _expirationMinutes;
-    private readonly Dictionary<string, string> _otpStorage = new(); // Lưu OTP
+    private readonly Dictionary<string, string> _otpStorage = new();
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
@@ -43,7 +43,7 @@ public class UserService : BaseService<User>, IUserService
         _userRepository = _unitOfWork.UserRepository;
         _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
         _configuration = configuration;
-        
+
         _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
     }
 
@@ -58,48 +58,73 @@ public class UserService : BaseService<User>, IUserService
         try
         {
             var userCurrent = GetUser();
-            if (userCurrent == null) return ResponseHelper.Warning("Vui lòng đăng nhập lại");
+            if (userCurrent == null) return HandlerFail("Please, login again.");
             userCurrent.Password = userPasswordCommand.Password;
             InitializeBaseEntityForUpdate(userCurrent);
             _userRepository.Update(userCurrent);
-            var res = await _unitOfWork.SaveChanges();
-            
-            return res ? ResponseHelper.Success() : ResponseHelper.Error();
+            var isSave = await _unitOfWork.SaveChanges();
+
+            if (!isSave)
+            {
+                return HandlerFail(Const.FAIL_SAVE_MSG);
+            }
+
+            return new ResponseBuilder()
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(UserPasswordCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
-    
+
     public async Task<BusinessResult> Create(UserCreateCommand createCommand)
     {
         try
         {
             var entity = await CreateOrUpdateEntity(createCommand);
-            
-            return entity != null ? ResponseHelper.Success() : ResponseHelper.Error();
+            var userResult = _mapper.Map<UserResult>(entity);
+
+            if (userResult == null)
+            {
+                return HandlerFail(Const.FAIL_SAVE_MSG);
+            }
+
+            return new ResponseBuilder<UserResult>()
+                .WithData(userResult)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(UserCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
-    
+
     public async Task<BusinessResult> Update(UserUpdateCommand updateCommand)
     {
         try
         {
             var entity = await CreateOrUpdateEntity(updateCommand);
-            
-            return entity != null ? ResponseHelper.Success() : ResponseHelper.Error();
+            var userResult = _mapper.Map<UserResult>(entity);
+
+            if (userResult == null)
+            {
+                return HandlerFail(Const.FAIL_SAVE_MSG);
+            }
+
+            return new ResponseBuilder<UserResult>()
+                .WithData(userResult)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(UserCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 
@@ -138,13 +163,15 @@ public class UserService : BaseService<User>, IUserService
                 smtp.Send(message);
                 _otpStorage[email] = otp; // Lưu trữ OTP cho email
                 _expiryStorage[email] = DateTime.UtcNow.AddMinutes(5); // OTP hết hạn sau 5 phút
-                return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_SAVE_MSG);
+                return new ResponseBuilder()
+                    .WithStatus(Const.SUCCESS_CODE)
+                    .WithMessage(Const.SUCCESS_READ_MSG)
+                    .Build();
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error sending email: {ex.Message}");
-            return ResponseHelper.Error(ex.Message);
+            return HandlerError(ex.Message);
         }
     }
 
@@ -162,11 +189,14 @@ public class UserService : BaseService<User>, IUserService
         {
             if (expiry > DateTime.UtcNow && storedOtp == otpInput)
             {
-                return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG);
+                return HandlerFail("OTP validation failed");
             }
         }
 
-        return new BusinessResult(Const.FAIL_CODE, Const.FAIL_READ_MSG);
+        return new ResponseBuilder()
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_READ_MSG)
+            .Build();
     }
 
 
@@ -176,14 +206,16 @@ public class UserService : BaseService<User>, IUserService
 
         var userResult = _mapper.Map<UserResult>(user);
 
-        if (user != null)
+        if (userResult == null)
         {
-            return new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, userResult);
+            return HandlerNotFound("User not found");
         }
-        else
-        {
-            return new BusinessResult(Const.FAIL_CODE, "Username khong ton tai", userResult);
-        }
+
+        return new ResponseBuilder<UserResult>()
+            .WithData(userResult)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_READ_MSG)
+            .Build();
     }
 
     public BusinessResult DecodeToken(string token)
@@ -215,7 +247,11 @@ public class UserService : BaseService<User>, IUserService
             Exp = long.Parse(exp),
         };
 
-        return new BusinessResult(Const.SUCCESS_CODE, "Decoded to get user", decodedToken);
+        return new ResponseBuilder<DecodedToken>()
+            .WithData(decodedToken)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage("Decoded Token")
+            .Build();
     }
 
     private (string token, string expiration) CreateToken(UserResult user)
@@ -224,7 +260,8 @@ public class UserService : BaseService<User>, IUserService
         {
             new Claim("Id", user.Id.ToString()),
             new Claim("Role", user.Role.ToString()),
-            new Claim("Expiration", new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
+            new Claim("Expiration",
+                new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -261,11 +298,11 @@ public class UserService : BaseService<User>, IUserService
         var result = _mapper.Map<UserResult>(user);
         //check username 
         if (user == null)
-            return new BusinessResult(Const.WARNING_NO_DATA_CODE, "Not found account", null);
+            return HandlerNotFound("The account does not exist.");
 
         //check password
         if (!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
-            return new BusinessResult(Const.WARNING_NO_DATA_CODE, "Not match password", null);
+            return HandlerNotFound("The password is incorrect.");
 
         var (token, expiration) = CreateToken(result);
 
@@ -273,7 +310,12 @@ public class UserService : BaseService<User>, IUserService
 
         await SaveRefreshToken(user.Id, refreshToken);
 
-        return new BusinessResult(1, "", new TokenResult { Token = token, RefreshToken = refreshToken });
+        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
+        return new ResponseBuilder<TokenResult>()
+            .WithData(tokenResult)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
 
     private async Task SaveRefreshToken(Guid userId, string refreshToken)
@@ -296,7 +338,7 @@ public class UserService : BaseService<User>, IUserService
         return username switch
         {
             null => await base.CreateOrUpdate<UserResult>(user),
-            _ => new BusinessResult(Const.FAIL_CODE, "Account existed")
+            _ => HandlerFail("The account is already registered.")
         };
     }
 
@@ -306,17 +348,21 @@ public class UserService : BaseService<User>, IUserService
         {
             var userRefreshToken = await _userRefreshTokenRepository
                 .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
-            if (userRefreshToken == null) return ResponseHelper.NotFound("Not found refresh token");
+            if (userRefreshToken == null)
+                return HandlerNotFound("You are not logged in, please log in to continue.");
             _userRefreshTokenRepository.DeletePermanently(userRefreshToken);
-        
+
             var isSaved = await _unitOfWork.SaveChanges();
             if (!isSaved) throw new Exception();
 
-            return ResponseHelper.Success();
+            return new ResponseBuilder()
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage("The account has been logged out.")
+                .Build();
         }
         catch (Exception e)
         {
-            return ResponseHelper.Error(e.Message);
+            return HandlerError(e.Message);
         }
     }
 
@@ -328,24 +374,32 @@ public class UserService : BaseService<User>, IUserService
 
         return userResult switch
         {
-            null => new BusinessResult(Const.FAIL_CODE, Const.NOT_FOUND_MSG, userResult),
-            _ => new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, userResult)
+            null => HandlerNotFound(),
+            _ => new ResponseBuilder()
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build()
         };
     }
 
     public async Task<BusinessResult> GetByRefreshToken(UserGetByRefreshTokenQuery request)
     {
-        if (request.RefreshToken == null) return ResponseHelper.NotFound("Refresh token is null");
-        var user = await _userRefreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+        if (request.RefreshToken == null) return HandlerNotFound("Refresh token is null");
+        var userRefreshToken = await _userRefreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+        var userRefreshTokenResult = _mapper.Map<UserRefreshTokenResult>(userRefreshToken);
 
-        var userRefreshToken = _mapper.Map<UserRefreshToken>(user);
-        
-        return userRefreshToken != null ? ResponseHelper.Success(userRefreshToken) : ResponseHelper.NotFound("Not found refresh token");
+        if (userRefreshTokenResult == null) return HandlerNotFound("Not found refresh token");
+
+        return new ResponseBuilder<UserRefreshTokenResult>()
+            .WithData(userRefreshToken)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
 
     public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
     {
-        if (request.RefreshToken == null) return ResponseHelper.Warning("Refresh token could not be retrieved");
+        if (request.RefreshToken == null) return HandlerNotFound("You are not logged in, please log in to continue.");
         var refreshToken = request.RefreshToken;
 
         // Validate refresh token from request
@@ -353,7 +407,7 @@ public class UserService : BaseService<User>, IUserService
 
         if (storedRefreshToken == null || storedRefreshToken.ExpirationDate < DateTime.UtcNow)
         {
-            return ResponseHelper.Warning("Refresh token is expired.");
+            return HandlerFail("Your session has expired. Please log in again.");
         }
 
         // Get user info from the refresh token
@@ -363,7 +417,12 @@ public class UserService : BaseService<User>, IUserService
         // Create new access token
         var (token, expiration) = CreateToken(userResult);
 
-        return new BusinessResult(1, "", new TokenResult { Token = token, RefreshToken = refreshToken });
+        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
+        return new ResponseBuilder<TokenResult>()
+            .WithData(tokenResult)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
 
     #endregion
@@ -385,8 +444,15 @@ public class UserService : BaseService<User>, IUserService
 
         return payload switch
         {
-            null => new BusinessResult(Const.FAIL_CODE, Const.FAIL_READ_GOOGLE_TOKEN_MSG),
-            _ => new BusinessResult(Const.SUCCESS_CODE, Const.SUCCESS_READ_MSG, payload)
+            null => new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Invalid Google Token")
+                .Build(),
+            _ => new ResponseBuilder<GoogleJsonWebSignature.Payload>()
+                .WithData(payload)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage("Validate Google Token")
+                .Build(),
         };
     }
 
@@ -410,8 +476,13 @@ public class UserService : BaseService<User>, IUserService
 
         var userResult = _mapper.Map<UserResult>(user);
         var (token, expiration) = CreateToken(userResult);
+        var loginResponse = new LoginResponse(token, expiration);
 
-        return ResponseHelper.GetToken(token, expiration);
+        return new ResponseBuilder<LoginResponse>()
+            .WithData(loginResponse)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
 
     public async Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request)
@@ -478,7 +549,12 @@ public class UserService : BaseService<User>, IUserService
         var _userAdded = _response.Data as User;
         var userResult = _mapper.Map<UserResult>(_userAdded);
         var (token, expiration) = CreateToken(userResult);
+        var loginResponse = new LoginResponse(token, expiration);
 
-        return ResponseHelper.GetToken(token, expiration);
+        return new ResponseBuilder<LoginResponse>()
+            .WithData(loginResponse)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
 }

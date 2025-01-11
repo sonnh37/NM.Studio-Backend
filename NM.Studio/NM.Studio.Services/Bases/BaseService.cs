@@ -69,14 +69,26 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await _baseRepository.GetById(id, true);
             var result = _mapper.Map<TResult>(entity);
-            if (result == null) return ResponseHelper.Warning<TResult>(result);
+            if (result == null)
+                return new ResponseBuilder<TResult>()
+                    .WithData(result)
+                    .WithStatus(Const.NOT_FOUND_CODE)
+                    .WithMessage(Const.NOT_FOUND_MSG)
+                    .Build();
 
-            return ResponseHelper.Success(result);
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -86,14 +98,28 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entities = await _baseRepository.GetAll();
             var results = _mapper.Map<List<TResult>>(entities);
-            if (results.Count == 0) return ResponseHelper.Warning<TResult>(results);
+            if (!results.Any())
+            {
+                return new ResponseBuilder<TResult>()
+                    .WithData(results)
+                    .WithStatus(Const.NOT_FOUND_CODE)
+                    .WithMessage(Const.NOT_FOUND_MSG)
+                    .Build();
+            }
 
-            return ResponseHelper.Success(results);
+            return new ResponseBuilder<TResult>()
+                .WithData(results)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -102,27 +128,59 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         try
         {
             List<TResult>? results;
-            int totalItems = 0;
 
             if (!x.IsPagination)
             {
                 var allData = await _baseRepository.GetAll(x);
                 results = _mapper.Map<List<TResult>>(allData);
-                if (results.Count == 0) return ResponseHelper.Warning<TResult>(results);
+                if (!results.Any())
+                {
+                    return new ResponseBuilder<TResult>()
+                        .WithData(results)
+                        .WithStatus(Const.NOT_FOUND_CODE)
+                        .WithMessage(Const.NOT_FOUND_MSG)
+                        .Build();
+                }
 
-                return ResponseHelper.Success(results);
+                return new ResponseBuilder<TResult>()
+                    .WithData(results)
+                    .WithStatus(Const.SUCCESS_CODE)
+                    .WithMessage(Const.SUCCESS_READ_MSG)
+                    .Build();
             }
 
             var tuple = await _baseRepository.GetPaged(x);
-            results = _mapper.Map<List<TResult>?>(tuple.Item1);
-            totalItems = tuple.Item2;
+            // create results table response
+            results = _mapper.Map<List<TResult>>(tuple.Item1);
+            var tableResponse = new ResultsTableResponse<TResult>
+            {
+                GetQueryableQuery = x,
+                Item = (results, tuple.Item2),
+            };
 
-            return ResponseHelper.Success((results, totalItems), x);
+            if (!results.Any())
+            {
+                return new ResponseBuilder<TResult>()
+                    .WithData(tableResponse)
+                    .WithStatus(Const.NOT_FOUND_CODE)
+                    .WithMessage(Const.NOT_FOUND_MSG)
+                    .Build();
+            }
+
+
+            return new ResponseBuilder<TResult>()
+                .WithData(tableResponse)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred in {typeof(TResult).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -137,16 +195,26 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
             var result = _mapper.Map<TResult>(entity);
-            if (result == null) return ResponseHelper.Error();
+            if (result == null)
+                return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage(Const.FAIL_SAVE_MSG).Build();
 
-            var msg = ResponseHelper.Success(result);
+            var msg = new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
 
             return msg;
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -157,16 +225,26 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entity = await RestoreEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            if (result == null) return ResponseHelper.Error();
+            if (result == null)
+                return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage(Const.FAIL_SAVE_MSG)
+                    .Build();
 
-            var msg = ResponseHelper.Success(result);
 
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -174,24 +252,41 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     {
         try
         {
-            if (id == Guid.Empty) return ResponseHelper.NotFound("Not found id");
-
             if (isPermanent)
             {
                 var isDeleted = await DeleteEntityPermanently(id);
-                return isDeleted ? ResponseHelper.Success() : ResponseHelper.Warning();
+                return isDeleted
+                    ? new ResponseBuilder()
+                        .WithStatus(Const.SUCCESS_CODE)
+                        .WithMessage(Const.SUCCESS_DELETE_MSG)
+                        .Build()
+                    : new ResponseBuilder()
+                        .WithStatus(Const.FAIL_CODE)
+                        .WithMessage(Const.FAIL_DELETE_MSG)
+                        .Build();
             }
 
             var entity = await DeleteEntity(id);
 
-            return entity != null ? ResponseHelper.Success() : ResponseHelper.Warning();
+            return entity != null
+                ? new ResponseBuilder()
+                    .WithStatus(Const.SUCCESS_CODE)
+                    .WithMessage(Const.SUCCESS_SAVE_MSG)
+                    .Build()
+                : new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage(Const.FAIL_SAVE_MSG)
+                    .Build();
         }
         catch (DbUpdateException dbEx)
         {
             if (dbEx.InnerException?.Message.Contains("FOREIGN KEY") == true)
             {
                 var errorMessage = "Không thể xóa vì dữ liệu đang được tham chiếu ở bảng khác.";
-                return ResponseHelper.Error(errorMessage);
+                return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage(errorMessage)
+                    .Build();
             }
 
             throw;
@@ -199,7 +294,10 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while deleting {typeof(TEntity).Name} with ID {id}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -298,4 +396,29 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     }
 
     #endregion
+
+    public BusinessResult HandlerError(string message)
+    {
+        string errorMessage = $"An error {typeof(TEntity).Name}: {message}"; 
+        return new ResponseBuilder()
+            .WithStatus(Const.FAIL_CODE)
+            .WithMessage(errorMessage)
+            .Build();
+    }
+    
+    public BusinessResult HandlerNotFound(string message = Const.NOT_FOUND_MSG)
+    {
+        return new ResponseBuilder()
+            .WithStatus(Const.NOT_FOUND_CODE)
+            .WithMessage(message)
+            .Build();
+    }
+    
+    public BusinessResult HandlerFail(string message)
+    {
+        return new ResponseBuilder()
+            .WithStatus(Const.FAIL_CODE)
+            .WithMessage(message)
+            .Build();
+    }
 }

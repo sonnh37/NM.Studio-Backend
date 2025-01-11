@@ -1,5 +1,4 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -7,7 +6,6 @@ using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
-using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 
@@ -43,16 +41,19 @@ public class BaseController : ControllerBase
         {
             Id = userId != null ? Guid.Parse(userId) : Guid.Empty
         };
-        var messageResult = await _mediator.Send(userGetByIdQuery);
+        var businessResult = await _mediator.Send(userGetByIdQuery);
 
-        return messageResult;
+        return businessResult;
     }
     
     protected async Task<BusinessResult> GetCurrentUser(string accessToken)
     {
         if (string.IsNullOrEmpty(accessToken))
         {
-            return ResponseHelper.NotFound("Token not found");
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("No access token provided")
+                .Build();
         }
         
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -62,15 +63,18 @@ public class BaseController : ControllerBase
 
         if (string.IsNullOrEmpty(userId))
         {
-            return ResponseHelper.NotFound("UserId not found");
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("User not found")
+                .Build();
         }
         
         var userGetByIdQuery = new UserGetByIdQuery
         {
             Id = Guid.Parse(userId)
         };
-        var messageResult = await _mediator.Send(userGetByIdQuery);
-        return messageResult;
+        var businessResult = await _mediator.Send(userGetByIdQuery);
+        return businessResult;
     }
 
     protected async Task<BusinessResult> IsLoggedIn(string refreshToken)
@@ -92,9 +96,9 @@ public class BaseController : ControllerBase
         {
             RefreshToken = refreshToken
         };
-        var messageResult = await _mediator.Send(request);
-        if (messageResult.Status != 1) return messageResult;
-        var _object = messageResult.Data as TokenResult;
+        var businessResult = await _mediator.Send(request);
+        if (businessResult.Status != 1) return businessResult;
+        var _object = businessResult.Data as TokenResult;
         var accessTokenOptions = new CookieOptions
         {
             HttpOnly = true,
@@ -104,6 +108,6 @@ public class BaseController : ControllerBase
         };
 
         Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
-        return ResponseHelper.GetToken(_object.Token, "");
+        return businessResult;
     }
 }

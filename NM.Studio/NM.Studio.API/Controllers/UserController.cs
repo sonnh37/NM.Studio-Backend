@@ -8,6 +8,7 @@ using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.Enums;
 using NM.Studio.Domain.Models;
+using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 
@@ -24,9 +25,9 @@ public class UserController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] UserGetAllQuery userGetAllQuery)
     {
-        var messageResult = await _mediator.Send(userGetAllQuery);
+        var businessResult = await _mediator.Send(userGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -37,9 +38,9 @@ public class UserController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(userGetByIdQuery);
+        var businessResult = await _mediator.Send(userGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -50,104 +51,103 @@ public class UserController : BaseController
         if (refreshToken == null)
         {
             // refreshToken is unvalid
-            return Ok(ResponseHelper.NotFound("refreshToken not found"));
+            return Ok(new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("Pls, login again.")
+                .Build());
         }
-        
+
         // check refreshToken is valid
         var message = IsLoggedIn(refreshToken).Result;
         if (message.Status != 1)
         {
-            // delete tokens make sure
-            // Response.Cookies.Delete("accessToken");
-            // Response.Cookies.Delete("refreshToken");
-            // refreshToken is unvalid to auto refresh call again 
             return Ok(message);
         }
-        
+
         // check AccessToken is valid
         var accessToken = Request.Cookies["accessToken"];
         if (accessToken != null)
         {
             // accessToken và refreshToken is available
             var msg = await GetCurrentUser();
-        
+
             return Ok(msg);
         }
-        
+
         var userRefresh = new UserRefreshTokenCommand
         {
             // accessToken is unvalid
             RefreshToken = refreshToken
         };
         var message_ = await _mediator.Send(userRefresh);
-        if(message_.Status != 1) return Ok(message_); 
+        if (message_.Status != 1) return Ok(message_);
         var _object = message_.Data as TokenResult;
         var accessTokenOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, 
-            SameSite = SameSiteMode.None, 
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
         };
 
         Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
-        
+
         // Get info user 
         if (string.IsNullOrEmpty(_object.Token))
         {
             return Ok("Access token is error");
         }
-        
+
         // accessToken và refreshToken is available
-        var messageResult = await GetCurrentUser(_object.Token);
-        
-        return Ok(messageResult);
+        var businessResult = await GetCurrentUser(_object.Token);
+
+        return Ok(businessResult);
     }
-    
+
     [Authorize(Roles = "Admin,Staff")]
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UserCreateCommand userCreateCommand)
     {
-        var messageView = await _mediator.Send(userCreateCommand);
+        var businessResult = await _mediator.Send(userCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [Authorize(Roles = "Admin,Staff")]
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] UserUpdateCommand userUpdateCommand)
     {
-        var messageView = await _mediator.Send(userUpdateCommand);
+        var businessResult = await _mediator.Send(userUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
-    
+
     [Authorize(Roles = "Admin,Staff")]
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] UserRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
-    
+
     [HttpPut("password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UserPasswordCommand userUpdateCommand)
     {
-        var messageView = await _mediator.Send(userUpdateCommand);
+        var businessResult = await _mediator.Send(userUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [Authorize(Roles = "Admin,Staff")]
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] UserDeleteCommand userDeleteCommand)
     {
-        var messageView = await _mediator.Send(userDeleteCommand);
+        var businessResult = await _mediator.Send(userDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
-    
+
     [Authorize(Roles = "Admin,Staff")]
     [HttpGet("account")]
     [AllowAnonymous]
@@ -161,66 +161,53 @@ public class UserController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] AuthQuery authQuery)
     {
-        try
+        var businessResult = await _mediator.Send(authQuery);
+        if (businessResult.Status != 1) return Ok(businessResult);
+        var _object = businessResult.Data as TokenResult;
+
+        var accessTokenOptions = new CookieOptions
         {
-            var messageResult = await _mediator.Send(authQuery);
-            if(messageResult.Status != 1) return Ok(messageResult);
-            var _object = messageResult.Data as TokenResult;
+            HttpOnly = true,
+            Secure = true, // Set true khi chạy trên HTTPS
+            SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+        };
 
-            var accessTokenOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, // Set true khi chạy trên HTTPS
-                SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-            };
-
-            var refreshTokenOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, // Set true khi chạy trên HTTPS
-                SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
-                Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
-            };
-            
-
-            // Set cookies vào HttpContext
-            Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
-            Response.Cookies.Append("refreshToken", _object.RefreshToken, refreshTokenOptions);      
-            return Ok(ResponseHelper.GetToken(_object.Token, ""));
-        }
-        catch (Exception ex)
+        var refreshTokenOptions = new CookieOptions
         {
-            return Ok(ResponseHelper.Error(ex.Message));
-        }
+            HttpOnly = true,
+            Secure = true, // Set true khi chạy trên HTTPS
+            SameSite = SameSiteMode.None, // Đảm bảo chỉ gửi cookie trong cùng domain
+            Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
+        };
+
+
+        // Set cookies vào HttpContext
+        Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
+        Response.Cookies.Append("refreshToken", _object.RefreshToken, refreshTokenOptions);
+
+        return Ok(businessResult);
     }
-    
+
     [AllowAnonymous]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        try
+        var refreshToken = Request.Cookies["refreshToken"];
+        var userLogoutCommand = new UserLogoutCommand
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var userLogoutCommand = new UserLogoutCommand
-            {
-                RefreshToken = refreshToken
-            };
-            var messageView = await _mediator.Send(userLogoutCommand);
-    
-            if(messageView.Status != 1) return Ok(messageView);
-            
-            Response.Cookies.Delete("accessToken");
-            Response.Cookies.Delete("refreshToken");
+            RefreshToken = refreshToken
+        };
+        var businessResult = await _mediator.Send(userLogoutCommand);
 
-            return Ok(messageView);
-        }
-        catch (Exception ex)
-        {
-            return Ok(ResponseHelper.Error(ex.Message));
-        }
+        if (businessResult.Status != 1) return Ok(businessResult);
+
+        Response.Cookies.Delete("accessToken");
+        Response.Cookies.Delete("refreshToken");
+
+        return Ok(businessResult);
     }
-    
+
     [AllowAnonymous]
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken([FromBody] UserRefreshTokenCommand request)
@@ -228,7 +215,7 @@ public class UserController : BaseController
         var msg = await base.RefreshToken();
         return Ok(msg);
     }
-    
+
     // [HttpGet("get-token")]
     // public Task<IActionResult> GetToken()
     // {
@@ -252,26 +239,20 @@ public class UserController : BaseController
     //         return Ok(ResponseHelper.Error("Error system."));
     //     }
     // }
-    
+
     [AllowAnonymous]
     [HttpGet("is-logged-in")]
     public async Task<IActionResult> IsLogged()
     {
-        try
+        var refreshToken = Request.Cookies["refreshToken"];
+        if (refreshToken == null)
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            if (refreshToken == null)
-            {
-                return Unauthorized();
-            }
-            // check refreshToken is exist db
-            var message = await IsLoggedIn(refreshToken);
-            return Ok(message);
+            return Unauthorized();
         }
-        catch (Exception ex)
-        {
-            return Ok(ResponseHelper.Error("Error system."));
-        }
+
+        // check refreshToken is exist db
+        var message = await IsLoggedIn(refreshToken);
+        return Ok(message);
     }
 
     [AllowAnonymous]
@@ -281,58 +262,56 @@ public class UserController : BaseController
     {
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
         request.Password = passwordHash;
-        
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
-    
+
     [HttpPost("decode-token")]
-   
     public async Task<IActionResult> DecodeToken([FromBody] DecodedTokenQuery request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
     [HttpPost("send-email")]
     public async Task<IActionResult> SendOTP([FromBody] UserSendEmailQuery request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
     [HttpPost("verify-otp")]
     public async Task<IActionResult> VerifyOTP([FromBody] VerifyOTPQuery request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
-
 
 
     [AllowAnonymous]
     [HttpPost("find-account-registered-by-google")]
     public async Task<IActionResult> FindAccountRegisteredByGoogle([FromBody] UserGetByGoogleTokenQuery request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
     [HttpPost("login-by-google")]
     public async Task<IActionResult> LoginByGoogle([FromBody] AuthByGoogleTokenQuery request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
     [HttpPost("register-by-google")]
     public async Task<IActionResult> RegisterByGoogle([FromBody] UserCreateByGoogleTokenCommand request)
     {
-        var messageView = await _mediator.Send(request);
-        return Ok(messageView);
+        var businessResult = await _mediator.Send(request);
+        return Ok(businessResult);
     }
 }

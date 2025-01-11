@@ -20,9 +20,9 @@ namespace NM.Studio.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] SubCategoryGetAllQuery subCategoryGetAllQuery)
         {
-            var messageResult = await _mediator.Send(subCategoryGetAllQuery);
+            var businessResult = await _mediator.Send(subCategoryGetAllQuery);
 
-            return Ok(messageResult);
+            return Ok(businessResult);
         }
 
         [AllowAnonymous]
@@ -33,41 +33,41 @@ namespace NM.Studio.API.Controllers
             {
                 Id = id
             };
-            var messageResult = await _mediator.Send(subCategoryGetByIdQuery);
+            var businessResult = await _mediator.Send(subCategoryGetByIdQuery);
 
-            return Ok(messageResult);
+            return Ok(businessResult);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] SubCategoryCreateCommand subCategoryCreateCommand)
         {
-            var messageView = await _mediator.Send(subCategoryCreateCommand);
+            var businessResult = await _mediator.Send(subCategoryCreateCommand);
 
-            return Ok(messageView);
+            return Ok(businessResult);
         }
 
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] SubCategoryUpdateCommand subCategoryUpdateCommand)
         {
-            var messageView = await _mediator.Send(subCategoryUpdateCommand);
+            var businessResult = await _mediator.Send(subCategoryUpdateCommand);
 
-            return Ok(messageView);
+            return Ok(businessResult);
         }
         
         [HttpPut("restore")]
         public async Task<IActionResult> UpdateIsDeleted([FromBody] SubCategoryRestoreCommand command)
         {
-            var messageView = await _mediator.Send(command);
+            var businessResult = await _mediator.Send(command);
 
-            return Ok(messageView);
+            return Ok(businessResult);
         }
 
         [HttpDelete]
         public async Task<IActionResult> Delete([FromQuery] SubCategoryDeleteCommand subCategoryDeleteCommand)
         {
-            var messageView = await _mediator.Send(subCategoryDeleteCommand);
+            var businessResult = await _mediator.Send(subCategoryDeleteCommand);
 
-            return Ok(messageView);
+            return Ok(businessResult);
         }
     }
 }

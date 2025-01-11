@@ -21,9 +21,9 @@ public class ColorController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] ColorGetAllQuery colorGetAllQuery)
     {
-        var messageResult = await _mediator.Send(colorGetAllQuery);
+        var businessResult = await _mediator.Send(colorGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -34,40 +34,40 @@ public class ColorController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(colorGetByIdQuery);
+        var businessResult = await _mediator.Send(colorGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ColorCreateCommand colorCreateCommand)
     {
-        var messageView = await _mediator.Send(colorCreateCommand);
+        var businessResult = await _mediator.Send(colorCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ColorUpdateCommand colorUpdateCommand)
     {
-        var messageView = await _mediator.Send(colorUpdateCommand);
+        var businessResult = await _mediator.Send(colorUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] ColorRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ColorDeleteCommand colorDeleteCommand)
     {
-        var messageView = await _mediator.Send(colorDeleteCommand);
+        var businessResult = await _mediator.Send(colorDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

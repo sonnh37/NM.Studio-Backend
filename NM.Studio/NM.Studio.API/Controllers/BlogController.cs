@@ -19,9 +19,9 @@ public class BlogController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] BlogGetAllQuery blogGetAllQuery)
     {
-        var messageResult = await _mediator.Send(blogGetAllQuery);
+        var businessResult = await _mediator.Send(blogGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -32,40 +32,40 @@ public class BlogController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(blogGetByIdQuery);
+        var businessResult = await _mediator.Send(blogGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] BlogCreateCommand blogCreateCommand)
     {
-        var messageView = await _mediator.Send(blogCreateCommand);
+        var businessResult = await _mediator.Send(blogCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] BlogUpdateCommand blogUpdateCommand)
     {
-        var messageView = await _mediator.Send(blogUpdateCommand);
+        var businessResult = await _mediator.Send(blogUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] BlogRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] BlogDeleteCommand blogDeleteCommand)
     {
-        var messageView = await _mediator.Send(blogDeleteCommand);
+        var businessResult = await _mediator.Send(blogDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

@@ -12,5 +12,5 @@ public interface IProductService : IBaseService
     
     Task<BusinessResult> Update<TResult>(ProductUpdateCommand createCommand) where TResult : BaseResult;
 
-    Task<BusinessResult> GetRepresentativeByCategory<TResult>(ProductRepresentativeByCategoryQuery query) where TResult : BaseResult;
+    Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query);
 }

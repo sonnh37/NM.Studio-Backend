@@ -30,18 +30,32 @@ public class ProductXSizeService : BaseService<ProductXSize>, IProductXSizeServi
     public async Task<BusinessResult> DeleteById(ProductXSizeDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.SizeId == Guid.Empty)
-            return ResponseHelper.Delete(false);
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage(Const.NOT_FOUND_MSG)
+                .Build();
 
         var queryable =
             _productXSizeRepository.GetQueryable(x => x.ProductId == command.ProductId && x.SizeId == command.SizeId);
         var entity = await queryable.FirstOrDefaultAsync();
 
-        if (entity == null) return ResponseHelper.Delete(false);
+        if (entity == null)  return new ResponseBuilder()
+            .WithStatus(Const.NOT_FOUND_CODE)
+            .WithMessage(Const.NOT_FOUND_MSG)
+            .Build();
 
         _productXSizeRepository.DeletePermanently(entity);
         var saveChanges = await _unitOfWork.SaveChanges();
 
-        return ResponseHelper.Delete(saveChanges);
+        if (!saveChanges) return new ResponseBuilder()
+            .WithStatus(Const.FAIL_CODE)
+            .WithMessage(Const.FAIL_DELETE_MSG)
+            .Build();
+
+        return new ResponseBuilder()
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_DELETE_MSG)
+            .Build();
     }
 
     public async Task<BusinessResult> Update<TResult>(ProductXSizeUpdateCommand updateCommand)
@@ -57,15 +71,21 @@ public class ProductXSizeService : BaseService<ProductXSize>, IProductXSizeServi
             if (product == null) throw new Exception();
             updateCommand.Id = product.Id;
             var entity = await CreateOrUpdateEntity(updateCommand);
+            
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
+            
+            if (result == null) return HandlerNotFound();
 
-            return msg;
+            
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ProductUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 }

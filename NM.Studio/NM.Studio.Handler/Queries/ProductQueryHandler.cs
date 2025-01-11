@@ -32,6 +32,6 @@ public class ProductQueryHandler :
 
     public async Task<BusinessResult> Handle(ProductRepresentativeByCategoryQuery request, CancellationToken cancellationToken)
     {
-        return await _productService.GetRepresentativeByCategory<ProductResult>(request);
+        return await _productService.GetRepresentativeByCategory(request);
     }
 }

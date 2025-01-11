@@ -29,18 +29,21 @@ public class ServiceService : BaseService<Service>, IServiceService
         {
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Name);
             var service = _serviceRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (service != null) return ResponseHelper.Error("Name is already in use"); 
+            if (service != null) return HandlerFail("The service's name already exists");
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
-            
-            return msg;
+
+            if (result == null) return HandlerFail(Const.FAIL_SAVE_MSG);
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ServiceCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
     
@@ -51,7 +54,7 @@ public class ServiceService : BaseService<Service>, IServiceService
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Name);
             var service = _serviceRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();            
             
-            if (service == null) throw new Exception();
+            if (service == null) return HandlerNotFound();
             
             // check if update input slug != current slug
             if (updateCommand.Slug != service?.Slug)
@@ -59,19 +62,22 @@ public class ServiceService : BaseService<Service>, IServiceService
                 // continue check if input slug == any slug
                 var service_ = _serviceRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (service_ != null) return ResponseHelper.Error("Name is already in use"); 
+                if (service_ != null) return HandlerFail("The service's name already exists");
             }
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
             
-            return msg;
+            if (result == null) return HandlerFail(Const.FAIL_SAVE_MSG);
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while updating {typeof(ServiceUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return HandlerError(ex.Message);
         }
     }
 }

@@ -35,7 +35,7 @@ public class MappingProfile : Profile
         BlogMapping();
         BookingMapping();
     }
-    
+
     private void AlbumMapping()
     {
         CreateMap<Album, AlbumResult>().ReverseMap();
@@ -46,15 +46,14 @@ public class MappingProfile : Profile
         CreateMap<AlbumXPhoto, AlbumXPhotoCreateCommand>().ReverseMap();
         CreateMap<AlbumXPhoto, AlbumXPhotoUpdateCommand>().ReverseMap();
     }
-    
+
     private void BookingMapping()
     {
         CreateMap<Booking, BookingResult>().ReverseMap();
         CreateMap<Booking, BookingCreateCommand>().ReverseMap();
         CreateMap<Booking, BookingUpdateCommand>().ReverseMap();
-
     }
-    
+
     private void ProductMapping()
     {
         CreateMap<Product, ProductResult>().ReverseMap();
@@ -64,23 +63,23 @@ public class MappingProfile : Profile
         CreateMap<ProductXPhoto, ProductXPhotoResult>().ReverseMap();
         CreateMap<ProductXPhoto, ProductXPhotoCreateCommand>().ReverseMap();
         CreateMap<ProductXPhoto, ProductXPhotoUpdateCommand>().ReverseMap();
-        
+
         CreateMap<ProductXColor, ProductXColorResult>().ReverseMap();
         CreateMap<ProductXColor, ProductXColorCreateCommand>().ReverseMap();
         CreateMap<ProductXColor, ProductXColorUpdateCommand>().ReverseMap();
-        
+
         CreateMap<ProductXSize, ProductXSizeResult>().ReverseMap();
         CreateMap<ProductXSize, ProductXSizeCreateCommand>().ReverseMap();
         CreateMap<ProductXSize, ProductXSizeUpdateCommand>().ReverseMap();
     }
-    
+
     private void ServiceMapping()
     {
         CreateMap<Service, ServiceResult>().ReverseMap();
         CreateMap<Service, ServiceCreateCommand>().ReverseMap();
         CreateMap<Service, ServiceUpdateCommand>().ReverseMap();
     }
-    
+
     private void BlogMapping()
     {
         CreateMap<Blog, BlogResult>().ReverseMap();
@@ -93,6 +92,7 @@ public class MappingProfile : Profile
         CreateMap<User, UserResult>().ReverseMap();
         CreateMap<User, UserCreateCommand>().ReverseMap();
         CreateMap<User, UserUpdateCommand>().ReverseMap();
+        CreateMap<UserRefreshToken, UserRefreshTokenResult>().ReverseMap();
     }
 
     private void PhotoMapping()
@@ -102,28 +102,28 @@ public class MappingProfile : Profile
         CreateMap<Photo, PhotoUpdateCommand>().ReverseMap();
         CreateMap<PhotoResult, PhotoUpdateCommand>().ReverseMap();
     }
-    
+
     private void SizeMapping()
     {
         CreateMap<Size, SizeResult>().ReverseMap();
         CreateMap<Size, SizeCreateCommand>().ReverseMap();
         CreateMap<Size, SizeUpdateCommand>().ReverseMap();
     }
-    
+
     private void ColorMapping()
     {
         CreateMap<Color, ColorResult>().ReverseMap();
         CreateMap<Color, ColorCreateCommand>().ReverseMap();
         CreateMap<Color, ColorUpdateCommand>().ReverseMap();
     }
-    
+
     private void CategoryMapping()
     {
         CreateMap<Category, CategoryResult>().ReverseMap();
         CreateMap<Category, CategoryCreateCommand>().ReverseMap();
         CreateMap<Category, CategoryUpdateCommand>().ReverseMap();
     }
-    
+
     private void SubCategoryMapping()
     {
         CreateMap<SubCategory, SubCategoryResult>().ReverseMap();

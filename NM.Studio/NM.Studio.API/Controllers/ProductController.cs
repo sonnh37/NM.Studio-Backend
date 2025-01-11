@@ -19,18 +19,18 @@ public class ProductController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] ProductGetAllQuery productGetAllQuery)
     {
-        var messageResult = await _mediator.Send(productGetAllQuery);
+        var businessResult = await _mediator.Send(productGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
     
     [AllowAnonymous]
     [HttpGet("representative-by-category")]
     public async Task<IActionResult> GetRepresentativeByCategory([FromQuery] ProductRepresentativeByCategoryQuery query)
     {
-        var messageResult = await _mediator.Send(query);
+        var businessResult = await _mediator.Send(query);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -41,41 +41,41 @@ public class ProductController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(productGetByIdQuery);
+        var businessResult = await _mediator.Send(productGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ProductCreateCommand productCreateCommand)
     {
-        var messageView = await _mediator.Send(productCreateCommand);
+        var businessResult = await _mediator.Send(productCreateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ProductUpdateCommand productUpdateCommand)
     {
-        var messageView = await _mediator.Send(productUpdateCommand);
+        var businessResult = await _mediator.Send(productUpdateCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
     
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] ProductRestoreCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ProductDeleteCommand productDeleteCommand)
     {
-        var messageView = await _mediator.Send(productDeleteCommand);
+        var businessResult = await _mediator.Send(productDeleteCommand);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }

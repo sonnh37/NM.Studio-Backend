@@ -19,7 +19,7 @@ public class GetQueryableQuery : BaseQuery
 
 
     [Required]
-    public bool IsPagination { get; set; } = ConstantHelper.IsPagination;
+    public bool IsPagination { get; set; } = ConstantHelper.IsPagination; 
 
     public Guid? Id { get; set; }
 

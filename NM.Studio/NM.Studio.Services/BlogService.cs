@@ -30,23 +30,35 @@ public class BlogService : BaseService<Blog>, IBlogService
             if (createCommand.IsFeatured)
             {
                 var blogAbout = _blogRepository.GetQueryable(m => !m.IsDeleted && m.IsFeatured).SingleOrDefault();
-                if(blogAbout != null) return ResponseHelper.Error("About page is already in use:" + blogAbout.Id +"(" + blogAbout.Title + ")");
+                if(blogAbout != null) return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage("About page is already created")
+                    .Build();
 
             }
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
             var blog = _blogRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (blog != null) return ResponseHelper.Error("Title is already in use"); 
+            if (blog != null) return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Title already exists")
+                .Build();
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
             
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(BlogCreateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 
@@ -60,8 +72,10 @@ public class BlogService : BaseService<Blog>, IBlogService
                 var blogAbout = _blogRepository.GetQueryable(m => !m.IsDeleted && m.IsFeatured
                                                                                && m.Id != updateCommand.Id
                 ).SingleOrDefault();
-                if(blogAbout != null) return ResponseHelper.Error("About page is already in use:" + blogAbout.Id +"(" + blogAbout.Title + ")");
-
+                if(blogAbout != null) return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage("About page is already created")
+                    .Build();
             }
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Title);
             var blog = _blogRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();            
@@ -74,19 +88,28 @@ public class BlogService : BaseService<Blog>, IBlogService
                 // continue check if input slug == any slug
                 var blog_ = _blogRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (blog_ != null) return ResponseHelper.Error("Title is already in use"); 
+                if (blog_ != null) return new ResponseBuilder()
+                    .WithStatus(Const.FAIL_CODE)
+                    .WithMessage("Title already exists")
+                    .Build();
             }
             
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            var msg = ResponseHelper.Success(result);
             
-            return msg;
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_SAVE_MSG)
+                .Build();
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(BlogUpdateCommand).Name}: {ex.Message}";
-            return ResponseHelper.Error(errorMessage);
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
         }
     }
 }

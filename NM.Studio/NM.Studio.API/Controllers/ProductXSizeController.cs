@@ -19,9 +19,9 @@ public class ProductXSizeController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] ProductXSizeGetAllQuery productXSizeGetAllQuery)
     {
-        var messageResult = await _mediator.Send(productXSizeGetAllQuery);
+        var businessResult = await _mediator.Send(productXSizeGetAllQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [AllowAnonymous]
@@ -32,32 +32,32 @@ public class ProductXSizeController : BaseController
         {
             Id = id
         };
-        var messageResult = await _mediator.Send(productXSizeGetByIdQuery);
+        var businessResult = await _mediator.Send(productXSizeGetByIdQuery);
 
-        return Ok(messageResult);
+        return Ok(businessResult);
     }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ProductXSizeCreateCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ProductXSizeUpdateCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ProductXSizeDeleteCommand command)
     {
-        var messageView = await _mediator.Send(command);
+        var businessResult = await _mediator.Send(command);
 
-        return Ok(messageView);
+        return Ok(businessResult);
     }
 }
