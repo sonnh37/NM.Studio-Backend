@@ -15,13 +15,9 @@ public interface IUserService : IBaseService
 
     Task<BusinessResult> Update(UserUpdateCommand updateCommand);
     
-    Task<BusinessResult> Login(AuthQuery authQuery);
-
     Task<BusinessResult> AddUser(UserCreateCommand user);
 
     Task<BusinessResult> GetByUsername(string username);
-
-    BusinessResult DecodeToken(string token);
 
     BusinessResult SendEmail(string email);
 
@@ -36,8 +32,4 @@ public interface IUserService : IBaseService
     Task<BusinessResult> GetByUsernameOrEmail(string key);
     
     Task<BusinessResult> GetByRefreshToken(UserGetByRefreshTokenQuery request);
-    
-    Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request);
-
-    Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand);
 }

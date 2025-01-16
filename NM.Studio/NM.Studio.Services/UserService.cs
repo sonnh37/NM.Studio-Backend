@@ -290,46 +290,6 @@ public class UserService : BaseService<User>, IUserService
         return Convert.ToBase64String(randomNumber);
     }
 
-    public async Task<BusinessResult> Login(AuthQuery query)
-    {
-        var user = await _userRepository.FindUsernameOrEmail(query.Account);
-        var result = _mapper.Map<UserResult>(user);
-        //check username 
-        if (user == null)
-            return HandlerNotFound("The account does not exist.");
-
-        //check password
-        if (!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
-            return HandlerNotFound("The password is incorrect.");
-
-        var (token, expiration) = CreateToken(result);
-
-        var refreshToken = GenerateRefreshToken();
-
-        await SaveRefreshToken(user.Id, refreshToken);
-
-        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
-        return new ResponseBuilder<TokenResult>()
-            .WithData(tokenResult)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
-    }
-
-    private async Task SaveRefreshToken(Guid userId, string refreshToken)
-    {
-        var expirationDate = DateTime.UtcNow.AddMonths(1); // Refresh token expires in 1 month
-
-        var refreshTokenEntity = new UserRefreshToken
-        {
-            UserId = userId,
-            RefreshToken = refreshToken,
-            ExpirationDate = expirationDate
-        };
-        _userRefreshTokenRepository.Add(refreshTokenEntity);
-        await _unitOfWork.SaveChanges();
-    }
-
     public async Task<BusinessResult> AddUser(UserCreateCommand user)
     {
         var username = await _userRepository.FindUsernameOrEmail(user.Username);
@@ -339,31 +299,7 @@ public class UserService : BaseService<User>, IUserService
             _ => HandlerFail("The account is already registered.")
         };
     }
-
-    public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
-    {
-        try
-        {
-            var userRefreshToken = await _userRefreshTokenRepository
-                .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
-            if (userRefreshToken == null)
-                return HandlerNotFound("You are not logged in, please log in to continue.");
-            _userRefreshTokenRepository.DeletePermanently(userRefreshToken);
-
-            var isSaved = await _unitOfWork.SaveChanges();
-            if (!isSaved) throw new Exception();
-
-            return new ResponseBuilder()
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage("The account has been logged out.")
-                .Build();
-        }
-        catch (Exception e)
-        {
-            return HandlerError(e.Message);
-        }
-    }
-
+    
     public async Task<BusinessResult> GetByUsernameOrEmail(string key)
     {
         var user = await _userRepository.FindUsernameOrEmail(key);
@@ -390,34 +326,6 @@ public class UserService : BaseService<User>, IUserService
 
         return new ResponseBuilder<UserRefreshTokenResult>()
             .WithData(userRefreshToken)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
-    }
-
-    public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
-    {
-        if (request.RefreshToken == null) return HandlerNotFound("You are not logged in, please log in to continue.");
-        var refreshToken = request.RefreshToken;
-
-        // Validate refresh token from request
-        var storedRefreshToken = await _userRefreshTokenRepository.GetByRefreshTokenAsync(refreshToken);
-
-        if (storedRefreshToken == null || storedRefreshToken.ExpirationDate < DateTime.UtcNow)
-        {
-            return HandlerFail("Your session has expired. Please log in again.");
-        }
-
-        // Get user info from the refresh token
-        var user = await _userRepository.GetById(storedRefreshToken.UserId);
-        var userResult = _mapper.Map<UserResult>(user);
-
-        // Create new access token
-        var (token, expiration) = CreateToken(userResult);
-
-        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
-        return new ResponseBuilder<TokenResult>()
-            .WithData(tokenResult)
             .WithStatus(Const.SUCCESS_CODE)
             .WithMessage(Const.SUCCESS_LOGIN_MSG)
             .Build();
