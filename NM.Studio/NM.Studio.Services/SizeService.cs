@@ -13,8 +13,8 @@ public class SizeService : BaseService<Size>, ISizeService
     private readonly ISizeRepository _sizeRepository;
 
     public SizeService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _sizeRepository = _unitOfWork.SizeRepository;
     }

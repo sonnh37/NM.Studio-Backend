@@ -12,8 +12,6 @@ public class UserCommandHandler : BaseCommandHandler,
     IRequestHandler<UserDeleteCommand, BusinessResult>,
     IRequestHandler<UserCreateCommand, BusinessResult>,
     IRequestHandler<UserCreateByGoogleTokenCommand, BusinessResult>,
-    IRequestHandler<UserRefreshTokenCommand, BusinessResult>,
-    IRequestHandler<UserLogoutCommand, BusinessResult>,
     IRequestHandler<UserPasswordCommand, BusinessResult>,
     IRequestHandler<UserRestoreCommand, BusinessResult>
 {
@@ -45,16 +43,6 @@ public class UserCommandHandler : BaseCommandHandler,
     public async Task<BusinessResult> Handle(UserCreateByGoogleTokenCommand request, CancellationToken cancellationToken)
     {
         return await _userService.RegisterByGoogleAsync(request);
-    }
-
-    public async Task<BusinessResult> Handle(UserRefreshTokenCommand request, CancellationToken cancellationToken)
-    {
-        return await _userService.RefreshToken(request);
-    }
-
-    public async Task<BusinessResult> Handle(UserLogoutCommand request, CancellationToken cancellationToken)
-    {
-        return await _userService.Logout(request);
     }
 
     public async Task<BusinessResult> Handle(UserPasswordCommand request, CancellationToken cancellationToken)

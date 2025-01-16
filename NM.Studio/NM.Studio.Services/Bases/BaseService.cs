@@ -28,7 +28,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     protected readonly IUnitOfWork _unitOfWork;
     protected readonly IHttpContextAccessor _httpContextAccessor;
 
-    protected BaseService(IMapper mapper, IUnitOfWork unitOfWork, IHttpContextAccessor? httpContextAccessor = null)
+    protected BaseService(IMapper mapper, IUnitOfWork unitOfWork)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;

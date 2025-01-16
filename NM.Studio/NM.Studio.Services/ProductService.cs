@@ -22,8 +22,8 @@ public class ProductService : BaseService<Product>, IProductService
     private readonly ICategoryRepository _categoryRepository;
 
     public ProductService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _categoryRepository = _unitOfWork.CategoryRepository;
         _productRepository = _unitOfWork.ProductRepository;

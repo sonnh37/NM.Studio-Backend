@@ -36,14 +36,12 @@ public class UserService : BaseService<User>, IUserService
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
 
-    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration configuration,
-        IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+    public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration configuration)
+        : base(mapper, unitOfWork)
     {
         _userRepository = _unitOfWork.UserRepository;
         _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
         _configuration = configuration;
-
         _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
     }
 

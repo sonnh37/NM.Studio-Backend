@@ -21,8 +21,8 @@ public class ProductXColorService : BaseService<ProductXColor>, IProductXColorSe
     private readonly IProductXColorRepository _productXColorRepository;
 
     public ProductXColorService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _productXColorRepository = _unitOfWork.ProductXColorRepository;
     }

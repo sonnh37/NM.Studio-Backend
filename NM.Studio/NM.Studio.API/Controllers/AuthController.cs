@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.CQRS.Commands.Users;
+using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
@@ -21,56 +22,9 @@ public class AuthController : BaseController
 
     [AllowAnonymous]
     [HttpGet("info")]
-    public IActionResult GetUserInfo()
+    public IActionResult GetUserInfo([FromQuery] AuthGetByCookieQuery request)
     {
-        #region CheckAuthen
-
-        var refreshToken = Request.Cookies["refreshToken"];
-        if (refreshToken == null)
-        {
-            // refreshToken is unvalid
-            return Ok(new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("Pls, login again.")
-                .Build());
-        }
-
-        // check in db have refreshToken 
-        var message = IsLoggedIn(refreshToken).Result;
-        if (message.Status != 1)
-        {
-            return Ok(message);
-        }
-        
-        #endregion
-        
-        // check AccessToken from client is valid
-        var accessToken = Request.Cookies["accessToken"];
-        if (accessToken != null)
-        {
-            var msg = GetUserByCookie().Result;
-
-            return Ok(msg);
-        }
-
-        var userRefresh = new UserRefreshTokenCommand
-        {
-            RefreshToken = refreshToken
-        };
-        var message_ = _mediator.Send(userRefresh).Result;
-        if (message_.Status != 1) return Ok(message_);
-        var _object = message_.Data as TokenResult;
-        var accessTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-        };
-
-        Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
-
-        var businessResult = GetUserByToken(_object.Token).Result;
+        var businessResult = _mediator.Send(request).Result;
 
         return Ok(businessResult);
     }
@@ -134,21 +88,6 @@ public class AuthController : BaseController
         return Ok(msg);
     }
 
-    [AllowAnonymous]
-    [HttpGet("is-logged-in")]
-    public async Task<IActionResult> IsLogged()
-    {
-        var refreshToken = Request.Cookies["refreshToken"];
-        if (refreshToken == null)
-        {
-            return Unauthorized();
-        }
-
-        // check refreshToken is exist db
-        var message = await IsLoggedIn(refreshToken);
-        return Ok(message);
-    }
-    
     [AllowAnonymous]
     // POST api/<AuthController>
     [HttpPost("register")]

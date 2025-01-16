@@ -17,7 +17,6 @@ public class BaseController : ControllerBase
     protected readonly IMediator _mediator;
     protected readonly TokenSetting _tokenSetting;
 
-
     protected BaseController()
     {
     }

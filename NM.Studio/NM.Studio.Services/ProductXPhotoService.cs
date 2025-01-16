@@ -16,8 +16,8 @@ public class ProductXPhotoService : BaseService<ProductXPhoto>, IProductXPhotoSe
     private readonly IProductXPhotoRepository _productXPhotoRepository;
 
     public ProductXPhotoService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _productXPhotoRepository = _unitOfWork.ProductXPhotoRepository;
     }

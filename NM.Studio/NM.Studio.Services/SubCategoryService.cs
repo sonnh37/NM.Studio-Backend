@@ -12,8 +12,8 @@ public class SubCategoryService : BaseService<SubCategory>, ISubCategoryService
     private readonly ISubCategoryRepository _subCategoryRepository;
 
     public SubCategoryService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _subCategoryRepository = _unitOfWork.SubCategoryRepository;
     }

@@ -12,8 +12,6 @@ public class UserQueryHandler :
     IRequestHandler<UserGetAllQuery, BusinessResult>,
     IRequestHandler<UserGetByIdQuery, BusinessResult>,
     IRequestHandler<UserGetByAccountQuery, BusinessResult>,
-    IRequestHandler<AuthQuery, BusinessResult>,
-    IRequestHandler<DecodedTokenQuery, BusinessResult>,
     IRequestHandler<UserSendEmailQuery, BusinessResult>,
     IRequestHandler<VerifyOTPQuery, BusinessResult>,
     IRequestHandler<UserGetByGoogleTokenQuery, BusinessResult>,
@@ -39,19 +37,9 @@ public class UserQueryHandler :
         return await _userService.GetById<UserResult>(request.Id);
     }
 
-    public async Task<BusinessResult> Handle(AuthQuery request, CancellationToken cancellationToken)
-    {
-        return await _userService.Login(request);
-    }
-
     public async Task<BusinessResult> Handle(UserGetByAccountQuery request, CancellationToken cancellationToken)
     {
         return await _userService.GetByUsernameOrEmail(request.account!);
-    }
-
-    public Task<BusinessResult> Handle(DecodedTokenQuery request, CancellationToken cancellationToken)
-    {
-        return Task.FromResult(_userService.DecodeToken(request.Token!));
     }
 
     public Task<BusinessResult> Handle(UserSendEmailQuery request, CancellationToken cancellationToken)
@@ -73,7 +61,6 @@ public class UserQueryHandler :
     {
         return await _userService.LoginByGoogleTokenAsync(new VerifyGoogleTokenRequest{ Token = request.Token!});
     }
-
 
     public async Task<BusinessResult> Handle(UserGetByRefreshTokenQuery request, CancellationToken cancellationToken)
     {

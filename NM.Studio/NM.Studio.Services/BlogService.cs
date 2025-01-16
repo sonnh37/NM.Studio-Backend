@@ -17,8 +17,8 @@ public class BlogService : BaseService<Blog>, IBlogService
     private readonly IBlogRepository _blogRepository;
 
     public BlogService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _blogRepository = _unitOfWork.BlogRepository;
     }

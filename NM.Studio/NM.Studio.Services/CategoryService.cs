@@ -13,8 +13,8 @@ public class CategoryService : BaseService<Category>, ICategoryService
     private readonly ICategoryRepository _albumRepository;
 
     public CategoryService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _albumRepository = _unitOfWork.CategoryRepository;
     }

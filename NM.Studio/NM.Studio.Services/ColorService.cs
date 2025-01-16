@@ -13,8 +13,8 @@ public class ColorService : BaseService<Color>, IColorService
     private readonly IColorRepository _colorRepository;
 
     public ColorService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _colorRepository = _unitOfWork.ColorRepository;
     }

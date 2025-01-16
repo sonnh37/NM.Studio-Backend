@@ -16,8 +16,8 @@ public class AlbumXPhotoService : BaseService<AlbumXPhoto>, IAlbumXPhotoService
     private readonly IAlbumXPhotoRepository _albumXPhotoRepository;
 
     public AlbumXPhotoService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _albumXPhotoRepository = _unitOfWork.AlbumXPhotoRepository;
     }

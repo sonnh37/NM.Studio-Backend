@@ -21,8 +21,8 @@ public class ProductXSizeService : BaseService<ProductXSize>, IProductXSizeServi
     private readonly IProductXSizeRepository _productXSizeRepository;
 
     public ProductXSizeService(IMapper mapper,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _productXSizeRepository = _unitOfWork.ProductXSizeRepository;
     }

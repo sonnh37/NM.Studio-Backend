@@ -21,8 +21,8 @@ public class BookingService : BaseService<Booking>, IBookingService
     private readonly IEmailService _emailService;
 
     public BookingService(IMapper mapper, IEmailService emailService,
-        IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
-        : base(mapper, unitOfWork, httpContextAccessor)
+        IUnitOfWork unitOfWork)
+        : base(mapper, unitOfWork)
     {
         _emailService = emailService;
         _bookingRepository = _unitOfWork.BookingRepository;

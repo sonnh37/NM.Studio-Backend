@@ -23,5 +23,6 @@ public static class ServiceRegistration
         services.AddTransient<IEmailService, EmailService>();
         services.AddTransient<IProductXColorService, ProductXColorService>();
         services.AddTransient<IProductXSizeService, ProductXSizeService>();
+        services.AddTransient<IAuthService, AuthService>();
     }
 }
