@@ -30,10 +30,7 @@ public class AlbumService : BaseService<Album>, IAlbumService
         {
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
             var album = _albumRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (album != null) return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage("Title already exists")
-                .Build();
+            if (album != null) return HandlerFail("Title already exists");
             
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity); 
@@ -47,10 +44,7 @@ public class AlbumService : BaseService<Album>, IAlbumService
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumCreateCommand).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return HandlerFail(errorMessage);
         }
     }
     
@@ -63,16 +57,11 @@ public class AlbumService : BaseService<Album>, IAlbumService
             
             if (album == null) throw new Exception();
             
-            // check if update input slug != current slug
             if (updateCommand.Slug != album?.Slug)
             {
-                // continue check if input slug == any slug
                 var album_ = _albumRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (album_ != null) return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage("Title already exists")
-                    .Build();
+                if (album_ != null) HandlerFail("Title already exists");
             }
             
             var entity = await CreateOrUpdateEntity(updateCommand);
@@ -86,10 +75,7 @@ public class AlbumService : BaseService<Album>, IAlbumService
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumUpdateCommand).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return HandlerFail(errorMessage);
         }
     }
 

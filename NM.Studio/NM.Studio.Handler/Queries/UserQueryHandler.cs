@@ -18,7 +18,8 @@ public class UserQueryHandler :
     IRequestHandler<VerifyOTPQuery, BusinessResult>,
     IRequestHandler<UserGetByGoogleTokenQuery, BusinessResult>,
     IRequestHandler<AuthByGoogleTokenQuery, BusinessResult>,
-    IRequestHandler<UserGetByRefreshTokenQuery, BusinessResult>
+    IRequestHandler<UserGetByRefreshTokenQuery, BusinessResult>,
+    IRequestHandler<UserGetByCookieQuery, BusinessResult>
 {
     protected readonly IUserService _userService;
 
@@ -77,5 +78,10 @@ public class UserQueryHandler :
     public async Task<BusinessResult> Handle(UserGetByRefreshTokenQuery request, CancellationToken cancellationToken)
     {
         return await _userService.GetByRefreshToken(request);
+    }
+
+    public Task<BusinessResult> Handle(UserGetByCookieQuery request, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(_userService.GetUserByCookie());
     }
 }

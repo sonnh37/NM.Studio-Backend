@@ -10,6 +10,7 @@ using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Entities.Bases;
 using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
+using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 
@@ -58,6 +59,38 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             // Log lỗi nếu cần thiết
             return null;
+        }
+    }
+    
+    public BusinessResult GetUserByCookie()
+    {
+        try
+        {
+            if (_httpContextAccessor?.HttpContext == null ||
+                !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
+                return HandlerNotFound("Not login yet");
+
+            // Lấy thông tin UserId từ Claims
+            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return HandlerNotFound("No user claim found");
+
+            // Lấy thêm thông tin User từ database nếu cần
+            var userId = Guid.Parse(userIdClaim);
+            var user = _unitOfWork.UserRepository.GetById(userId).Result;
+            var userResult = _mapper.Map<UserResult>(user);
+
+            if (userResult == null) return HandlerNotFound();
+            
+            return new ResponseBuilder<UserResult>()
+                .WithData(userResult)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            return HandlerError(ex.Message);
         }
     }
 

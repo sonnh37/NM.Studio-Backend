@@ -33,20 +33,15 @@ public class BaseController : ControllerBase
         _tokenSetting = tokenSetting.Value;
     }
 
-    protected async Task<BusinessResult> GetCurrentUser()
+    protected Task<BusinessResult> GetUserByCookie()
     {
-        var userId = Response.HttpContext.User.FindFirst("Id")?.Value;
-
-        var userGetByIdQuery = new UserGetByIdQuery
-        {
-            Id = userId != null ? Guid.Parse(userId) : Guid.Empty
-        };
-        var businessResult = await _mediator.Send(userGetByIdQuery);
+        var request = new UserGetByCookieQuery();
+        var businessResult = _mediator.Send(request);
 
         return businessResult;
     }
     
-    protected async Task<BusinessResult> GetCurrentUser(string accessToken)
+    protected async Task<BusinessResult> GetUserByToken(string accessToken)
     {
         if (string.IsNullOrEmpty(accessToken))
         {
@@ -60,20 +55,13 @@ public class BaseController : ControllerBase
         var jwtToken = tokenHandler.ReadJwtToken(accessToken);
 
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
-
-        if (string.IsNullOrEmpty(userId))
-        {
-            return new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("User not found")
-                .Build();
-        }
         
         var userGetByIdQuery = new UserGetByIdQuery
         {
             Id = Guid.Parse(userId)
         };
         var businessResult = await _mediator.Send(userGetByIdQuery);
+        
         return businessResult;
     }
 
