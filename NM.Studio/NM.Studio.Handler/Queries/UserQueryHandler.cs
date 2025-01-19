@@ -14,8 +14,8 @@ public class UserQueryHandler :
     IRequestHandler<UserGetByAccountQuery, BusinessResult>,
     IRequestHandler<UserSendEmailQuery, BusinessResult>,
     IRequestHandler<VerifyOTPQuery, BusinessResult>,
-    IRequestHandler<UserGetByGoogleTokenQuery, BusinessResult>,
-    IRequestHandler<AuthByGoogleTokenQuery, BusinessResult>,
+    // IRequestHandler<UserGetByGoogleTokenQuery, BusinessResult>,
+    // IRequestHandler<AuthByGoogleTokenQuery, BusinessResult>,
     IRequestHandler<UserGetByRefreshTokenQuery, BusinessResult>,
     IRequestHandler<UserGetByCookieQuery, BusinessResult>
 {
@@ -52,15 +52,15 @@ public class UserQueryHandler :
         return Task.FromResult(_userService.ValidateOtp(request.Email!, request.Otp!));
     }
 
-    public async Task<BusinessResult> Handle(UserGetByGoogleTokenQuery request, CancellationToken cancellationToken)
-    {
-        return await _userService.FindAccountRegisteredByGoogle(new VerifyGoogleTokenRequest{ Token = request.Token!});
-    }
-
-    public async Task<BusinessResult> Handle(AuthByGoogleTokenQuery request, CancellationToken cancellationToken)
-    {
-        return await _userService.LoginByGoogleTokenAsync(new VerifyGoogleTokenRequest{ Token = request.Token!});
-    }
+    // public async Task<BusinessResult> Handle(UserGetByGoogleTokenQuery request, CancellationToken cancellationToken)
+    // {
+    //     return await _userService.FindAccountRegisteredByGoogle(new VerifyGoogleTokenRequest{ Token = request.Token!});
+    // }
+    //
+    // public async Task<BusinessResult> Handle(AuthByGoogleTokenQuery request, CancellationToken cancellationToken)
+    // {
+    //     return await _userService.LoginByGoogleTokenAsync(new VerifyGoogleTokenRequest{ Token = request.Token!});
+    // }
 
     public async Task<BusinessResult> Handle(UserGetByRefreshTokenQuery request, CancellationToken cancellationToken)
     {

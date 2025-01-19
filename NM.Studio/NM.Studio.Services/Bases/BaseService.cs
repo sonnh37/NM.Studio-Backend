@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.Linq.Expressions;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
@@ -101,6 +102,36 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         try
         {
             var entity = await _baseRepository.GetById(id, true);
+            var result = _mapper.Map<TResult>(entity);
+            if (result == null)
+                return new ResponseBuilder<TResult>()
+                    .WithData(result)
+                    .WithStatus(Const.NOT_FOUND_CODE)
+                    .WithMessage(Const.NOT_FOUND_MSG)
+                    .Build();
+
+            return new ResponseBuilder<TResult>()
+                .WithData(result)
+                .WithStatus(Const.SUCCESS_CODE)
+                .WithMessage(Const.SUCCESS_READ_MSG)
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(errorMessage)
+                .Build();
+        }
+    }
+
+    
+    public async Task<BusinessResult> GetByOptions<TResult>(Expression<Func<TEntity, bool>> predicate) where TResult : BaseResult
+    {
+        try
+        {
+            var entity = await _baseRepository.GetByOptions(predicate);
             var result = _mapper.Map<TResult>(entity);
             if (result == null)
                 return new ResponseBuilder<TResult>()
@@ -379,7 +410,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     }
 
 
-    private void InitializeBaseEntityForCreate(TEntity? entity)
+    protected void InitializeBaseEntityForCreate(TEntity? entity)
     {
         if (entity == null) return;
 

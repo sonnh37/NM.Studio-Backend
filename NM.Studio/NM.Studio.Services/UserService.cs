@@ -30,7 +30,7 @@ public class UserService : BaseService<User>, IUserService
 {
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
-    private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly int _expirationMinutes;
     private readonly Dictionary<string, string> _otpStorage = new();
     private readonly Dictionary<string, DateTime> _expiryStorage = new();
@@ -40,7 +40,7 @@ public class UserService : BaseService<User>, IUserService
         : base(mapper, unitOfWork)
     {
         _userRepository = _unitOfWork.UserRepository;
-        _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
+        _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
         _configuration = configuration;
         _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
     }
@@ -252,32 +252,32 @@ public class UserService : BaseService<User>, IUserService
             .Build();
     }
 
-    private (string token, string expiration) CreateToken(UserResult user)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim("Id", user.Id.ToString()),
-            new Claim("Role", user.Role.ToString()),
-            new Claim("Expiration",
-                new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            _configuration.GetSection("AppSettings:Token").Value!));
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(_expirationMinutes),
-            signingCredentials: creds
-        );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return (jwt, DateTime.Now.AddMinutes(_expirationMinutes).ToString("o"));
-    }
+    // private (string token, string expiration) CreateToken(UserResult user)
+    // {
+    //     var claims = new List<Claim>
+    //     {
+    //         new Claim("Id", user.Id.ToString()),
+    //         new Claim("Role", user.Role.ToString()),
+    //         new Claim("Expiration",
+    //             new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
+    //     };
+    //
+    //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+    //         _configuration.GetSection("AppSettings:Token").Value!));
+    //
+    //     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+    //
+    //
+    //     var token = new JwtSecurityToken(
+    //         claims: claims,
+    //         expires: DateTime.Now.AddMinutes(_expirationMinutes),
+    //         signingCredentials: creds
+    //     );
+    //
+    //     var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+    //
+    //     return (jwt, DateTime.Now.AddMinutes(_expirationMinutes).ToString("o"));
+    // }
 
     private string GenerateRefreshToken()
     {
@@ -319,15 +319,15 @@ public class UserService : BaseService<User>, IUserService
     public async Task<BusinessResult> GetByRefreshToken(UserGetByRefreshTokenQuery request)
     {
         if (request.RefreshToken == null) return HandlerNotFound("Refresh token is null");
-        var userRefreshToken = await _userRefreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
-        var userRefreshTokenResult = _mapper.Map<UserRefreshTokenResult>(userRefreshToken);
+        var userRefreshToken = await _refreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+        var refreshTokenResult = _mapper.Map<RefreshTokenResult>(userRefreshToken);
 
-        if (userRefreshTokenResult == null) return HandlerNotFound("Not found refresh token");
+        if (refreshTokenResult == null) return HandlerNotFound("Not found refresh token");
 
-        return new ResponseBuilder<UserRefreshTokenResult>()
+        return new ResponseBuilder<RefreshTokenResult>()
             .WithData(userRefreshToken)
             .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .WithMessage(Const.SUCCESS_READ_MSG)
             .Build();
     }
 
@@ -344,123 +344,123 @@ public class UserService : BaseService<User>, IUserService
         return payload;
     }
 
-    public async Task<BusinessResult> VerifyGoogleTokenAsync(VerifyGoogleTokenRequest request)
-    {
-        var payload = await VerifyGoogleToken(request.Token!);
+    // public async Task<BusinessResult> VerifyGoogleTokenAsync(VerifyGoogleTokenRequest request)
+    // {
+    //     var payload = await VerifyGoogleToken(request.Token!);
+    //
+    //     return payload switch
+    //     {
+    //         null => new ResponseBuilder()
+    //             .WithStatus(Const.FAIL_CODE)
+    //             .WithMessage("Invalid Google Token")
+    //             .Build(),
+    //         _ => new ResponseBuilder<GoogleJsonWebSignature.Payload>()
+    //             .WithData(payload)
+    //             .WithStatus(Const.SUCCESS_CODE)
+    //             .WithMessage("Validate Google Token")
+    //             .Build(),
+    //     };
+    // }
 
-        return payload switch
-        {
-            null => new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage("Invalid Google Token")
-                .Build(),
-            _ => new ResponseBuilder<GoogleJsonWebSignature.Payload>()
-                .WithData(payload)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage("Validate Google Token")
-                .Build(),
-        };
-    }
 
-
-    public async Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request)
-    {
-        var response = VerifyGoogleTokenAsync(request).Result;
-
-        if (response.Status != Const.SUCCESS_CODE)
-        {
-            return response;
-        }
-
-        var payload = response.Data as GoogleJsonWebSignature.Payload;
-        var user = await _userRepository.GetByEmail(payload.Email);
-
-        if (user == null)
-        {
-            return new BusinessResult(Const.FAIL_CODE, Const.NOT_FOUND_USER_LOGIN_BY_GOOGLE_MSG);
-        }
-
-        var userResult = _mapper.Map<UserResult>(user);
-        var (token, expiration) = CreateToken(userResult);
-        var loginResponse = new LoginResponse(token, expiration);
-
-        return new ResponseBuilder<LoginResponse>()
-            .WithData(loginResponse)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
-    }
-
-    public async Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request)
-    {
-        var verifyGoogleToken = new VerifyGoogleTokenRequest
-        {
-            Token = request.Token
-        };
-
-        var response = VerifyGoogleTokenAsync(verifyGoogleToken).Result;
-
-        if (response.Status != Const.SUCCESS_CODE)
-        {
-            return response;
-        }
-
-        var payload = response.Data as GoogleJsonWebSignature.Payload;
-        var user = await _userRepository.GetByEmail(payload.Email);
-        var userResult = _mapper.Map<UserResult>(user);
-        if (userResult == null)
-        {
-            return new BusinessResult(Const.SUCCESS_CODE, "Email has not registered by google", null);
-        }
-
-        return new BusinessResult(Const.SUCCESS_CODE, "Email has registered by google", userResult);
-    }
-
-    public async Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request)
-    {
-        var verifyGoogleToken = new VerifyGoogleTokenRequest
-        {
-            Token = request.Token
-        };
-
-        var response = VerifyGoogleTokenAsync(verifyGoogleToken).Result;
-
-        if (response.Status != Const.SUCCESS_CODE)
-        {
-            return response;
-        }
-
-        var payload = response.Data as GoogleJsonWebSignature.Payload;
-        var user = await _userRepository.GetByEmail(payload.Email);
-
-        if (user != null)
-        {
-            return new BusinessResult(Const.FAIL_CODE, "Email has existed in server");
-        }
-
-        //string base64Image = await GetBase64ImageFromUrl(payload.Picture);
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        UserCreateCommand _user = new UserCreateCommand
-        {
-            Username = payload.Subject,
-            Email = payload.Email,
-            Password = passwordHash,
-            FirstName = payload.GivenName,
-            LastName = payload.FamilyName,
-            Role = Role.Customer,
-            Avatar = payload.Picture
-        };
-
-        var _response = await AddUser(_user);
-        var _userAdded = _response.Data as User;
-        var userResult = _mapper.Map<UserResult>(_userAdded);
-        var (token, expiration) = CreateToken(userResult);
-        var loginResponse = new LoginResponse(token, expiration);
-
-        return new ResponseBuilder<LoginResponse>()
-            .WithData(loginResponse)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
-    }
+    // public async Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request)
+    // {
+    //     var response = VerifyGoogleTokenAsync(request).Result;
+    //
+    //     if (response.Status != Const.SUCCESS_CODE)
+    //     {
+    //         return response;
+    //     }
+    //
+    //     var payload = response.Data as GoogleJsonWebSignature.Payload;
+    //     var user = await _userRepository.GetByEmail(payload.Email);
+    //
+    //     if (user == null)
+    //     {
+    //         return new BusinessResult(Const.FAIL_CODE, Const.NOT_FOUND_USER_LOGIN_BY_GOOGLE_MSG);
+    //     }
+    //
+    //     var userResult = _mapper.Map<UserResult>(user);
+    //     var (token, expiration) = CreateToken(userResult);
+    //     var loginResponse = new LoginResponse(token, expiration);
+    //
+    //     return new ResponseBuilder<LoginResponse>()
+    //         .WithData(loginResponse)
+    //         .WithStatus(Const.SUCCESS_CODE)
+    //         .WithMessage(Const.SUCCESS_LOGIN_MSG)
+    //         .Build();
+    // }
+    //
+    // public async Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request)
+    // {
+    //     var verifyGoogleToken = new VerifyGoogleTokenRequest
+    //     {
+    //         Token = request.Token
+    //     };
+    //
+    //     var response = VerifyGoogleTokenAsync(verifyGoogleToken).Result;
+    //
+    //     if (response.Status != Const.SUCCESS_CODE)
+    //     {
+    //         return response;
+    //     }
+    //
+    //     var payload = response.Data as GoogleJsonWebSignature.Payload;
+    //     var user = await _userRepository.GetByEmail(payload.Email);
+    //     var userResult = _mapper.Map<UserResult>(user);
+    //     if (userResult == null)
+    //     {
+    //         return new BusinessResult(Const.SUCCESS_CODE, "Email has not registered by google", null);
+    //     }
+    //
+    //     return new BusinessResult(Const.SUCCESS_CODE, "Email has registered by google", userResult);
+    // }
+    //
+    // public async Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request)
+    // {
+    //     var verifyGoogleToken = new VerifyGoogleTokenRequest
+    //     {
+    //         Token = request.Token
+    //     };
+    //
+    //     var response = VerifyGoogleTokenAsync(verifyGoogleToken).Result;
+    //
+    //     if (response.Status != Const.SUCCESS_CODE)
+    //     {
+    //         return response;
+    //     }
+    //
+    //     var payload = response.Data as GoogleJsonWebSignature.Payload;
+    //     var user = await _userRepository.GetByEmail(payload.Email);
+    //
+    //     if (user != null)
+    //     {
+    //         return new BusinessResult(Const.FAIL_CODE, "Email has existed in server");
+    //     }
+    //
+    //     //string base64Image = await GetBase64ImageFromUrl(payload.Picture);
+    //     var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+    //     UserCreateCommand _user = new UserCreateCommand
+    //     {
+    //         Username = payload.Subject,
+    //         Email = payload.Email,
+    //         Password = passwordHash,
+    //         FirstName = payload.GivenName,
+    //         LastName = payload.FamilyName,
+    //         Role = Role.Customer,
+    //         Avatar = payload.Picture
+    //     };
+    //
+    //     var _response = await AddUser(_user);
+    //     var _userAdded = _response.Data as User;
+    //     var userResult = _mapper.Map<UserResult>(_userAdded);
+    //     var (token, expiration) = CreateToken(userResult);
+    //     var loginResponse = new LoginResponse(token, expiration);
+    //
+    //     return new ResponseBuilder<LoginResponse>()
+    //         .WithData(loginResponse)
+    //         .WithStatus(Const.SUCCESS_CODE)
+    //         .WithMessage(Const.SUCCESS_LOGIN_MSG)
+    //         .Build();
+    // }
 }

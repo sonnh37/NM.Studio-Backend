@@ -8,11 +8,11 @@ using Microsoft.Extensions.Logging;
 
 public class CleanRefreshTokenJob : IJob
 {
-    private readonly IUserRefreshTokenRepository _refreshTokenRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<CleanRefreshTokenJob> _logger;
 
-    public CleanRefreshTokenJob(IUserRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork, ILogger<CleanRefreshTokenJob> logger)
+    public CleanRefreshTokenJob(IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork, ILogger<CleanRefreshTokenJob> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;

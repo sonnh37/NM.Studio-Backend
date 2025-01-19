@@ -38,7 +38,7 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     
     public IBookingRepository BookingRepository => GetRepository<IBookingRepository>();
     
-    public IUserRefreshTokenRepository UserRefreshTokenRepository => GetRepository<IUserRefreshTokenRepository>();
+    public IRefreshTokenRepository RefreshTokenRepository => GetRepository<IRefreshTokenRepository>();
     
     public IProductXSizeRepository ProductXSizeRepository => GetRepository<IProductXSizeRepository>();
     

@@ -13,19 +13,20 @@ public partial class StudioContext : BaseDbContext
     {
     }
 
-    public virtual DbSet<Product> Products { get; set; } = null!;
-    public virtual DbSet<Color> Colors { get; set; } = null!;
-    public virtual DbSet<Size> Sizes { get; set; } = null!;
-    public virtual DbSet<Category> Categories { get; set; } = null!;
-    public virtual DbSet<Photo> Photos { get; set; } = null!;
-    public virtual DbSet<ProductXPhoto> ProductXPhotos { get; set; } = null!;
-    public virtual DbSet<AlbumXPhoto> AlbumXPhotos { get; set; } = null!;
-    public virtual DbSet<Service> Services { get; set; } = null!;
-    public virtual DbSet<User> Users { get; set; } = null!;
-    public virtual DbSet<Blog> Blogs { get; set; } = null!;
-    public virtual DbSet<Booking> Bookings { get; set; } = null!;
-    public virtual DbSet<ProductXSize> ProductXSizes { get; set; } = null!;
-    public virtual DbSet<ProductXColor> ProductXColors { get; set; } = null!;
+    public virtual DbSet<Product> Products { get; set; }
+    public virtual DbSet<Color> Colors { get; set; }
+    public virtual DbSet<Size> Sizes { get; set; }
+    public virtual DbSet<Category> Categories { get; set; }
+    public virtual DbSet<Photo> Photos { get; set; }
+    public virtual DbSet<ProductXPhoto> ProductXPhotos { get; set; }
+    public virtual DbSet<AlbumXPhoto> AlbumXPhotos { get; set; }
+    public virtual DbSet<Service> Services { get; set; }
+    public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<Blog> Blogs { get; set; }
+    public virtual DbSet<Booking> Bookings { get; set; }
+    public virtual DbSet<ProductXSize> ProductXSizes { get; set; }
+    public virtual DbSet<ProductXColor> ProductXColors { get; set; }
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -38,7 +39,7 @@ public partial class StudioContext : BaseDbContext
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, true)
             .Build();
-        var strConn = /*config["ConnectionStrings:DB"]*/ config.GetConnectionString("DefaultConnection");
+        var strConn = config.GetConnectionString("DefaultConnection");
 
         return strConn;
     }
@@ -69,7 +70,7 @@ public partial class StudioContext : BaseDbContext
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(m => m.UserRefreshTokens)
+            entity.HasMany(m => m.RefreshTokens)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -95,16 +96,16 @@ public partial class StudioContext : BaseDbContext
                 .HasForeignKey(sc => sc.ServiceId);
         });
 
-        modelBuilder.Entity<UserRefreshToken>(entity =>
+        modelBuilder.Entity<RefreshToken>(entity =>
         {
-            entity.ToTable("UserRefreshToken");
+            entity.ToTable("RefreshToken");
 
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("gen_random_uuid()");
 
             entity.HasOne(sc => sc.User)
-                .WithMany(c => c.UserRefreshTokens)
+                .WithMany(c => c.RefreshTokens)
                 .HasForeignKey(sc => sc.UserId);
         });
 

@@ -24,5 +24,6 @@ public static class ServiceRegistration
         services.AddTransient<IProductXColorService, ProductXColorService>();
         services.AddTransient<IProductXSizeService, ProductXSizeService>();
         services.AddTransient<IAuthService, AuthService>();
+        services.AddTransient<IRefreshTokenService, RefreshTokenService>();
     }
 }

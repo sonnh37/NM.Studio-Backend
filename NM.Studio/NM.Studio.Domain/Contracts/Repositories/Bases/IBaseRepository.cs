@@ -29,7 +29,9 @@ public interface IBaseRepository<TEntity> : IBaseRepository
     Task<List<TEntity>> ApplySortingAndPaging(IQueryable<TEntity> queryable, GetQueryableQuery pagedQuery);
 
     Task<TEntity?> GetById(Guid id, bool isInclude = false);
-    
+
+    Task<TEntity?> GetByOptions(Expression<Func<TEntity, bool>> predicate);
+
     Task<IList<TEntity>> GetByIds(IList<Guid> ids);
 
     void Add(TEntity entity);

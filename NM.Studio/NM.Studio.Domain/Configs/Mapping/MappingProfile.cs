@@ -10,6 +10,7 @@ using NM.Studio.Domain.CQRS.Commands.Products;
 using NM.Studio.Domain.CQRS.Commands.ProductXColors;
 using NM.Studio.Domain.CQRS.Commands.ProductXPhotos;
 using NM.Studio.Domain.CQRS.Commands.ProductXSizes;
+using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
 using NM.Studio.Domain.CQRS.Commands.Services;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
 using NM.Studio.Domain.CQRS.Commands.SubCategories;
@@ -92,7 +93,9 @@ public class MappingProfile : Profile
         CreateMap<User, UserResult>().ReverseMap();
         CreateMap<User, UserCreateCommand>().ReverseMap();
         CreateMap<User, UserUpdateCommand>().ReverseMap();
-        CreateMap<UserRefreshToken, UserRefreshTokenResult>().ReverseMap();
+        CreateMap<RefreshToken, RefreshTokenResult>().ReverseMap();
+        CreateMap<RefreshToken, RefreshTokenCreateCommand>().ReverseMap();
+        CreateMap<RefreshToken, RefreshTokenUpdateCommand>().ReverseMap();
     }
 
     private void PhotoMapping()

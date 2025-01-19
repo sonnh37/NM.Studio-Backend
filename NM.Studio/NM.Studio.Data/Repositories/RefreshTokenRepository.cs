@@ -7,15 +7,15 @@ using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Data.Repositories;
 
-public class UserRefreshTokenRepository : BaseRepository<UserRefreshToken>, IUserRefreshTokenRepository
+public class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshTokenRepository
 {
-    public UserRefreshTokenRepository(StudioContext dbContext, IMapper mapper) : base(dbContext, mapper)
+    public RefreshTokenRepository(StudioContext dbContext, IMapper mapper) : base(dbContext, mapper)
     {
     }
 
-    public async Task<UserRefreshToken?> GetByRefreshTokenAsync(string refreshToken)
+    public async Task<RefreshToken?> GetByRefreshTokenAsync(string refreshToken)
     {
-        var queryable = GetQueryable(x => x.RefreshToken != null && x.RefreshToken.ToLower() == refreshToken.ToLower());
+        var queryable = GetQueryable(x => x.Token != null && x.Token.ToLower() == refreshToken.ToLower());
         var entity = await queryable.SingleOrDefaultAsync();
 
         return entity;
@@ -25,7 +25,7 @@ public class UserRefreshTokenRepository : BaseRepository<UserRefreshToken>, IUse
     {
         try
         {
-            var queryable = GetQueryable(token => token.ExpirationDate < DateTime.UtcNow);
+            var queryable = GetQueryable(token => token.Expiry < DateTime.UtcNow);
             if (!queryable.Any())
             {
               return;  

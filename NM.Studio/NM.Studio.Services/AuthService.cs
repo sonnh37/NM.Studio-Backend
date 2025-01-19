@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
+using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
 using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
@@ -26,20 +27,22 @@ public class AuthService : IAuthService
 {
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
-    private readonly IUserRefreshTokenRepository _userRefreshTokenRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly int _expirationMinutes;
     private readonly string _clientId;
     protected readonly IMapper _mapper;
     protected readonly IUnitOfWork _unitOfWork;
     protected readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IUserService _userService;
+    private readonly IRefreshTokenService _refreshTokenService;
     protected readonly TokenSetting _tokenSetting;
 
     public AuthService(IMapper mapper,
         IUnitOfWork unitOfWork, 
         IConfiguration configuration,
         IUserService userService,
-        IOptions<TokenSetting> tokenSetting
+        IOptions<TokenSetting> tokenSetting,
+        IRefreshTokenService refreshTokenService
         )
     {
         _mapper = mapper;
@@ -50,94 +53,131 @@ public class AuthService : IAuthService
         _tokenSetting = tokenSetting.Value;
         _userRepository = _unitOfWork.UserRepository;
         _userService = userService;
-        _userRefreshTokenRepository = _unitOfWork.UserRefreshTokenRepository;
+        _refreshTokenService = refreshTokenService;
+        _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
         
     }
 
-    public async Task<BusinessResult> Login(AuthQuery query)
+    public BusinessResult Login(AuthQuery query)
     {
-        var user = await _userRepository.FindUsernameOrEmail(query.Account);
-        var result = _mapper.Map<UserResult>(user);
-        //check username 
+        var user = _userRepository.FindUsernameOrEmail(query.Account).Result;
         if (user == null)
             return new ResponseBuilder()
                 .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("The account does not exist.")
+                .WithMessage(Const.NOT_FOUND_MSG)
                 .Build();
-
-        //check password
+        
         if (!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
             return new ResponseBuilder()
                 .WithStatus(Const.NOT_FOUND_CODE)
                 .WithMessage("The password does not match.")
                 .Build();
+        
+        var result = _mapper.Map<UserResult>(user);
 
-        var (token, expiration) = CreateToken(result);
+        var accessToken = CreateToken(result);
 
-        var refreshToken = GenerateRefreshToken();
+        // save refreshToken
+        var refreshTokenCreateCommand = new RefreshTokenCreateCommand
+        {
+            UserId = user.Id,
+            Token = GenerateRefreshToken(),
+        };
+        var res = _refreshTokenService.CreateOrUpdate<RefreshTokenResult>(refreshTokenCreateCommand).Result;
 
-        await SaveRefreshToken(user.Id, refreshToken);
-
-        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
-        return new ResponseBuilder<TokenResult>()
-            .WithData(tokenResult)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+        if (res.Status != 1) 
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage(Const.FAIL_SAVE_MSG)
+                .Build();
+        
+        var refreshToken = res.Data as RefreshTokenResult;
+        
+        if (refreshToken == null)  return new ResponseBuilder()
+            .WithStatus(Const.FAIL_CODE)
+            .WithMessage("Error while save refresh token.")
             .Build();
+        
+        SaveHttpOnlyCookie(accessToken, refreshToken.Token!);
+
+        return new ResponseBuilder()
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage("Login successful.")
+            .Build();
+    }
+    
+    private void SaveHttpOnlyCookie(string accessToken, string refreshToken)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+
+        var accessTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, 
+            SameSite = SameSiteMode.None, 
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+        };
+
+        var refreshTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, 
+            SameSite = SameSiteMode.None, 
+            Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
+        };
+
+        httpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+        httpContext.Response.Cookies.Append("refreshToken", refreshToken, refreshTokenOptions);
     }
 
     public BusinessResult GetUserByCookie(AuthGetByCookieQuery request)
     {
+        BusinessResult? businessResult = null;
         #region CheckAuthen
 
         var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
         if (refreshToken == null)
         {
-            // refreshToken is unvalid
             return (new ResponseBuilder()
                 .WithStatus(Const.NOT_FOUND_CODE)
                 .WithMessage("Pls, login again.")
                 .Build());
         }
+        businessResult = _userService.GetByRefreshToken(new UserGetByRefreshTokenQuery{ RefreshToken = refreshToken }).Result;
+        if (businessResult.Status != 1) return businessResult;
 
-        // check in db have refreshToken 
-        var message = _userService.GetByRefreshToken(new UserGetByRefreshTokenQuery{ RefreshToken = refreshToken }).Result;
-        if (message.Status != 1)
-        {
-            return (message);
-        }
+        businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
+        if (businessResult.Status != 1) return businessResult;
         
         #endregion
-        
-        // check AccessToken from client is valid
+
+        #region CheckAccessToken
         var accessToken = _httpContextAccessor.HttpContext.Request.Cookies["accessToken"];
         if (accessToken != null)
         {
-            var br = GetUserByCookie();
+            var br = GetUserByClaims().Result;
 
-            return (br);
+            return br;
         }
-
+        #endregion
+        
+        #region CheckRefreshToken
         var userRefresh = new UserRefreshTokenCommand
         {
             RefreshToken = refreshToken
         };
-        var message_ = this.RefreshToken(userRefresh).Result;
-        if (message_.Status != 1) return (message_);
-        var _object = message_.Data as TokenResult;
-        var accessTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-        };
+        
+        businessResult = RefreshToken(userRefresh).Result;
+        
+        if (businessResult.Status != 1) return (businessResult);
+        #endregion
 
-        _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", _object.Token, accessTokenOptions);
+        #region CheckRefreshToken is valid => return user
+        var tokenResult = businessResult.Data as TokenResult;
+        businessResult = GetUserByToken(tokenResult.AccessToken).Result;
 
-        var businessResult = GetUserByToken(_object.Token).Result;
-
-        return (businessResult);
+        return businessResult;
+        #endregion
     }
     
     protected async Task<BusinessResult> GetUserByToken(string accessToken)
@@ -174,9 +214,9 @@ public class AuthService : IAuthService
         var refreshToken = request.RefreshToken;
 
         // Validate refresh token from request
-        var storedRefreshToken = await _userRefreshTokenRepository.GetByRefreshTokenAsync(refreshToken);
+        var storedRefreshToken = await _refreshTokenRepository.GetByRefreshTokenAsync(refreshToken);
 
-        if (storedRefreshToken == null || storedRefreshToken.ExpirationDate < DateTime.UtcNow)
+        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTime.UtcNow)
         {
             return new ResponseBuilder()
                 .WithStatus(Const.FAIL_CODE)
@@ -185,13 +225,24 @@ public class AuthService : IAuthService
         }
 
         // Get user info from the refresh token
-        var user = await _userRepository.GetById(storedRefreshToken.UserId);
+        var userId = storedRefreshToken.UserId.Value;
+        var user = await _userRepository.GetById(userId);
         var userResult = _mapper.Map<UserResult>(user);
 
         // Create new access token
-        var (token, expiration) = CreateToken(userResult);
+        var accessToken = CreateToken(userResult);
+        
+        var accessTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+        };
 
-        var tokenResult = new TokenResult { Token = token, RefreshToken = refreshToken };
+        _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+
+        var tokenResult = new TokenResult { AccessToken = accessToken, RefreshToken = refreshToken };
         return new ResponseBuilder<TokenResult>()
             .WithData(tokenResult)
             .WithStatus(Const.SUCCESS_CODE)
@@ -203,17 +254,20 @@ public class AuthService : IAuthService
     {
         try
         {
-            var userRefreshToken = await _userRefreshTokenRepository
+            var userRefreshToken = await _refreshTokenRepository
                 .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
             if (userRefreshToken == null)
                 return new ResponseBuilder()
                     .WithStatus(Const.NOT_FOUND_CODE)
                     .WithMessage("You are not logged in, please log in to continue.")
                     .Build();
-            _userRefreshTokenRepository.DeletePermanently(userRefreshToken);
+            _refreshTokenRepository.DeletePermanently(userRefreshToken);
 
             var isSaved = await _unitOfWork.SaveChanges();
             if (!isSaved) throw new Exception();
+            
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete("accessToken");
+            _httpContextAccessor.HttpContext.Response.Cookies.Delete("refreshToken");
 
             return new ResponseBuilder()
                 .WithStatus(Const.SUCCESS_CODE)
@@ -240,14 +294,12 @@ public class AuthService : IAuthService
         throw new NotImplementedException();
     }
 
-    private (string token, string expiration) CreateToken(UserResult user)
+    private string CreateToken(UserResult user)
     {
         var claims = new List<Claim>
         {
             new Claim("Id", user.Id.ToString()),
             new Claim("Role", user.Role.ToString()),
-            new Claim("Expiration",
-                new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -264,7 +316,7 @@ public class AuthService : IAuthService
 
         var jwt = new JwtSecurityTokenHandler().WriteToken(token);
 
-        return (jwt, DateTime.Now.AddMinutes(_expirationMinutes).ToString("o"));
+        return jwt;
     }
 
     private string GenerateRefreshToken()
@@ -282,50 +334,33 @@ public class AuthService : IAuthService
     {
         var expirationDate = DateTime.UtcNow.AddMonths(1); // Refresh token expires in 1 month
 
-        var refreshTokenEntity = new UserRefreshToken
+        var refreshTokenEntity = new RefreshToken
         {
             UserId = userId,
-            RefreshToken = refreshToken,
-            ExpirationDate = expirationDate
+            Token = refreshToken,
+            Expiry = expirationDate
         };
-        _userRefreshTokenRepository.Add(refreshTokenEntity);
+        _refreshTokenRepository.Add(refreshTokenEntity);
         await _unitOfWork.SaveChanges();
     }
     
-    public BusinessResult GetUserByCookie()
+    public async Task<BusinessResult> GetUserByClaims()
     {
         try
         {
-            if (_httpContextAccessor?.HttpContext == null ||
-                !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                return new ResponseBuilder()
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage("Not login yet.")
-                    .Build();
-
             // Lấy thông tin UserId từ Claims
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
+            var userId = GetUserIdFromClaims();
+            if (!userId.HasValue)
+            {
                 return new ResponseBuilder()
                     .WithStatus(Const.NOT_FOUND_CODE)
                     .WithMessage("No user found.")
                     .Build();
+            }
 
-            // Lấy thêm thông tin User từ database nếu cần
-            var userId = Guid.Parse(userIdClaim);
-            var user = _unitOfWork.UserRepository.GetById(userId).Result;
-            var userResult = _mapper.Map<UserResult>(user);
-
-            if (userResult == null) return new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("Not found.")
-                .Build();
-            
-            return new ResponseBuilder<UserResult>()
-                .WithData(userResult)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            // Lấy thông tin người dùng từ database
+            var userResult = await _userService.GetById<UserResult>(userId.Value);
+            return userResult;
         }
         catch (Exception ex)
         {
@@ -335,4 +370,13 @@ public class AuthService : IAuthService
                 .Build();
         }
     }
+    
+    private Guid? GetUserIdFromClaims()
+    {
+        var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim)) return null;
+
+        return Guid.Parse(userIdClaim);
+    }
+
 }

@@ -23,11 +23,11 @@ public interface IUserService : IBaseService
 
     BusinessResult ValidateOtp(string email, string otpInput);
     
-    Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request);
-    
-    Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request);
-    
-    Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request);
+    // Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request);
+    //
+    // Task<BusinessResult> LoginByGoogleTokenAsync(VerifyGoogleTokenRequest request);
+    //
+    // Task<BusinessResult> FindAccountRegisteredByGoogle(VerifyGoogleTokenRequest request);
     
     Task<BusinessResult> GetByUsernameOrEmail(string key);
     

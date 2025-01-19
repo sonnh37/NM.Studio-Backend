@@ -18,9 +18,9 @@ public class AuthQueryHandler :
         _authService = authService;
     }
 
-    public async Task<BusinessResult> Handle(AuthQuery request, CancellationToken cancellationToken)
+    public Task<BusinessResult> Handle(AuthQuery request, CancellationToken cancellationToken)
     {
-        return await _authService.Login(request);
+        return Task.FromResult(_authService.Login(request));
     }
 
     public Task<BusinessResult> Handle(AuthGetByCookieQuery request, CancellationToken cancellationToken)

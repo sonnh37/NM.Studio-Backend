@@ -25,7 +25,7 @@ public static class RepositoryRegistration
         services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
         services.AddScoped<IBlogRepository, BlogRepository>();
         services.AddScoped<IBookingRepository, BookingRepository>();
-        services.AddScoped<IUserRefreshTokenRepository, UserRefreshTokenRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IProductXColorRepository, ProductXColorRepository>();
         services.AddScoped<IProductXSizeRepository, ProductXSizeRepository>();
     }

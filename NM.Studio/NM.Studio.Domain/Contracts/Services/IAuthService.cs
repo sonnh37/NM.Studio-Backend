@@ -9,7 +9,7 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IAuthService
 {
-    Task<BusinessResult> Login(AuthQuery authQuery);
+    BusinessResult Login(AuthQuery authQuery);
     
     BusinessResult GetUserByCookie(AuthGetByCookieQuery request);
     

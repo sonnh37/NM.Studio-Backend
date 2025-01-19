@@ -264,7 +264,7 @@ namespace NM.Studio.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserRefreshToken",
+                name: "RefreshToken",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
@@ -470,7 +470,7 @@ namespace NM.Studio.Data.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserRefreshToken_UserId",
-                table: "UserRefreshToken",
+                table: "RefreshToken",
                 column: "UserId");
         }
 
@@ -496,7 +496,7 @@ namespace NM.Studio.Data.Migrations
                 name: "ProductXSizes");
 
             migrationBuilder.DropTable(
-                name: "UserRefreshToken");
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
                 name: "Album");

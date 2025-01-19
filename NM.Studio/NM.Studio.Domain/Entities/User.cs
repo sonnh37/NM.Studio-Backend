@@ -33,5 +33,5 @@ public class User : BaseEntity
     
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     
-    public virtual ICollection<UserRefreshToken> UserRefreshTokens { get; set; } = new List<UserRefreshToken>();
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

@@ -176,6 +176,15 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return entity;
     }
     
+    public virtual async Task<TEntity?> GetByOptions(Expression<Func<TEntity, bool>> predicate)
+    {
+        var queryable = GetQueryable(predicate);
+        queryable = IncludeHelper.Apply(queryable);
+        var entity = await queryable.FirstOrDefaultAsync();
+
+        return entity;
+    }
+    
     public virtual async Task<TEntity?> GetByIdNoInclude(Guid id)
     {
         var queryable = GetQueryable(x => x.Id == id);

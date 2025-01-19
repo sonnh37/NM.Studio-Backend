@@ -3,8 +3,8 @@ using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Domain.Contracts.Repositories;
 
-public interface IUserRefreshTokenRepository : IBaseRepository<UserRefreshToken>
+public interface IRefreshTokenRepository : IBaseRepository<RefreshToken>
 {
-    Task<UserRefreshToken?> GetByRefreshTokenAsync(string refreshToken);
+    Task<RefreshToken?> GetByRefreshTokenAsync(string refreshToken);
     Task CleanupExpiredTokensAsync();
 }

@@ -17,7 +17,7 @@ namespace NM.Studio.API.Controllers;
 [Route("users")]
 public class UserController : BaseController
 {
-    public UserController(IMediator mediator, IOptions<TokenSetting> tokenSetting) : base(mediator, tokenSetting)
+    public UserController(IMediator mediator) : base(mediator)
     {
     }
 
@@ -87,28 +87,28 @@ public class UserController : BaseController
         return Ok(businessResult);
     }
 
-    [Authorize(Roles = "Admin,Staff")]
-    [HttpGet("account")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetAccount([FromQuery] UserGetByAccountQuery request)
-    {
-        var msg = await _mediator.Send(request);
-        return Ok(msg);
-    }
-
-    [AllowAnonymous]
-    [HttpPost("send-email")]
-    public async Task<IActionResult> SendOTP([FromBody] UserSendEmailQuery request)
-    {
-        var businessResult = await _mediator.Send(request);
-        return Ok(businessResult);
-    }
-
-    [AllowAnonymous]
-    [HttpPost("find-account-registered-by-google")]
-    public async Task<IActionResult> FindAccountRegisteredByGoogle([FromBody] UserGetByGoogleTokenQuery request)
-    {
-        var businessResult = await _mediator.Send(request);
-        return Ok(businessResult);
-    }
+    // [Authorize(Roles = "Admin,Staff")]
+    // [HttpGet("account")]
+    // [AllowAnonymous]
+    // public async Task<IActionResult> GetAccount([FromQuery] UserGetByAccountQuery request)
+    // {
+    //     var msg = await _mediator.Send(request);
+    //     return Ok(msg);
+    // }
+    //
+    // [AllowAnonymous]
+    // [HttpPost("send-email")]
+    // public async Task<IActionResult> SendOTP([FromBody] UserSendEmailQuery request)
+    // {
+    //     var businessResult = await _mediator.Send(request);
+    //     return Ok(businessResult);
+    // }
+    //
+    // [AllowAnonymous]
+    // [HttpPost("find-account-registered-by-google")]
+    // public async Task<IActionResult> FindAccountRegisteredByGoogle([FromBody] UserGetByGoogleTokenQuery request)
+    // {
+    //     var businessResult = await _mediator.Send(request);
+    //     return Ok(businessResult);
+    // }
 }

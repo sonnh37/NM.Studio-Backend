@@ -31,7 +31,7 @@ public interface IUnitOfWork : IBaseUnitOfWork
     
     IBookingRepository BookingRepository { get; }
     
-    IUserRefreshTokenRepository UserRefreshTokenRepository { get; }
+    IRefreshTokenRepository RefreshTokenRepository { get; }
     
     IProductXSizeRepository ProductXSizeRepository { get; }
     
