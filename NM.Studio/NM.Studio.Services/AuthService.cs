@@ -38,12 +38,12 @@ public class AuthService : IAuthService
     protected readonly TokenSetting _tokenSetting;
 
     public AuthService(IMapper mapper,
-        IUnitOfWork unitOfWork, 
+        IUnitOfWork unitOfWork,
         IConfiguration configuration,
         IUserService userService,
         IOptions<TokenSetting> tokenSetting,
         IRefreshTokenService refreshTokenService
-        )
+    )
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
@@ -55,7 +55,6 @@ public class AuthService : IAuthService
         _userService = userService;
         _refreshTokenService = refreshTokenService;
         _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
-        
     }
 
     public BusinessResult Login(AuthQuery query)
@@ -66,13 +65,13 @@ public class AuthService : IAuthService
                 .WithStatus(Const.NOT_FOUND_CODE)
                 .WithMessage(Const.NOT_FOUND_MSG)
                 .Build();
-        
+
         if (!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
             return new ResponseBuilder()
                 .WithStatus(Const.NOT_FOUND_CODE)
                 .WithMessage("The password does not match.")
                 .Build();
-        
+
         var result = _mapper.Map<UserResult>(user);
 
         var accessToken = CreateToken(result);
@@ -85,19 +84,20 @@ public class AuthService : IAuthService
         };
         var res = _refreshTokenService.CreateOrUpdate<RefreshTokenResult>(refreshTokenCreateCommand).Result;
 
-        if (res.Status != 1) 
+        if (res.Status != 1)
             return new ResponseBuilder()
                 .WithStatus(Const.FAIL_CODE)
                 .WithMessage(Const.FAIL_SAVE_MSG)
                 .Build();
-        
+
         var refreshToken = res.Data as RefreshTokenResult;
-        
-        if (refreshToken == null)  return new ResponseBuilder()
-            .WithStatus(Const.FAIL_CODE)
-            .WithMessage("Error while save refresh token.")
-            .Build();
-        
+
+        if (refreshToken == null)
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Error while save refresh token.")
+                .Build();
+
         SaveHttpOnlyCookie(accessToken, refreshToken.Token!);
 
         return new ResponseBuilder()
@@ -105,7 +105,7 @@ public class AuthService : IAuthService
             .WithMessage("Login successful.")
             .Build();
     }
-    
+
     private void SaveHttpOnlyCookie(string accessToken, string refreshToken)
     {
         var httpContext = _httpContextAccessor.HttpContext;
@@ -113,16 +113,16 @@ public class AuthService : IAuthService
         var accessTokenOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, 
-            SameSite = SameSiteMode.None, 
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
         };
 
         var refreshTokenOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true, 
-            SameSite = SameSiteMode.None, 
+            Secure = true,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
         };
 
@@ -133,25 +133,15 @@ public class AuthService : IAuthService
     public BusinessResult GetUserByCookie(AuthGetByCookieQuery request)
     {
         BusinessResult? businessResult = null;
-        #region CheckAuthen
-
-        var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
-        if (refreshToken == null)
-        {
-            return (new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("Pls, login again.")
-                .Build());
-        }
-        businessResult = _userService.GetByRefreshToken(new UserGetByRefreshTokenQuery{ RefreshToken = refreshToken }).Result;
+        #region Check refresh token
+        var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"]; 
+        businessResult = ValidateRefreshTokenIpAdMatch(refreshToken);
         if (businessResult.Status != 1) return businessResult;
 
-        businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
-        if (businessResult.Status != 1) return businessResult;
-        
         #endregion
 
         #region CheckAccessToken
+
         var accessToken = _httpContextAccessor.HttpContext.Request.Cookies["accessToken"];
         if (accessToken != null)
         {
@@ -159,27 +149,29 @@ public class AuthService : IAuthService
 
             return br;
         }
+
         #endregion
-        
+
         #region SaveRefreshToken
-        var userRefresh = new UserRefreshTokenCommand
-        {
-            RefreshToken = refreshToken
-        };
+        var refreshTokenResult = businessResult.Data as RefreshTokenResult;
+        var userId = refreshTokenResult.UserId.Value;
         
-        businessResult = RefreshToken(userRefresh).Result;
-        
+        businessResult = SaveRefreshToken(userId, refreshToken).Result;
+
         if (businessResult.Status != 1) return (businessResult);
+
         #endregion
 
         #region CheckRefreshToken is valid => return user
+
         var tokenResult = businessResult.Data as TokenResult;
         businessResult = GetUserByToken(tokenResult.AccessToken).Result;
 
         return businessResult;
+
         #endregion
     }
-    
+
     protected async Task<BusinessResult> GetUserByToken(string accessToken)
     {
         if (string.IsNullOrEmpty(accessToken))
@@ -189,67 +181,46 @@ public class AuthService : IAuthService
                 .WithMessage("No access token provided")
                 .Build();
         }
-        
+
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(accessToken);
 
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
-        if (string.IsNullOrEmpty(userId)) return new ResponseBuilder()
-            .WithStatus(Const.NOT_FOUND_CODE)
-            .WithMessage("Error the access token provided")
-            .Build();
-        
+        if (string.IsNullOrEmpty(userId))
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("Error the access token provided")
+                .Build();
+
         var businessResult = await _userService.GetById<UserResult>(Guid.Parse(userId));
-        
+
         return businessResult;
     }
 
     public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
     {
-        if (request.RefreshToken == null)
-            return new ResponseBuilder()
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage("You are not logged in, please log in to continue.")
-                    .Build();
-        var refreshToken = request.RefreshToken;
+        var businessResult = ValidateRefreshTokenIpAdMatch(request.RefreshToken);
+        if (businessResult.Status != 1) return businessResult;
 
-        // Validate refresh token from request
-        var storedRefreshToken = await _refreshTokenRepository.GetByRefreshTokenAsync(refreshToken);
-
-        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTime.UtcNow)
-        {
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage("Your session has expired. Please log in again.")
-                .Build();
-        }
-
-        // Get user info from the refresh token
-        var userId = storedRefreshToken.UserId.Value;
-        var user = await _userRepository.GetById(userId);
-        var userResult = _mapper.Map<UserResult>(user);
-
-        // Create new access token
-        var accessToken = CreateToken(userResult);
+        var refreshTokenResult = businessResult.Data as RefreshTokenResult;
+        var userId = refreshTokenResult.UserId.Value;
         
-        var accessTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-        };
-
-        _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
-
-        var tokenResult = new TokenResult { AccessToken = accessToken, RefreshToken = refreshToken };
-        return new ResponseBuilder<TokenResult>()
-            .WithData(tokenResult)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
+        var res = await SaveRefreshToken(userId, request.RefreshToken);
+        return res;
     }
-    
+
+    public BusinessResult ValidateRefreshTokenIpAdMatch(string refreshToken)
+    {
+        if (refreshToken == null)
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("You are not logged in, please log in to continue.")
+                .Build();
+
+        var businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
+        return businessResult;
+    }
+
     public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
     {
         try
@@ -265,7 +236,7 @@ public class AuthService : IAuthService
 
             var isSaved = await _unitOfWork.SaveChanges();
             if (!isSaved) throw new Exception();
-            
+
             _httpContextAccessor.HttpContext.Response.Cookies.Delete("accessToken");
             _httpContextAccessor.HttpContext.Response.Cookies.Delete("refreshToken");
 
@@ -330,20 +301,32 @@ public class AuthService : IAuthService
         return Convert.ToBase64String(randomNumber);
     }
 
-    private async Task SaveRefreshToken(Guid userId, string refreshToken)
+    private async Task<BusinessResult> SaveRefreshToken(Guid userId, string refreshToken)
     {
-        var expirationDate = DateTime.UtcNow.AddMonths(1); // Refresh token expires in 1 month
+        var user = await _userRepository.GetById(userId);
+        var userResult = _mapper.Map<UserResult>(user);
 
-        var refreshTokenEntity = new RefreshToken
+        // Create new access token
+        var accessToken = CreateToken(userResult);
+        
+        var accessTokenOptions = new CookieOptions
         {
-            UserId = userId,
-            Token = refreshToken,
-            Expiry = expirationDate
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
         };
-        _refreshTokenRepository.Add(refreshTokenEntity);
-        await _unitOfWork.SaveChanges();
+
+        _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+
+        var tokenResult = new TokenResult { AccessToken = accessToken, RefreshToken = refreshToken };
+        return new ResponseBuilder<TokenResult>()
+            .WithData(tokenResult)
+            .WithStatus(Const.SUCCESS_CODE)
+            .WithMessage(Const.SUCCESS_LOGIN_MSG)
+            .Build();
     }
-    
+
     public async Task<BusinessResult> GetUserByClaims()
     {
         try
@@ -370,7 +353,7 @@ public class AuthService : IAuthService
                 .Build();
         }
     }
-    
+
     private Guid? GetUserIdFromClaims()
     {
         var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
@@ -378,5 +361,4 @@ public class AuthService : IAuthService
 
         return Guid.Parse(userIdClaim);
     }
-
 }

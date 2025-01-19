@@ -113,19 +113,27 @@ public class RefreshTokenService : BaseService<RefreshToken>, IRefreshTokenServi
         
         ipAddress = NormalizeIpAddress(ipAddress);
         // Kiểm tra refreshToken và IP address
-        var businessResult = base.GetByOptions<RefreshTokenResult>(
-            m => (m.Token == refreshToken) && (m.IpAddress != ipAddress)
-        ).Result;
-        
-        if (businessResult.Status == 1)
+        var storedRefreshToken = _refreshTokenRepository.GetByRefreshTokenAsync(refreshToken).Result;
+
+        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTime.UtcNow)
+        {
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Your session has expired. Please log in again.")
+                .Build();
+        }
+
+        if (storedRefreshToken.IpAddress != ipAddress)
         {
             return new ResponseBuilder()
                 .WithStatus(Const.FAIL_CODE)
                 .WithMessage("Warning!! someone trying to get token.")
                 .Build();
-        } 
+        }
         
-        return new ResponseBuilder()
+        var refreshTokenResult = _mapper.Map<RefreshTokenResult>(storedRefreshToken);
+        return new ResponseBuilder<RefreshTokenResult>()
+            .WithData(refreshTokenResult)
             .WithStatus(Const.SUCCESS_CODE)
             .WithMessage(Const.SUCCESS_READ_MSG)
             .Build();
