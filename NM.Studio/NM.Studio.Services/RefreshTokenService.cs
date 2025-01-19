@@ -85,6 +85,11 @@ public class RefreshTokenService : BaseService<RefreshToken>, IRefreshTokenServi
     }
     private string NormalizeIpAddress(string ipAddress)
     {
+        if (ipAddress.Contains(","))
+        {
+            ipAddress = ipAddress.Split(',')[0].Trim();
+        }
+        
         if (IPAddress.TryParse(ipAddress, out var ip))
         {
             if (ip.IsIPv4MappedToIPv6)
