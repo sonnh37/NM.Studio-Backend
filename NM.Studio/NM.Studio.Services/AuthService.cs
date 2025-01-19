@@ -161,7 +161,7 @@ public class AuthService : IAuthService
         }
         #endregion
         
-        #region CheckRefreshToken
+        #region SaveRefreshToken
         var userRefresh = new UserRefreshTokenCommand
         {
             RefreshToken = refreshToken
