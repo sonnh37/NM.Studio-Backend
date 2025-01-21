@@ -50,7 +50,7 @@ public class ProductService : BaseService<Product>, IProductService
                     },
                     Product = c.SubCategories
                         .SelectMany(sc => sc.Products)
-                        .OrderBy(p => p.LastUpdatedDate)
+                        .OrderByDescending(p => p.LastUpdatedDate)
                         .Take(1)
                         .Select(p => new ProductRepresentativeResult
                         {
