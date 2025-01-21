@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NM.Studio.Data.Migrations
 {
     [DbContext(typeof(StudioContext))]
-    [Migration("20241223151334_Initial_MigrateToPostgreSql")]
-    partial class Initial_MigrateToPostgreSql
+    [Migration("20250120155314_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -466,6 +466,50 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("ProductXSizes");
                 });
 
+            modelBuilder.Entity("NM.Studio.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("Expiry")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshToken", (string)null);
+                });
+
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
                 {
                     b.Property<Guid>("Id")
@@ -639,44 +683,6 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.UserRefreshToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpirationDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("LastUpdatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRefreshToken", (string)null);
-                });
-
             modelBuilder.Entity("NM.Studio.Domain.Entities.AlbumXPhoto", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Album", "Album")
@@ -770,6 +776,16 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Size");
                 });
 
+            modelBuilder.Entity("NM.Studio.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
@@ -778,17 +794,6 @@ namespace NM.Studio.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.UserRefreshToken", b =>
-                {
-                    b.HasOne("NM.Studio.Domain.Entities.User", "User")
-                        .WithMany("UserRefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Album", b =>
@@ -841,7 +846,7 @@ namespace NM.Studio.Data.Migrations
                 {
                     b.Navigation("Bookings");
 
-                    b.Navigation("UserRefreshTokens");
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }
