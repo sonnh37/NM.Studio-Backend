@@ -15,7 +15,7 @@ namespace NM.Studio.Domain.Contracts.Services.Bases;
 public interface IBaseService
 {
     Task<BusinessResult> GetAll<TResult>() where TResult : BaseResult;
-
+    
     BusinessResult GetUserByCookie();
 
     Task<BusinessResult> GetAll<TResult>(GetQueryableQuery query) where TResult : BaseResult;

@@ -18,11 +18,10 @@ public interface IBaseRepository<TEntity> : IBaseRepository
     IQueryable<TEntity> GetQueryable(CancellationToken cancellationToken = default);
     IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate);
 
-    Task<long> GetTotalCount();
-
     Task<List<TEntity>> GetAll();
 
     Task<List<TEntity>> GetAll(GetQueryableQuery query);
+    Task<int> GetTotalCount(DateTime? fromDate, DateTime? toDate);
 
     Task<(List<TEntity>, int)> GetPaged(GetQueryableQuery query);
 

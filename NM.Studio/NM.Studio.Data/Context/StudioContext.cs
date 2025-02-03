@@ -43,6 +43,14 @@ public partial class StudioContext : BaseDbContext
 
         return strConn;
     }
+    
+    // Auto Enum Convert Int To String
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        base.ConfigureConventions(configurationBuilder);
+ 
+        configurationBuilder.Properties<Enum>().HaveConversion<string>();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,15 +64,6 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("gen_random_uuid()");
             
-            entity.Property(x => x.Status)
-                .HasConversion(new EnumToStringConverter<UserStatus>());
-            
-            entity.Property(x => x.Gender)
-                .HasConversion(new EnumToStringConverter<Gender>());
-            
-            entity.Property(x => x.Role)
-                .HasConversion(new EnumToStringConverter<Role>());
-
             entity.HasMany(m => m.Bookings)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
@@ -84,9 +83,6 @@ public partial class StudioContext : BaseDbContext
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("gen_random_uuid()");
             
-            entity.Property(x => x.Status)
-                .HasConversion(new EnumToStringConverter<BookingStatus>());
-
             entity.HasOne(sc => sc.User)
                 .WithMany(c => c.Bookings)
                 .HasForeignKey(sc => sc.UserId);
@@ -174,9 +170,6 @@ public partial class StudioContext : BaseDbContext
             entity.Property(e => e.Id)
                 .ValueGeneratedOnAdd()
                 .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.Property(x => x.Status)
-                .HasConversion(new EnumToStringConverter<ProductStatus>());
 
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
 

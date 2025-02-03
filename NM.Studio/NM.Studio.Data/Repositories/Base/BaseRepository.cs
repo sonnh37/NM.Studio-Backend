@@ -143,6 +143,19 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     }
 
     // get with pagination ( filter )
+    public async Task<int> GetTotalCount(DateTime? fromDate, DateTime? toDate)
+    {
+        var queryable = GetQueryable();
+        
+        if (fromDate.HasValue)
+            queryable = queryable.Where(entity => entity.CreatedDate >= fromDate.Value);
+
+        if (toDate.HasValue)
+            queryable = queryable.Where(entity => entity.CreatedDate <= toDate.Value);
+        
+        return await queryable.CountAsync();
+    }
+
     public async Task<(List<TEntity>, int)> GetPaged(GetQueryableQuery query)
     {
         var queryable = GetQueryable();
