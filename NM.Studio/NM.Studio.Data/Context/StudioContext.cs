@@ -30,7 +30,7 @@ public partial class StudioContext : BaseDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        if (!optionsBuilder.IsConfigured) optionsBuilder.UseSqlServer(GetConnectionString());
+        if (!optionsBuilder.IsConfigured) optionsBuilder.UseNpgsql(GetConnectionString());
     }
 
     private string GetConnectionString()
