@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
@@ -28,7 +29,6 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IUserRepository _userRepository;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly int _expirationMinutes;
     private readonly string _clientId;
     protected readonly IMapper _mapper;
     protected readonly IUnitOfWork _unitOfWork;
@@ -49,13 +49,48 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
         _configuration = configuration;
         _httpContextAccessor ??= new HttpContextAccessor();
-        _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
         _tokenSetting = tokenSetting.Value;
         _userRepository = _unitOfWork.UserRepository;
         _userService = userService;
         _refreshTokenService = refreshTokenService;
         _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
     }
+    
+    public async Task<RSA> GetRSAKeyFromTokenAsync(string token, string kid)
+    {
+        // Step 1: Read token to get userId
+        var userId = GetUserIdFromToken(token);
+
+        var refreshTokenEntity = await _refreshTokenRepository.GetByUserIdAndKeyIdAsync(Guid.Parse(userId), kid);
+        if (refreshTokenEntity == null)
+        {
+            throw new Exception("RefreshToken entity not found");
+        }
+
+        return LoadRSAFromXml(refreshTokenEntity.PublicKey); // Chuyển XML -> RSA
+    }
+    
+    public string GetUserIdFromToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        return jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value; // "sub" thường là userId
+    }
+
+    private string GetKidFromToken(string token)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var jwtToken = handler.ReadJwtToken(token);
+        return jwtToken.Header.Kid; // Lấy Key ID (kid)
+    }
+
+    private RSA LoadRSAFromXml(string xmlKey)
+    {
+        var rsa = RSA.Create();
+        rsa.FromXmlString(xmlKey);
+        return rsa;
+    }
+
 
     public BusinessResult Login(AuthQuery query)
     {
@@ -74,67 +109,69 @@ public class AuthService : IAuthService
 
         var result = _mapper.Map<UserResult>(user);
 
-        var accessToken = CreateToken(result);
-
-        // save refreshToken
-        var refreshTokenCreateCommand = new RefreshTokenCreateCommand
+        // Tạo cặp khóa RSA
+        using (var rsa = new RSACryptoServiceProvider(2048))
         {
-            UserId = user.Id,
-            Token = GenerateRefreshToken(),
-        };
-        var res = _refreshTokenService.CreateOrUpdate<RefreshTokenResult>(refreshTokenCreateCommand).Result;
+            try
+            {
+                // Lấy public key (dạng XML) để lưu vào database
+                string publicKey = rsa.ToXmlString(false);
 
-        if (res.Status != 1)
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(Const.FAIL_SAVE_MSG)
-                .Build();
+                // 🟢 Tạo kid từ publicKey (hash SHA256)
+                string kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(publicKey)));
 
-        var refreshToken = res.Data as RefreshTokenResult;
+// Tạo access token với private key
+                string accessToken = CreateToken(result, rsa, "AccessToken", kid);
 
-        if (refreshToken == null)
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage("Error while save refresh token.")
-                .Build();
+// Tạo refresh token với kid giống access token
+                string refreshTokenValue = CreateToken(result, rsa, "RefreshToken", kid);
 
-        SaveHttpOnlyCookie(accessToken, refreshToken.Token!);
+// Lưu refresh token và public key vào database
+                var refreshTokenCreateCommand = new RefreshTokenCreateCommand
+                {
+                    UserId = user.Id,
+                    Token = refreshTokenValue,
+                    PublicKey = publicKey,
+                    KeyId = kid // 🟢 Lưu kid vào database
+                };
 
-        return new ResponseBuilder()
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage("Login successful.")
-            .Build();
-    }
+                var res = _refreshTokenService.CreateOrUpdate<RefreshTokenResult>(refreshTokenCreateCommand).Result;
 
-    private void SaveHttpOnlyCookie(string accessToken, string refreshToken)
-    {
-        var httpContext = _httpContextAccessor.HttpContext;
+                if (res.Status != 1)
+                    return new ResponseBuilder()
+                        .WithStatus(Const.FAIL_CODE)
+                        .WithMessage(Const.FAIL_SAVE_MSG)
+                        .Build();
 
-        var accessTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-        };
+                var refreshToken = res.Data as RefreshTokenResult;
 
-        var refreshTokenOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
-        };
+                if (refreshToken == null)
+                    return new ResponseBuilder()
+                        .WithStatus(Const.FAIL_CODE)
+                        .WithMessage("Error while saving refresh token.")
+                        .Build();
 
-        httpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
-        httpContext.Response.Cookies.Append("refreshToken", refreshToken, refreshTokenOptions);
+                SaveHttpOnlyCookie(accessToken, refreshToken.Token!);
+
+                return new ResponseBuilder()
+                    .WithStatus(Const.SUCCESS_CODE)
+                    .WithMessage("Login successful.")
+                    .Build();
+            }
+            finally
+            {
+                rsa.PersistKeyInCsp = false;
+            }
+        }
     }
 
     public BusinessResult GetUserByCookie(AuthGetByCookieQuery request)
     {
         BusinessResult? businessResult = null;
+
         #region Check refresh token
-        var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"]; 
+
+        var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
         businessResult = ValidateRefreshTokenIpAdMatch(refreshToken);
         if (businessResult.Status != 1) return businessResult;
 
@@ -153,10 +190,11 @@ public class AuthService : IAuthService
         #endregion
 
         #region SaveRefreshToken
-        var refreshTokenResult = businessResult.Data as RefreshTokenResult;
-        var userId = refreshTokenResult.UserId.Value;
-        
-        businessResult = SaveRefreshToken(userId, refreshToken).Result;
+
+        businessResult = RefreshToken(new UserRefreshTokenCommand
+        {
+            RefreshToken = refreshToken
+        }).Result;
 
         if (businessResult.Status != 1) return (businessResult);
 
@@ -171,54 +209,96 @@ public class AuthService : IAuthService
 
         #endregion
     }
-
-    protected async Task<BusinessResult> GetUserByToken(string accessToken)
+   
+    public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
     {
-        if (string.IsNullOrEmpty(accessToken))
+        // Bước 1: Lấy thông tin refresh token từ database
+        var refreshTokenEntity = await _refreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
+        if (refreshTokenEntity == null)
         {
             return new ResponseBuilder()
                 .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("No access token provided")
+                .WithMessage("Refresh token not found.")
                 .Build();
         }
 
-        var tokenHandler = new JwtSecurityTokenHandler();
-        var jwtToken = tokenHandler.ReadJwtToken(accessToken);
-
-        var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
-        if (string.IsNullOrEmpty(userId))
+        // Bước 2: Xác thực chữ ký JWT bằng public key
+        var isValid = ValidateJwtSignature(request.RefreshToken, refreshTokenEntity.PublicKey);
+        if (!isValid)
+        {
             return new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("Error the access token provided")
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("Invalid refresh token signature.")
                 .Build();
+        }
 
-        var businessResult = await _userService.GetById<UserResult>(Guid.Parse(userId));
-
-        return businessResult;
-    }
-
-    public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
-    {
-        var businessResult = ValidateRefreshTokenIpAdMatch(request.RefreshToken);
-        if (businessResult.Status != 1) return businessResult;
-
-        var refreshTokenResult = businessResult.Data as RefreshTokenResult;
-        var userId = refreshTokenResult.UserId.Value;
-        
-        var res = await SaveRefreshToken(userId, request.RefreshToken);
-        return res;
-    }
-
-    public BusinessResult ValidateRefreshTokenIpAdMatch(string refreshToken)
-    {
-        if (refreshToken == null)
-            return new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage("You are not logged in, please log in to continue.")
-                .Build();
-
+        // Bước 3: Kiểm tra IP của request có khớp với IP đã lưu không
         var businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
-        return businessResult;
+
+        if (businessResult.Status != 1)
+        {
+            return new ResponseBuilder()
+                .WithStatus(Const.FAIL_CODE)
+                .WithMessage("IP address mismatch.")
+                .Build();
+        }
+
+        // Bước 4: Tạo cặp khóa RSA mới
+        using (var rsa = new RSACryptoServiceProvider(2048))
+        {
+            try
+            {
+                // Lấy public key mới (dạng XML) để lưu vào database
+                string newPublicKey = rsa.ToXmlString(false);
+
+                // Bước 5: Tạo access token mới với private key mới
+                var user = await _userRepository.GetById(refreshTokenEntity.UserId!.Value);
+                var userResult = _mapper.Map<UserResult>(user);
+                // 🟢 Tạo kid từ publicKey (hash SHA256)
+                string kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(newPublicKey)));
+
+// Tạo access token với private key
+                string newAccessToken = CreateToken(userResult, rsa, "AccessToken", kid);
+
+// Tạo refresh token với kid giống access token
+                string newRefreshToken = CreateToken(userResult, rsa, "RefreshToken", kid);
+
+                // Bước 7: Cập nhật refresh token trong database
+                refreshTokenEntity.Token = newRefreshToken;
+                refreshTokenEntity.PublicKey = newPublicKey;
+                refreshTokenEntity.KeyId = kid;
+                refreshTokenEntity.Expiry = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays); 
+                _refreshTokenRepository.Update(refreshTokenEntity);
+                var isSaveChanges = await _unitOfWork.SaveChanges();
+                if (!isSaveChanges)
+                {
+                    return new ResponseBuilder()
+                        .WithStatus(Const.FAIL_CODE)
+                        .WithMessage("Refresh token validation failed when saving changes.")
+                        .Build();
+                }
+                
+                // Bước 8: Lưu access token vào cookie (nếu cần)
+                SaveHttpOnlyCookie(newAccessToken, newRefreshToken);
+
+                // Bước 9: Trả về access token và refresh token mới
+                var tokenResult = new TokenResult
+                {
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken
+                };
+
+                return new ResponseBuilder<TokenResult>()
+                    .WithData(tokenResult)
+                    .WithStatus(Const.SUCCESS_CODE)
+                    .WithMessage("Token refreshed successfully.")
+                    .Build();
+            }
+            finally
+            {
+                rsa.PersistKeyInCsp = false; // Đảm bảo xóa key từ container
+            }
+        }
     }
 
     public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
@@ -254,6 +334,7 @@ public class AuthService : IAuthService
         }
     }
 
+    
 
     public Task<BusinessResult> RegisterByGoogleAsync(UserCreateByGoogleTokenCommand request)
     {
@@ -265,66 +346,115 @@ public class AuthService : IAuthService
         throw new NotImplementedException();
     }
 
-    private string CreateToken(UserResult user)
+    // private async Task<BusinessResult> SaveRefreshToken(Guid userId, string refreshToken)
+    // {
+    //     var user = await _userRepository.GetById(userId);
+    //     var userResult = _mapper.Map<UserResult>(user);
+    //
+    //     // Create new access token
+    //     var accessToken = CreateToken(userResult);
+    //
+    //     var accessTokenOptions = new CookieOptions
+    //     {
+    //         HttpOnly = true,
+    //         Secure = true,
+    //         SameSite = SameSiteMode.None,
+    //         Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+    //     };
+    //
+    //     _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+    //
+    //     var tokenResult = new TokenResult { AccessToken = accessToken, RefreshToken = refreshToken };
+    //     return new ResponseBuilder<TokenResult>()
+    //         .WithData(tokenResult)
+    //         .WithStatus(Const.SUCCESS_CODE)
+    //         .WithMessage(Const.SUCCESS_LOGIN_MSG)
+    //         .Build();
+    // }
+    
+    protected async Task<BusinessResult> GetUserByToken(string accessToken)
     {
-        var claims = new List<Claim>
+        if (string.IsNullOrEmpty(accessToken))
         {
-            new Claim("Id", user.Id.ToString()),
-            new Claim("Role", user.Role.ToString()),
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-            _configuration.GetSection("AppSettings:Token").Value!));
-
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-
-        var token = new JwtSecurityToken(
-            claims: claims,
-            expires: DateTime.Now.AddMinutes(_expirationMinutes),
-            signingCredentials: creds
-        );
-
-        var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-
-        return jwt;
-    }
-
-    private string GenerateRefreshToken()
-    {
-        var randomNumber = new byte[32];
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            rng.GetBytes(randomNumber);
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("No access token provided")
+                .Build();
         }
 
-        return Convert.ToBase64String(randomNumber);
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var jwtToken = tokenHandler.ReadJwtToken(accessToken);
+
+        var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("Error the access token provided")
+                .Build();
+
+        var businessResult = await _userService.GetById<UserResult>(Guid.Parse(userId));
+
+        return businessResult;
     }
 
-    private async Task<BusinessResult> SaveRefreshToken(Guid userId, string refreshToken)
+    private bool ValidateJwtSignature(string token, string publicKey)
     {
-        var user = await _userRepository.GetById(userId);
-        var userResult = _mapper.Map<UserResult>(user);
-
-        // Create new access token
-        var accessToken = CreateToken(userResult);
-        
-        var accessTokenOptions = new CookieOptions
+        try
         {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
-        };
+            var rsa = new RSACryptoServiceProvider();
+            rsa.FromXmlString(publicKey);
 
-        _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new RsaSecurityKey(rsa),
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            };
 
-        var tokenResult = new TokenResult { AccessToken = accessToken, RefreshToken = refreshToken };
-        return new ResponseBuilder<TokenResult>()
-            .WithData(tokenResult)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_LOGIN_MSG)
-            .Build();
+            var tokenHandler = new JwtSecurityTokenHandler();
+            tokenHandler.ValidateToken(token, validationParameters, out _);
+
+            return true;
+        }
+        catch (SecurityTokenSignatureKeyNotFoundException)
+        {
+            // Chữ ký không hợp lệ hoặc không tìm thấy key
+            Console.WriteLine("Invalid signature or key not found.");
+            return false;
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            // Token hết hạn
+            Console.WriteLine("Token has expired.");
+            return false;
+        }
+        catch (SecurityTokenInvalidSignatureException)
+        {
+            // Chữ ký không hợp lệ
+            Console.WriteLine("Invalid token signature.");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            // Các lỗi khác
+            Console.WriteLine($"Token validation failed: {ex.Message}");
+            return false;
+        }
+    }
+
+    
+    public BusinessResult ValidateRefreshTokenIpAdMatch(string refreshToken)
+    {
+        if (refreshToken == null)
+            return new ResponseBuilder()
+                .WithStatus(Const.NOT_FOUND_CODE)
+                .WithMessage("You are not logged in, please log in to continue.")
+                .Build();
+
+        var businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
+        return businessResult;
     }
 
     public async Task<BusinessResult> GetUserByClaims()
@@ -360,5 +490,54 @@ public class AuthService : IAuthService
         if (string.IsNullOrEmpty(userIdClaim)) return null;
 
         return Guid.Parse(userIdClaim);
+    }
+    
+    private string CreateToken(UserResult user, RSACryptoServiceProvider rsa, string tokenType, string kid)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim("Id", user.Id.ToString()),
+            new Claim("Role", user.Role.ToString()),
+            new Claim("TokenType", tokenType) // 🟢 Thêm claim để phân biệt
+        };
+
+        var key = new RsaSecurityKey(rsa)
+        {
+            KeyId = kid
+        };
+        var creds = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+
+        var token = new JwtSecurityToken(
+            claims: claims,
+            expires: tokenType == "AccessToken" 
+                ? DateTime.Now.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes) // Access token ngắn hạn
+                : DateTime.Now.AddDays(_tokenSetting.RefreshTokenExpiryDays),    // Refresh token dài hạn
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+    private void SaveHttpOnlyCookie(string accessToken, string refreshToken)
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+
+        var accessTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+        };
+
+        var refreshTokenOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.None,
+            Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
+        };
+
+        httpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
+        httpContext.Response.Cookies.Append("refreshToken", refreshToken, refreshTokenOptions);
     }
 }

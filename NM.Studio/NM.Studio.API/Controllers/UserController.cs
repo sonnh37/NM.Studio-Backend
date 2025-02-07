@@ -21,7 +21,7 @@ public class UserController : BaseController
     {
     }
 
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] UserGetAllQuery userGetAllQuery)
     {

@@ -20,6 +20,17 @@ public class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshToke
 
         return entity;
     }
+    
+    public async Task<RefreshToken?> GetByUserIdAndKeyIdAsync(Guid userId, string kid)
+    {
+        var queryable = GetQueryable(x => 
+            x.UserId == userId &&
+            x.KeyId != null && 
+            x.KeyId.ToLower() == kid.ToLower()
+            );
+
+        return await queryable.SingleOrDefaultAsync();
+    }
 
     public async Task CleanupExpiredTokensAsync()
     {

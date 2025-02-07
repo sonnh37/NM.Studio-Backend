@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json.Serialization;
 using NM.Studio.API.Registrations;
 using NM.Studio.Data;
@@ -11,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Models;
 using NM.Studio.Services;
 using Quartz;
@@ -99,6 +102,7 @@ builder.Services.AddCustomRepositories();
 builder.Services.AddCustomServices();
 
 #region Config-Authentication_Authorization
+
 builder.Services.Configure<TokenSetting>(builder.Configuration.GetSection("TokenSetting"));
 
 builder.Services.AddAuthentication(x =>
@@ -111,25 +115,36 @@ builder.Services.AddAuthentication(x =>
         options.SaveToken = true;
         options.RequireHttpsMetadata = true;
 
-        // Cấu hình kiểm tra token
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false, // Bật nếu muốn kiểm tra Issuer
-            ValidateAudience = false, // Bật nếu muốn kiểm tra Audience
+            ValidateIssuer = false,
+            ValidateAudience = false,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true, // Bật kiểm tra Signing Key
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                builder.Configuration.GetValue<string>("Appsettings:Token"))),
+            ValidateIssuerSigningKey = true,
             ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "Role"
+            RoleClaimType = "Role",
+
+            IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+            {
+                var httpContextAccessor =
+                    builder.Services.BuildServiceProvider().GetRequiredService<IHttpContextAccessor>();
+
+                var authService = httpContextAccessor.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+                if (authService == null)
+                {
+                    throw new SecurityTokenException("AuthService not available.");
+                }
+
+                var rsa = authService.GetRSAKeyFromTokenAsync(token, kid).Result;
+                return new List<SecurityKey> { new RsaSecurityKey(rsa) };
+            }
         };
 
-        // Đọc token từ cookie
+        // Lấy token từ cookie
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                // Lấy token từ cookie "accessToken"
                 var accessToken = context.Request.Cookies["accessToken"];
                 if (!string.IsNullOrEmpty(accessToken))
                 {
@@ -140,6 +155,7 @@ builder.Services.AddAuthentication(x =>
             },
         };
     });
+
 builder.Services.AddAuthorization();
 
 #endregion
@@ -160,7 +176,6 @@ builder.Services.AddCors(options =>
 });
 
 #endregion
-
 
 
 builder.Services.AddEndpointsApiExplorer();
