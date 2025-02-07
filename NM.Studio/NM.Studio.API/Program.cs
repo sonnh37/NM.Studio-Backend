@@ -134,7 +134,7 @@ builder.Services.AddAuthentication(x =>
                 {
                     throw new SecurityTokenException("AuthService not available.");
                 }
-
+                
                 var rsa = authService.GetRSAKeyFromTokenAsync(token, kid).Result;
                 return new List<SecurityKey> { new RsaSecurityKey(rsa) };
             }
