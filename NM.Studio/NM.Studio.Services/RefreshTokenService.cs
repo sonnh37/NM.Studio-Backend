@@ -47,12 +47,6 @@ public class RefreshTokenService : BaseService<RefreshToken>, IRefreshTokenServi
         _userService = userService;
         _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
     }
-    
-    public async Task<BusinessResult> GetByOptions<TResult>(Expression<Func<RefreshToken, bool>> predicate) where TResult : BaseResult
-    {
-        return await base.GetByOptions<TResult>(predicate);
-    }
-
 
     public async Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand)
         where TResult : BaseResult
