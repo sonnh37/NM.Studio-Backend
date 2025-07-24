@@ -1,7 +1,5 @@
 ﻿using NM.Studio.Data.Context;
-using NM.Studio.Domain.Contracts;
 using NM.Studio.Domain.Contracts.Repositories;
-using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 
 namespace NM.Studio.Data.UnitOfWorks;
@@ -14,33 +12,33 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IUserRepository UserRepository => GetRepository<IUserRepository>();
 
-    public IPhotoRepository PhotoRepository => GetRepository<IPhotoRepository>();
+    public IMediaFileRepository MediaFileRepository => GetRepository<IMediaFileRepository>();
 
     public IServiceRepository ServiceRepository => GetRepository<IServiceRepository>();
 
     public IProductRepository ProductRepository => GetRepository<IProductRepository>();
 
-    public IProductXPhotoRepository ProductXPhotoRepository => GetRepository<IProductXPhotoRepository>();
+    public IProductMediaRepository ProductMediaRepository => GetRepository<IProductMediaRepository>();
 
     public IAlbumRepository AlbumRepository => GetRepository<IAlbumRepository>();
 
-    public IAlbumXPhotoRepository AlbumXPhotoRepository => GetRepository<IAlbumXPhotoRepository>();
+    public IAlbumMediaRepository AlbumMediaRepository => GetRepository<IAlbumMediaRepository>();
 
     public ICategoryRepository CategoryRepository => GetRepository<ICategoryRepository>();
-    
+
     public ISubCategoryRepository SubCategoryRepository => GetRepository<ISubCategoryRepository>();
-    
+
     public IColorRepository ColorRepository => GetRepository<IColorRepository>();
-    
+
     public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();
-    
+
     public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
-    
-    public IBookingRepository BookingRepository => GetRepository<IBookingRepository>();
-    
+
+    public IServiceBookingRepository ServiceBookingRepository => GetRepository<IServiceBookingRepository>();
+
     public IRefreshTokenRepository RefreshTokenRepository => GetRepository<IRefreshTokenRepository>();
-    
-    public IProductXSizeRepository ProductXSizeRepository => GetRepository<IProductXSizeRepository>();
-    
-    public IProductXColorRepository ProductXColorRepository => GetRepository<IProductXColorRepository>();
+
+    public IProductSizeRepository ProductSizeRepository => GetRepository<IProductSizeRepository>();
+
+    public IProductColorRepository ProductColorRepository => GetRepository<IProductColorRepository>();
 }

@@ -1,16 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Users;
-using NM.Studio.Domain.CQRS.Queries.Users;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using NM.Studio.API.Controllers.Base;
-using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Responses;
-using NM.Studio.Domain.Models.Results.Bases;
-using NM.Studio.Domain.Utilities;
+using NM.Studio.Domain.CQRS.Commands.Users;
+using NM.Studio.Domain.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 

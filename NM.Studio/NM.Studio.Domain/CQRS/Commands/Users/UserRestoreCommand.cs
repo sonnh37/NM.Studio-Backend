@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.Users;
 
 public class UserRestoreCommand : UpdateCommand
 {
-    
 }

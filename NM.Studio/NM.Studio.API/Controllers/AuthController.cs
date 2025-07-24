@@ -1,15 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
-using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Responses;
-using NM.Studio.Domain.Models.Results.Bases;
-using NM.Studio.Domain.Utilities;
 
 namespace NM.Studio.API.Controllers;
 
@@ -29,7 +24,7 @@ public class AuthController : BaseController
         return Ok(businessResult);
     }
 
-     [AllowAnonymous]
+    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] AuthQuery authQuery)
     {
@@ -43,7 +38,7 @@ public class AuthController : BaseController
     public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies["refreshToken"];
-        
+
         var userLogoutCommand = new UserLogoutCommand
         {
             RefreshToken = refreshToken
@@ -64,7 +59,7 @@ public class AuthController : BaseController
             RefreshToken = refreshToken
         };
         var businessResult = await _mediator.Send(request);
-      
+
         return Ok(businessResult);
     }
 
@@ -79,7 +74,7 @@ public class AuthController : BaseController
         var businessResult = await _mediator.Send(request);
         return Ok(businessResult);
     }
-    
+
     // [AllowAnonymous]
     // [HttpPost("verify-otp")]
     // public async Task<IActionResult> VerifyOTP([FromBody] VerifyOTPQuery request)
@@ -103,5 +98,4 @@ public class AuthController : BaseController
     //     var businessResult = await _mediator.Send(request);
     //     return Ok(businessResult);
     // }
-    
 }

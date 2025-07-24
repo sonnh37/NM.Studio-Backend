@@ -1,46 +1,39 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Photos;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Commands.MediaFiles;
 using NM.Studio.Domain.Models.Responses;
-using MediatR;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
 namespace NM.Studio.Handler.Commands;
 
-public class PhotoCommandHandler : BaseCommandHandler,
-    IRequestHandler<PhotoUpdateCommand, BusinessResult>,
-    IRequestHandler<PhotoDeleteCommand, BusinessResult>,
-    IRequestHandler<PhotoCreateCommand, BusinessResult>,
-    IRequestHandler<PhotoRestoreCommand, BusinessResult>
+public class MediaFileCommandHandler : BaseCommandHandler,
+    IRequestHandler<MediaFileUpdateCommand, BusinessResult>,
+    IRequestHandler<MediaFileDeleteCommand, BusinessResult>,
+    IRequestHandler<MediaFileCreateCommand, BusinessResult>
 {
-    private readonly IPhotoService _photoService;
+    private readonly IMediaFileService _mediaFileService;
 
-    public PhotoCommandHandler(IPhotoService photoService) : base(photoService)
+    public MediaFileCommandHandler(IMediaFileService mediaFileService) : base(mediaFileService)
     {
-        _photoService = photoService;
+        _mediaFileService = mediaFileService;
     }
 
-    public async Task<BusinessResult> Handle(PhotoCreateCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(MediaFileCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _photoService.CreateOrUpdate<PhotoResult>(request);
+        var msgView = await _mediaFileService.CreateOrUpdate<MediaFileResult>(request);
         return msgView;
     }
 
-    public async Task<BusinessResult> Handle(PhotoDeleteCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(MediaFileDeleteCommand request, CancellationToken cancellationToken)
     {
         var msgView = await _baseService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
-
-    public async Task<BusinessResult> Handle(PhotoUpdateCommand request, CancellationToken cancellationToken)
+    
+    public async Task<BusinessResult> Handle(MediaFileUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<PhotoResult>(request);
+        var msgView = await _baseService.CreateOrUpdate<MediaFileResult>(request);
         return msgView;
-    }
-
-    public async Task<BusinessResult> Handle(PhotoRestoreCommand request, CancellationToken cancellationToken)
-    {
-        var businessResult = await _photoService.Restore<PhotoResult>(request);
-        return businessResult;
     }
 }

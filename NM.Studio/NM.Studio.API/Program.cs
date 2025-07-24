@@ -1,26 +1,25 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json.Serialization;
-using NM.Studio.API.Registrations;
-using NM.Studio.Data;
-using NM.Studio.Data.Context;
-using NM.Studio.Domain.Configs.Mapping;
-using NM.Studio.Domain.Middleware;
-using NM.Studio.Handler;
+﻿using System.Text.Json.Serialization;
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NM.Studio.API.Extensions;
+using NM.Studio.Data.Context;
+using NM.Studio.Domain.Configs;
+using NM.Studio.Domain.Configs.Mapping;
 using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.Middleware;
 using NM.Studio.Domain.Models;
+using NM.Studio.Handler;
 using NM.Studio.Services;
 using Quartz;
 
-DotNetEnv.Env.Load();
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddLogging();
 builder.Services.AddQuartz(q =>
 {
@@ -33,6 +32,13 @@ builder.Services.AddQuartz(q =>
         .ForJob(jobKey)
         .WithIdentity("CleanRefreshTokenJob-trigger")
         .WithCronSchedule("0 0 0 * * ?")); // Cron schedule chạy vào 00:00 mỗi ngày
+});
+
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Conventions.Add(
+        new RouteTokenTransformerConvention(new SlugifyParameterTransformer())
+    );
 });
 
 builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
@@ -82,100 +88,19 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-#region Add-MediaR
-
-//After 12.0.0
-//builder.Services.AddMediatR(config => config.RegisterServicesFromAssemblies(typeof(AppHandler).GetTypeInfo().Assembly));
-
-builder.Services.AddApplication();
-//builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssemblyContaining<BaseHandler>());
 
 
-// var handler = typeof(AppHandler).GetTypeInfo().Assembly;
-// builder.Services.AddMediatR(Assembly.GetExecutingAssembly(), handler);
-
-#endregion
+builder.Services.AddServices();
+builder.Services.AddRepositories();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-
-builder.Services.AddCustomRepositories();
-builder.Services.AddCustomServices();
-
-#region Config-Authentication_Authorization
-
 builder.Services.Configure<TokenSetting>(builder.Configuration.GetSection("TokenSetting"));
 
-builder.Services.AddAuthentication(x =>
-    {
-        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
-    {
-        options.SaveToken = true;
-        options.RequireHttpsMetadata = true;
+builder.Services.AddAuth();
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero,
-            RoleClaimType = "Role",
-
-            IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-            {
-                var httpContextAccessor =
-                    builder.Services.BuildServiceProvider().GetRequiredService<IHttpContextAccessor>();
-
-                var authService = httpContextAccessor.HttpContext.RequestServices.GetRequiredService<IAuthService>();
-                if (authService == null)
-                {
-                    throw new SecurityTokenException("AuthService not available.");
-                }
-                
-                var rsa = authService.GetRSAKeyFromTokenAsync(token, kid).Result;
-                return new List<SecurityKey> { new RsaSecurityKey(rsa) };
-            }
-        };
-
-        // Lấy token từ cookie
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Cookies["accessToken"];
-                if (!string.IsNullOrEmpty(accessToken))
-                {
-                    context.Token = accessToken;
-                }
-
-                return Task.CompletedTask;
-            },
-        };
-    });
-
-builder.Services.AddAuthorization();
-
-#endregion
-
-#region Add-Cors
-
-builder.Services.AddCors(options =>
-{
-    var frontendDomains = Environment.GetEnvironmentVariable("FRONTEND_DOMAIN")?.Split(',');
-
-    options.AddPolicy("AllowSpecificOrigins", builder =>
-    {
-        builder.WithOrigins(frontendDomains) // Thêm các domain của frontend
-            .AllowCredentials() // Cho phép gửi cookie
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-
-#endregion
+builder.Services.AddCORS();
 
 
 builder.Services.AddEndpointsApiExplorer();

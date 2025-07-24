@@ -1,7 +1,7 @@
 ﻿using Bogus;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace NM.Studio.Data;
 
@@ -14,11 +14,11 @@ public static class DummyData
         // GenerateCategories(context, 10);
         // GenerateSizes(context, 10);
         // GenerateProducts(context, 10);
-        // GeneratePhotos(context, 200);
+        // GenerateMediaFiles(context, 200);
         // GenerateAlbums(context, 20);
         // GenerateServices(context, 20);
-        // GenerateAlbumXPhotos(context, 150);
-        // GenerateProductXPhotos(context, 100);
+        // GenerateAlbumMedias(context, 150);
+        // GenerateProductMedias(context, 100);
     }
 
     private static void GenerateColors(DbContext context, int count)
@@ -74,23 +74,25 @@ public static class DummyData
 
             context.Set<Category>().AddRange(categories);
             context.SaveChanges();
-            
+
             GenerateSubCategories(context, categories);
         }
     }
-    
+
     private static void GenerateSubCategories(DbContext context, IEnumerable<Category> categories)
     {
         var subCategoryFaker = new Faker<SubCategory>()
             .RuleFor(sc => sc.Id, f => Guid.NewGuid())
             .RuleFor(sc => sc.Name, f => f.Commerce.Categories(1).First())
-            .RuleFor(sc => sc.CategoryId, f => f.PickRandom(categories).Id) // Chọn ngẫu nhiên CategoryId từ danh sách đã tạo
+            .RuleFor(sc => sc.CategoryId,
+                f => f.PickRandom(categories).Id) // Chọn ngẫu nhiên CategoryId từ danh sách đã tạo
             .RuleFor(o => o.CreatedDate, f => f.Date.Past(2))
             .RuleFor(o => o.LastUpdatedDate, f => f.Date.Recent())
             .RuleFor(o => o.IsDeleted, f => false);
 
         var subCategoriesCount = categories.Count(); // Số lượng SubCategory cho mỗi Category
-        var subCategories = subCategoryFaker.Generate(categories.Count() * subCategoriesCount); // Tạo tổng số SubCategory
+        var subCategories =
+            subCategoryFaker.Generate(categories.Count() * subCategoriesCount); // Tạo tổng số SubCategory
 
         // Set CreatedBy and UpdatedBy to the common email
         var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
@@ -135,54 +137,54 @@ public static class DummyData
 
 
     private static void GenerateProducts(DbContext context, int count)
-{
-    if (!context.Set<Product>().Any())
     {
-        var productFaker = new Faker<Product>()
-            .RuleFor(o => o.Id, f => Guid.NewGuid())
-            .RuleFor(o => o.Sku, f => f.Commerce.Ean13())
-            .RuleFor(o => o.SubCategoryId, f => f.PickRandom(context.Set<SubCategory>().Select(c => c.Id).ToList()))
-            // .RuleFor(o => o.SizeId, f => f.PickRandom(context.Set<Size>().Select(s => s.Id).ToList()))
-            // .RuleFor(o => o.ColorId, f => f.PickRandom(context.Set<Color>().Select(c => c.Id).ToList()))
-            .RuleFor(v => v.Status, f => f.PickRandom<ProductStatus>())
-            .RuleFor(o => o.Name, f => f.Commerce.ProductName())
-            .RuleFor(o => o.Price, f => f.Finance.Amount(50, 500)) // Giá từ 50 đến 500
-            .RuleFor(o => o.Description, f => f.Lorem.Paragraph())
-            .RuleFor(o => o.Status, f => f.PickRandom<ProductStatus>()) // Ngẫu nhiên chọn trạng thái
-            .RuleFor(o => o.CreatedDate, f => f.Date.Past(2))
-            .RuleFor(o => o.LastUpdatedDate, f => f.Date.Recent())
-            .RuleFor(o => o.IsDeleted, f => false);
-
-        // Generate products
-        var products = productFaker.Generate(count);
-
-        // Pick a common creator email (assuming this field exists)
-        var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
-
-        // Set CreatedBy and UpdatedBy to the common email
-        foreach (var product in products)
+        if (!context.Set<Product>().Any())
         {
-            product.CreatedBy = commonUserEmail;
-            product.LastUpdatedBy = commonUserEmail;
+            var productFaker = new Faker<Product>()
+                .RuleFor(o => o.Id, f => Guid.NewGuid())
+                .RuleFor(o => o.Sku, f => f.Commerce.Ean13())
+                .RuleFor(o => o.SubCategoryId, f => f.PickRandom(context.Set<SubCategory>().Select(c => c.Id).ToList()))
+                // .RuleFor(o => o.SizeId, f => f.PickRandom(context.Set<Size>().Select(s => s.Id).ToList()))
+                // .RuleFor(o => o.ColorId, f => f.PickRandom(context.Set<Color>().Select(c => c.Id).ToList()))
+                .RuleFor(v => v.Status, f => f.PickRandom<ProductStatus>())
+                .RuleFor(o => o.Name, f => f.Commerce.ProductName())
+                .RuleFor(o => o.Price, f => f.Finance.Amount(50, 500)) // Giá từ 50 đến 500
+                .RuleFor(o => o.Description, f => f.Lorem.Paragraph())
+                .RuleFor(o => o.Status, f => f.PickRandom<ProductStatus>()) // Ngẫu nhiên chọn trạng thái
+                .RuleFor(o => o.CreatedDate, f => f.Date.Past(2))
+                .RuleFor(o => o.LastUpdatedDate, f => f.Date.Recent())
+                .RuleFor(o => o.IsDeleted, f => false);
 
-            // // Lấy danh sách SubCategory tương ứng với CategoryId
-            // var subCategories = context.Set<SubCategory>()
-            //     .Where(sc => sc.CategoryId == product.CategoryId)
-            //     .Select(sc => sc.Id)
-            //     .ToList();
-            //
-            // // Chọn ngẫu nhiên SubCategoryId từ danh sách
-            // if (subCategories.Any())
-            // {
-            //     var categoryIndex = new Random().Next(0, subCategories.Count);
-            //     product.SubCategoryId = subCategories[categoryIndex];
-            // }
+            // Generate products
+            var products = productFaker.Generate(count);
+
+            // Pick a common creator email (assuming this field exists)
+            var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
+
+            // Set CreatedBy and UpdatedBy to the common email
+            foreach (var product in products)
+            {
+                product.CreatedBy = commonUserEmail;
+                product.LastUpdatedBy = commonUserEmail;
+
+                // // Lấy danh sách SubCategory tương ứng với CategoryId
+                // var subCategories = context.Set<SubCategory>()
+                //     .Where(sc => sc.CategoryId == product.CategoryId)
+                //     .Select(sc => sc.Id)
+                //     .ToList();
+                //
+                // // Chọn ngẫu nhiên SubCategoryId từ danh sách
+                // if (subCategories.Any())
+                // {
+                //     var categoryIndex = new Random().Next(0, subCategories.Count);
+                //     product.SubCategoryId = subCategories[categoryIndex];
+                // }
+            }
+
+            context.Set<Product>().AddRange(products);
+            context.SaveChanges();
         }
-
-        context.Set<Product>().AddRange(products);
-        context.SaveChanges();
     }
-}
 
 
     private static void GenerateUsers(DbContext context, int count)
@@ -290,11 +292,11 @@ public static class DummyData
     }
 
 
-    private static void GeneratePhotos(DbContext context, int count)
+    private static void GenerateMediaFiles(DbContext context, int count)
     {
-        if (!context.Set<Photo>().Any())
+        if (!context.Set<MediaFile>().Any())
         {
-            var photoFaker = new Faker<Photo>()
+            var mediaFileFaker = new Faker<MediaFile>()
                 .RuleFor(p => p.Id, f => Guid.NewGuid())
                 .RuleFor(p => p.Title, f => f.Lorem.Sentence(3, 3))
                 .RuleFor(p => p.Description, f => f.Lorem.Paragraph())
@@ -305,76 +307,76 @@ public static class DummyData
                 .RuleFor(p => p.LastUpdatedDate, f => f.Date.Recent())
                 .RuleFor(p => p.IsDeleted, f => false);
 
-            // Generate photos
-            var photos = photoFaker.Generate(count);
+            // Generate mediaFiles
+            var mediaFiles = mediaFileFaker.Generate(count);
 
             // Pick a common creator email (assuming this field exists)
             var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
 
             // Set CreatedBy and UpdatedBy to the common email
-            foreach (var photo in photos)
+            foreach (var mediaFile in mediaFiles)
             {
-                photo.CreatedBy = commonUserEmail;
-                photo.LastUpdatedBy = commonUserEmail;
+                mediaFile.CreatedBy = commonUserEmail;
+                mediaFile.LastUpdatedBy = commonUserEmail;
             }
 
-            context.Set<Photo>().AddRange(photos);
+            context.Set<MediaFile>().AddRange(mediaFiles);
             context.SaveChanges();
         }
     }
 
-    private static void GenerateAlbumXPhotos(DbContext context, int count)
+    private static void GenerateAlbumMedias(DbContext context, int count)
     {
-        if (!context.Set<AlbumXPhoto>().Any())
+        if (!context.Set<AlbumMedia>().Any())
         {
-            var albumXPhotoFaker = new Faker<AlbumXPhoto>()
+            var albumMediaFaker = new Faker<AlbumMedia>()
                 .RuleFor(axp => axp.Id, f => Guid.NewGuid())
-                .RuleFor(axp => axp.PhotoId, f => f.PickRandom(context.Set<Photo>().Select(p => p.Id).ToList()))
+                .RuleFor(axp => axp.MediaFileId, f => f.PickRandom(context.Set<MediaFile>().Select(p => p.Id).ToList()))
                 .RuleFor(axp => axp.AlbumId, f => f.PickRandom(context.Set<Album>().Select(a => a.Id).ToList()))
                 .RuleFor(p => p.CreatedDate, f => f.Date.Past(2))
                 .RuleFor(p => p.LastUpdatedDate, f => f.Date.Recent())
                 .RuleFor(p => p.IsDeleted, f => false);
 
-            var albumXPhotos = albumXPhotoFaker.Generate(count);
+            var albumMedias = albumMediaFaker.Generate(count);
 
             var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
 
             // Set CreatedBy and UpdatedBy to the common email
-            foreach (var albumXPhoto in albumXPhotos)
+            foreach (var albumMedia in albumMedias)
             {
-                albumXPhoto.CreatedBy = commonUserEmail;
-                albumXPhoto.LastUpdatedBy = commonUserEmail;
+                albumMedia.CreatedBy = commonUserEmail;
+                albumMedia.LastUpdatedBy = commonUserEmail;
             }
 
-            context.Set<AlbumXPhoto>().AddRange(albumXPhotos);
+            context.Set<AlbumMedia>().AddRange(albumMedias);
             context.SaveChanges();
         }
     }
 
-    private static void GenerateProductXPhotos(DbContext context, int count)
+    private static void GenerateProductMedias(DbContext context, int count)
     {
-        if (!context.Set<ProductXPhoto>().Any())
+        if (!context.Set<ProductMedia>().Any())
         {
-            var productXPhotoFaker = new Faker<ProductXPhoto>()
+            var productMediaFaker = new Faker<ProductMedia>()
                 .RuleFor(oxp => oxp.Id, f => Guid.NewGuid())
-                .RuleFor(oxp => oxp.PhotoId, f => f.PickRandom(context.Set<Photo>().Select(p => p.Id).ToList()))
+                .RuleFor(oxp => oxp.MediaFileId, f => f.PickRandom(context.Set<MediaFile>().Select(p => p.Id).ToList()))
                 .RuleFor(oxp => oxp.ProductId, f => f.PickRandom(context.Set<Product>().Select(o => o.Id).ToList()))
                 .RuleFor(p => p.CreatedDate, f => f.Date.Past(2))
                 .RuleFor(p => p.LastUpdatedDate, f => f.Date.Recent())
                 .RuleFor(p => p.IsDeleted, f => false);
 
-            var productXPhotos = productXPhotoFaker.Generate(count);
+            var productMedias = productMediaFaker.Generate(count);
 
             var commonUserEmail = context.Set<User>().FirstOrDefault()?.Email;
 
             // Set CreatedBy and UpdatedBy to the common email
-            foreach (var productXPhoto in productXPhotos)
+            foreach (var productMedia in productMedias)
             {
-                productXPhoto.CreatedBy = commonUserEmail;
-                productXPhoto.LastUpdatedBy = commonUserEmail;
+                productMedia.CreatedBy = commonUserEmail;
+                productMedia.LastUpdatedBy = commonUserEmail;
             }
 
-            context.Set<ProductXPhoto>().AddRange(productXPhotos);
+            context.Set<ProductMedia>().AddRange(productMedias);
             context.SaveChanges();
         }
     }

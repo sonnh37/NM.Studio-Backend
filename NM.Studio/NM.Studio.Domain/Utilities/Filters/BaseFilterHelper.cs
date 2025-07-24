@@ -1,6 +1,4 @@
-﻿
-
-using NM.Studio.Domain.CQRS.Queries.Base;
+﻿using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Entities.Bases;
 
 namespace NM.Studio.Domain.Utilities.Filters;
@@ -18,10 +16,7 @@ public static class BaseFilterHelper
         if (!string.IsNullOrEmpty(query.LastUpdatedBy))
             queryable = queryable.Where(m => m.LastUpdatedBy != null && m.LastUpdatedBy.Contains(query.LastUpdatedBy));
 
-        if (query.IsDeleted != null)
-        {
-            queryable = queryable.Where(m => query.IsDeleted.Value == m.IsDeleted);
-        }
+        if (query.IsDeleted != null) queryable = queryable.Where(m => query.IsDeleted.Value == m.IsDeleted);
 
         queryable = FromDateToDate(queryable, query);
 

@@ -1,30 +1,30 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.ProductXSizes;
+using NM.Studio.Domain.CQRS.Queries.ProductSizes;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 
 namespace NM.Studio.Handler.Queries;
 
-public class ProductXSizeQueryHandler :
-    IRequestHandler<ProductXSizeGetAllQuery, BusinessResult>,
-    IRequestHandler<ProductXSizeGetByIdQuery, BusinessResult>
+public class ProductSizeQueryHandler :
+    IRequestHandler<ProductSizeGetAllQuery, BusinessResult>,
+    IRequestHandler<ProductSizeGetByIdQuery, BusinessResult>
 {
-    protected readonly IProductXSizeService _productXSizeService;
+    protected readonly IProductSizeService ProductSizeService;
 
-    public ProductXSizeQueryHandler(IProductXSizeService productXSizeService)
+    public ProductSizeQueryHandler(IProductSizeService productSizeService)
     {
-        _productXSizeService = productXSizeService;
+        ProductSizeService = productSizeService;
     }
 
-    public async Task<BusinessResult> Handle(ProductXSizeGetAllQuery request,
+    public async Task<BusinessResult> Handle(ProductSizeGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _productXSizeService.GetAll<ProductXSizeResult>(request);
+        return await ProductSizeService.GetListByQueryAsync<ProductSizeResult>(request);
     }
 
-    public async Task<BusinessResult> Handle(ProductXSizeGetByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductSizeGetByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _productXSizeService.GetById<ProductXSizeResult>(request.Id);
+        return await ProductSizeService.GetById<ProductSizeResult>(request.Id);
     }
 }

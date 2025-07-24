@@ -6,5 +6,5 @@ public class ColorResult : BaseResult
 {
     public string? Name { get; set; }
 
-    public List<ProductXColorResult> ProductXColors { get; set; } = new List<ProductXColorResult>();
+    public List<ProductColorResult> ProductColors { get; set; } = new();
 }

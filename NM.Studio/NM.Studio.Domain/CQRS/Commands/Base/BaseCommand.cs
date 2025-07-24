@@ -1,7 +1,5 @@
-﻿using System.ComponentModel;
-using MediatR;
+﻿using MediatR;
 using NM.Studio.Domain.Models.Responses;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace NM.Studio.Domain.CQRS.Commands.Base;
 
@@ -25,6 +23,6 @@ public class UpdateCommand : CreateOrUpdateCommand
 public class DeleteCommand : BaseCommand, IRequest<BusinessResult>
 {
     public Guid Id { get; set; }
-    
+
     public bool IsPermanent { get; set; }
 }

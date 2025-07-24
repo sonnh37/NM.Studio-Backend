@@ -1,8 +1,8 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.Products;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -21,7 +21,7 @@ public class ProductQueryHandler :
     public async Task<BusinessResult> Handle(ProductGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _productService.GetAll<ProductResult>(request);
+        return await _productService.GetListByQueryAsync<ProductResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ProductGetByIdQuery request,
@@ -30,7 +30,8 @@ public class ProductQueryHandler :
         return await _productService.GetById<ProductResult>(request.Id);
     }
 
-    public async Task<BusinessResult> Handle(ProductRepresentativeByCategoryQuery request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductRepresentativeByCategoryQuery request,
+        CancellationToken cancellationToken)
     {
         return await _productService.GetRepresentativeByCategory(request);
     }

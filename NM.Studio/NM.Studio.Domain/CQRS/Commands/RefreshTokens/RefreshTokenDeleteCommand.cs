@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.RefreshTokens;
 
 public class RefreshTokenDeleteCommand : DeleteCommand
 {
-    
 }

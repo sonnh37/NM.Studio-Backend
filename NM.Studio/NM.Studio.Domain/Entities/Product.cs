@@ -6,24 +6,32 @@ namespace NM.Studio.Domain.Entities;
 public class Product : BaseEntity
 {
     public string? Sku { get; set; }
-
     public string? Slug { get; set; }
-
-    public Guid? SubCategoryId { get; set; }
-
     public string? Name { get; set; }
 
-    public decimal? Price { get; set; }
-
-    public string? Description { get; set; }
-
+    // Categorization
+    public Guid? SubCategoryId { get; set; }
     public virtual SubCategory? SubCategory { get; set; }
 
+    // Pricing and Availability
+    public decimal? Price { get; set; }
+    public decimal? RentalPrice { get; set; } // For rentable items
+    public decimal? Deposit { get; set; } // For rentable items
+    public bool IsRentable { get; set; }
+    public bool IsSaleable { get; set; }
+
+    // Details
+    public string? Description { get; set; }
+    public string? Material { get; set; }
+    public string? Brand { get; set; }
+    public string? Style { get; set; }
+    public string? Care { get; set; } // Care instructions
+
+    // Status
     public ProductStatus Status { get; set; }
 
-    public virtual ICollection<ProductXPhoto> ProductXPhotos { get; set; } = new List<ProductXPhoto>();
-
-    public virtual ICollection<ProductXColor> ProductXColors { get; set; } = new List<ProductXColor>();
-
-    public virtual ICollection<ProductXSize> ProductXSizes { get; set; } = new List<ProductXSize>();
+    // Collections
+    public virtual ICollection<ProductMedia> ProductMedias { get; set; } = new List<ProductMedia>();
+    public virtual ICollection<ProductColor> ProductColors { get; set; } = new List<ProductColor>();
+    public virtual ICollection<ProductSize> ProductSizes { get; set; } = new List<ProductSize>();
 }

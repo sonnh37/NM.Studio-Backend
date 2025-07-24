@@ -1,39 +1,39 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.ProductXPhotos;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Commands.ProductMedias;
 using NM.Studio.Domain.Models.Responses;
-using MediatR;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
 namespace NM.Studio.Handler.Commands;
 
-public class ProductXPhotoCommandHandler : BaseCommandHandler,
-    IRequestHandler<ProductXPhotoUpdateCommand, BusinessResult>,
-    IRequestHandler<ProductXPhotoDeleteCommand, BusinessResult>,
-    IRequestHandler<ProductXPhotoCreateCommand, BusinessResult>
+public class ProductMediaCommandHandler : BaseCommandHandler,
+    IRequestHandler<ProductMediaUpdateCommand, BusinessResult>,
+    IRequestHandler<ProductMediaDeleteCommand, BusinessResult>,
+    IRequestHandler<ProductMediaCreateCommand, BusinessResult>
 {
-    protected readonly IProductXPhotoService _productXPhotoService;
+    protected readonly IProductMediaService _productMediaService;
 
-    public ProductXPhotoCommandHandler(IProductXPhotoService productXPhotoService) : base(productXPhotoService)
+    public ProductMediaCommandHandler(IProductMediaService productMediaService) : base(productMediaService)
     {
-        _productXPhotoService = productXPhotoService;
+        _productMediaService = productMediaService;
     }
 
-    public async Task<BusinessResult> Handle(ProductXPhotoCreateCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductMediaCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productXPhotoService.CreateOrUpdate<ProductXPhotoResult>(request);
+        var msgView = await _productMediaService.CreateOrUpdate<ProductMediaResult>(request);
         return msgView;
     }
 
-    public async Task<BusinessResult> Handle(ProductXPhotoDeleteCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductMediaDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productXPhotoService.DeleteById(request);
+        var msgView = await _productMediaService.DeleteById(request);
         return msgView;
     }
 
-    public async Task<BusinessResult> Handle(ProductXPhotoUpdateCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductMediaUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<ProductXPhotoResult>(request);
+        var msgView = await _baseService.CreateOrUpdate<ProductMediaResult>(request);
         return msgView;
     }
 }

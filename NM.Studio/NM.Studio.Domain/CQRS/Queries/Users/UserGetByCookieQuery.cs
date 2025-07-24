@@ -5,5 +5,4 @@ namespace NM.Studio.Domain.CQRS.Queries.Users;
 
 public class UserGetByCookieQuery : IRequest<BusinessResult>
 {
-    
 }

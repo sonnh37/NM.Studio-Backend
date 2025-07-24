@@ -2,12 +2,12 @@
 
 namespace NM.Studio.Domain.Models.Results;
 
-public class PhotoResult : BaseResult
+public class MediaFileResult : BaseResult
 {
     public string? Title { get; set; }
 
     public string? Description { get; set; }
-    
+
     public bool IsFeatured { get; set; }
 
     public string? Type { get; set; }
@@ -20,7 +20,7 @@ public class PhotoResult : BaseResult
 
     public Guid? ProductId { get; set; }
 
-    public List<AlbumXPhotoResult> AlbumsXPhotos { get; set; } = new();
+    public List<AlbumMediaResult> AlbumMedias { get; set; } = new();
 
-    public List<ProductXPhotoResult> ProductXPhotos { get; set; } = new();
+    public List<ProductMediaResult> ProductMedias { get; set; } = new();
 }

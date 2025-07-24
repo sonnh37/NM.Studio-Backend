@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.SubCategories;
 
 public class SubCategoryRestoreCommand : UpdateCommand
 {
-    
 }

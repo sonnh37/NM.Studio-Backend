@@ -1,31 +1,31 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.Bookings;
+using NM.Studio.Domain.CQRS.Queries.ServiceBookings;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 
 namespace NM.Studio.Handler.Queries;
 
 public class BookingQueryHandler :
-    IRequestHandler<BookingGetAllQuery, BusinessResult>,
-    IRequestHandler<BookingGetByIdQuery, BusinessResult>
+    IRequestHandler<ServiceBookingGetAllQuery, BusinessResult>,
+    IRequestHandler<ServiceBookingGetByIdQuery, BusinessResult>
 {
-    protected readonly IBookingService _bookingService;
+    protected readonly IServiceBookingService ServiceBookingService;
 
-    public BookingQueryHandler(IBookingService bookingService)
+    public BookingQueryHandler(IServiceBookingService serviceBookingService)
     {
-        _bookingService = bookingService;
+        ServiceBookingService = serviceBookingService;
     }
 
-    public async Task<BusinessResult> Handle(BookingGetAllQuery request,
+    public async Task<BusinessResult> Handle(ServiceBookingGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _bookingService.GetAll<BookingResult>(request);
+        return await ServiceBookingService.GetListByQueryAsync<ServiceBookingResult>(request);
     }
 
-    public async Task<BusinessResult> Handle(BookingGetByIdQuery request,
+    public async Task<BusinessResult> Handle(ServiceBookingGetByIdQuery request,
         CancellationToken cancellationToken)
     {
-        return await _bookingService.GetById<BookingResult>(request.Id);
+        return await ServiceBookingService.GetById<ServiceBookingResult>(request.Id);
     }
 }

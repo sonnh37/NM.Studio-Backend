@@ -1,39 +1,39 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.ProductXSizes;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Commands.ProductSizes;
 using NM.Studio.Domain.Models.Responses;
-using MediatR;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
 namespace NM.Studio.Handler.Commands;
 
-public class ProductXSizeCommandHandler : BaseCommandHandler,
-    IRequestHandler<ProductXSizeUpdateCommand, BusinessResult>,
-    IRequestHandler<ProductXSizeDeleteCommand, BusinessResult>,
-    IRequestHandler<ProductXSizeCreateCommand, BusinessResult>
+public class ProductSizeCommandHandler : BaseCommandHandler,
+    IRequestHandler<ProductSizeUpdateCommand, BusinessResult>,
+    IRequestHandler<ProductSizeDeleteCommand, BusinessResult>,
+    IRequestHandler<ProductSizeCreateCommand, BusinessResult>
 {
-    protected readonly IProductXSizeService _productXSizeService;
+    protected readonly IProductSizeService ProductSizeService;
 
-    public ProductXSizeCommandHandler(IProductXSizeService productXSizeService) : base(productXSizeService)
+    public ProductSizeCommandHandler(IProductSizeService productSizeService) : base(productSizeService)
     {
-        _productXSizeService = productXSizeService;
+        ProductSizeService = productSizeService;
     }
 
-    public async Task<BusinessResult> Handle(ProductXSizeCreateCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductSizeCreateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productXSizeService.CreateOrUpdate<ProductXSizeResult>(request);
+        var msgView = await ProductSizeService.CreateOrUpdate<ProductSizeResult>(request);
         return msgView;
     }
 
-    public async Task<BusinessResult> Handle(ProductXSizeDeleteCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductSizeDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productXSizeService.DeleteById(request);
+        var msgView = await ProductSizeService.DeleteById(request);
         return msgView;
     }
 
-    public async Task<BusinessResult> Handle(ProductXSizeUpdateCommand request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductSizeUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productXSizeService.Update<ProductXSizeResult>(request);
+        var msgView = await ProductSizeService.Update<ProductSizeResult>(request);
         return msgView;
     }
 }

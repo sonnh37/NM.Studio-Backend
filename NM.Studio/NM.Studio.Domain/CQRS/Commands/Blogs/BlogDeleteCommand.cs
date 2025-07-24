@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.Blogs;
 
 public class BlogDeleteCommand : DeleteCommand
 {
-    
 }

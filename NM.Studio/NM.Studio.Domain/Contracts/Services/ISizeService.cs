@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface ISizeService : IBaseService
 {
-    
 }

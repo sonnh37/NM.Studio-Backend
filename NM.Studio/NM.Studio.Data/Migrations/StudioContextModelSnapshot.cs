@@ -35,7 +35,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -47,7 +47,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Slug")
@@ -61,7 +61,7 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("Album", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.AlbumXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.AlbumMedia", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -74,7 +74,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -83,19 +83,19 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("PhotoId")
+                    b.Property<Guid?>("MediaFileId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AlbumId");
 
-                    b.HasIndex("PhotoId");
+                    b.HasIndex("MediaFileId");
 
-                    b.ToTable("AlbumXPhoto", (string)null);
+                    b.ToTable("AlbumMedia", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Blog", b =>
@@ -105,13 +105,22 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<Guid?>("AuthorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BannerImage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Categories")
+                        .HasColumnType("text");
+
                     b.Property<string>("Content")
                         .HasColumnType("text");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -123,10 +132,32 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Slug")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Summary")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tags")
                         .HasColumnType("text");
 
                     b.Property<string>("Thumbnail")
@@ -135,32 +166,34 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
+                    b.Property<int>("ViewCount")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
 
                     b.ToTable("Blog", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Booking", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Cart", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
-                    b.Property<DateTime?>("BookingDate")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("FullName")
-                        .HasColumnType("text");
+                    b.Property<DateTimeOffset>("ExpiryDate")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -168,28 +201,78 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Phone")
-                        .HasColumnType("text");
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18, 2)");
 
-                    b.Property<Guid?>("ServiceId")
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("VoucherCode")
                         .HasColumnType("text");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ServiceId");
-
                     b.HasIndex("UserId");
 
-                    b.ToTable("Booking", (string)null);
+                    b.ToTable("Cart", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.CartItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<Guid>("CartId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SelectedColor")
+                        .HasColumnType("text");
+
+                    b.Property<string>("SelectedSize")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CartItem", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Category", b =>
@@ -202,19 +285,58 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IconUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaKeywords")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShortDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ThumbnailUrl")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
@@ -229,11 +351,34 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<string>("ColorCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ColorType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -241,18 +386,256 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.ToTable("Color", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.MediaFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("AltText")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Copyright")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedMediaBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayTitle")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan?>("Duration")
+                        .HasColumnType("interval");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Format")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Href")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFeatured")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsWatermarked")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LargeSrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MediumSrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MimeType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Resolution")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Src")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("TakenMediaDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ThumbnailSrc")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MediaFile", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTimeOffset?>("CancelledDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("CompletedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("InternalNotes")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("OrderDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ProcessedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ShippingAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShippingCity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("ShippingCountry")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShippingMethod")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShippingState")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ShippingZipCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TaxAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("VoucherCode")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("VoucherId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VoucherId");
+
+                    b.ToTable("Order", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.OrderItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -262,39 +645,193 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("CustomizationNotes")
                         .HasColumnType("text");
 
-                    b.Property<string>("Href")
-                        .HasColumnType("text");
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Src")
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SelectedColor")
                         .HasColumnType("text");
 
-                    b.Property<string>("Tag")
+                    b.Property<string>("SelectedSize")
                         .HasColumnType("text");
 
-                    b.Property<string>("Title")
+                    b.Property<decimal>("Subtotal")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("OrderItem", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.OrderStatusHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ChangedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IPAddress")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsCustomerNotified")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NotificationError")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PreviousStatus")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserAgent")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Photo", (string)null);
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStatusHistory", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("BillingAddress")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingEmail")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BillingPhone")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("PaymentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PaymentProviderResponse")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("ProcessedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Payment", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
@@ -304,11 +841,20 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<string>("Brand")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Care")
+                        .HasColumnType("text");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Deposit")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Description")
                         .HasColumnType("text");
@@ -316,17 +862,29 @@ namespace NM.Studio.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsRentable")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsSaleable")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Material")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("RentalPrice")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Sku")
                         .HasColumnType("text");
@@ -336,6 +894,9 @@ namespace NM.Studio.Data.Migrations
 
                     b.Property<string>("Status")
                         .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Style")
                         .HasColumnType("text");
 
                     b.Property<Guid?>("SubCategoryId")
@@ -348,11 +909,12 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("Product", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXColor", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductColor", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<Guid?>("ColorId")
                         .HasColumnType("uuid");
@@ -360,7 +922,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
@@ -372,7 +934,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("ProductId")
@@ -384,10 +946,10 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductXColors");
+                    b.ToTable("ProductColor", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductMedia", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -397,7 +959,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsDeleted")
@@ -406,10 +968,10 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("PhotoId")
+                    b.Property<Guid?>("MediaFileId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("ProductId")
@@ -417,23 +979,24 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PhotoId");
+                    b.HasIndex("MediaFileId");
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductXPhoto", (string)null);
+                    b.ToTable("ProductMedia", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXSize", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductSize", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsActive")
@@ -445,7 +1008,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid?>("ProductId")
@@ -460,7 +1023,7 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasIndex("SizeId");
 
-                    b.ToTable("ProductXSizes");
+                    b.ToTable("ProductSize", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.RefreshToken", b =>
@@ -473,7 +1036,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset?>("Expiry")
@@ -491,7 +1054,7 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("PublicKey")
@@ -517,13 +1080,12 @@ namespace NM.Studio.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("gen_random_uuid()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
@@ -535,14 +1097,14 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<decimal?>("Price")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Slug")
                         .HasColumnType("text");
@@ -552,7 +1114,97 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Service", (string)null);
+                    b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ServiceBooking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<DateTimeOffset>("AppointmentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("BookingNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CustomerPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DepositAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("interval");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDepositPaid")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ServicePrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("SpecialRequirements")
+                        .HasColumnType("text");
+
+                    b.Property<string>("StaffNotes")
+                        .HasColumnType("text");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("interval");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ServiceBooking", (string)null);
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Size", b =>
@@ -562,11 +1214,26 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("gen_random_uuid()");
 
+                    b.Property<decimal?>("Bust")
+                        .HasColumnType("numeric");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Hip")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
@@ -574,11 +1241,23 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal?>("Length")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<string>("SizeGuide")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Waist")
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
 
@@ -598,20 +1277,50 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFeatured")
                         .HasColumnType("boolean");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("MetaDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("MetaTitle")
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
+
+                    b.Property<string>("ShortDescription")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Slug")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -633,19 +1342,28 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("text");
 
+                    b.Property<string>("Cache")
+                        .HasColumnType("text");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedDate")
+                    b.Property<DateTimeOffset?>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("Dob")
+                    b.Property<DateTimeOffset?>("Dob")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FullName")
                         .HasColumnType("text");
 
                     b.Property<string>("Gender")
@@ -654,22 +1372,55 @@ namespace NM.Studio.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsEmailVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPhoneVerified")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastLoginDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastLoginIp")
+                        .HasColumnType("text");
+
                     b.Property<string>("LastName")
                         .HasColumnType("text");
 
                     b.Property<string>("LastUpdatedBy")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("LastUpdatedDate")
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nationality")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Otp")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("OtpExpiration")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Password")
                         .HasColumnType("text");
 
+                    b.Property<DateTimeOffset?>("PasswordChangedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("PasswordResetExpiration")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordResetToken")
+                        .HasColumnType("text");
+
                     b.Property<string>("Phone")
                         .HasColumnType("text");
 
-                    b.Property<string>("Preferences")
+                    b.Property<string>("PreferredLanguage")
                         .HasColumnType("text");
 
                     b.Property<string>("Role")
@@ -677,6 +1428,12 @@ namespace NM.Studio.Data.Migrations
 
                     b.Property<string>("Status")
                         .HasColumnType("text");
+
+                    b.Property<string>("TimeZone")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Username")
                         .HasColumnType("text");
@@ -686,57 +1443,279 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("User", (string)null);
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.AlbumXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Voucher", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("ApplicableCategories")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ApplicableProductIds")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTimeOffset>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsCombinableWithOther")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsFirstOrderOnly")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("MaxUsage")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxUsagePerUser")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MaximumDiscount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal?>("MaximumSpend")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("MinimumSpend")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTimeOffset>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserGroupRestrictions")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Voucher", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.VoucherUsageHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("gen_random_uuid()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("CreatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset?>("LastUpdatedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UsedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VoucherId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("VoucherId");
+
+                    b.ToTable("VoucherUsageHistory", (string)null);
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.AlbumMedia", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Album", "Album")
-                        .WithMany("AlbumXPhotos")
+                        .WithMany("AlbumMedias")
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("NM.Studio.Domain.Entities.Photo", "Photo")
-                        .WithMany("AlbumsXPhotos")
-                        .HasForeignKey("PhotoId");
+                    b.HasOne("NM.Studio.Domain.Entities.MediaFile", "MediaFile")
+                        .WithMany("AlbumMedias")
+                        .HasForeignKey("MediaFileId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Album");
 
-                    b.Navigation("Photo");
+                    b.Navigation("MediaFile");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Booking", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Blog", b =>
                 {
-                    b.HasOne("NM.Studio.Domain.Entities.Service", "Service")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ServiceId")
+                    b.HasOne("NM.Studio.Domain.Entities.User", "Author")
+                        .WithMany("Blogs")
+                        .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Cart", b =>
+                {
                     b.HasOne("NM.Studio.Domain.Entities.User", "User")
-                        .WithMany("Bookings")
+                        .WithMany("Carts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Service");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.CartItem", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Cart", "Cart")
+                        .WithMany("Items")
+                        .HasForeignKey("CartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cart");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.User", "User")
+                        .WithMany("Orders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.Voucher", "Voucher")
+                        .WithMany("Orders")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+
+                    b.Navigation("Voucher");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.OrderItem", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Order", "Order")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.OrderStatusHistory", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Order", "Order")
+                        .WithMany("OrderStatusHistories")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Payment", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Order", "Order")
+                        .WithMany("Payments")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.SubCategory", "SubCategory")
                         .WithMany("Products")
-                        .HasForeignKey("SubCategoryId");
+                        .HasForeignKey("SubCategoryId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXColor", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductColor", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Color", "Color")
-                        .WithMany("ProductXColors")
+                        .WithMany("ProductColors")
                         .HasForeignKey("ColorId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
-                        .WithMany("ProductXColors")
+                        .WithMany("ProductColors")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -745,32 +1724,32 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXPhoto", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductMedia", b =>
                 {
-                    b.HasOne("NM.Studio.Domain.Entities.Photo", "Photo")
-                        .WithMany("ProductXPhotos")
-                        .HasForeignKey("PhotoId")
+                    b.HasOne("NM.Studio.Domain.Entities.MediaFile", "MediaFile")
+                        .WithMany("ProductMedias")
+                        .HasForeignKey("MediaFileId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
-                        .WithMany("ProductXPhotos")
+                        .WithMany("ProductMedias")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Photo");
+                    b.Navigation("MediaFile");
 
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductXSize", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductSize", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Product", "Product")
-                        .WithMany("ProductXSizes")
+                        .WithMany("ProductSizes")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.Size", "Size")
-                        .WithMany("ProductXSizes")
+                        .WithMany("ProductSizes")
                         .HasForeignKey("SizeId")
                         .OnDelete(DeleteBehavior.Cascade);
 
@@ -789,6 +1768,25 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ServiceBooking", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Service", "Service")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.User", "User")
+                        .WithMany("ServiceBookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
@@ -799,9 +1797,41 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("NM.Studio.Domain.Entities.VoucherUsageHistory", b =>
+                {
+                    b.HasOne("NM.Studio.Domain.Entities.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.User", "User")
+                        .WithMany("VoucherUsageHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NM.Studio.Domain.Entities.Voucher", "Voucher")
+                        .WithMany("VoucherUsageHistories")
+                        .HasForeignKey("VoucherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Voucher");
+                });
+
             modelBuilder.Entity("NM.Studio.Domain.Entities.Album", b =>
                 {
-                    b.Navigation("AlbumXPhotos");
+                    b.Navigation("AlbumMedias");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Cart", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Category", b =>
@@ -811,23 +1841,32 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Color", b =>
                 {
-                    b.Navigation("ProductXColors");
+                    b.Navigation("ProductColors");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Photo", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.MediaFile", b =>
                 {
-                    b.Navigation("AlbumsXPhotos");
+                    b.Navigation("AlbumMedias");
 
-                    b.Navigation("ProductXPhotos");
+                    b.Navigation("ProductMedias");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("OrderItems");
+
+                    b.Navigation("OrderStatusHistories");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
-                    b.Navigation("ProductXColors");
+                    b.Navigation("ProductColors");
 
-                    b.Navigation("ProductXPhotos");
+                    b.Navigation("ProductMedias");
 
-                    b.Navigation("ProductXSizes");
+                    b.Navigation("ProductSizes");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>
@@ -837,7 +1876,7 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Size", b =>
                 {
-                    b.Navigation("ProductXSizes");
+                    b.Navigation("ProductSizes");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.SubCategory", b =>
@@ -847,9 +1886,24 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.User", b =>
                 {
-                    b.Navigation("Bookings");
+                    b.Navigation("Blogs");
+
+                    b.Navigation("Carts");
+
+                    b.Navigation("Orders");
 
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("ServiceBookings");
+
+                    b.Navigation("VoucherUsageHistories");
+                });
+
+            modelBuilder.Entity("NM.Studio.Domain.Entities.Voucher", b =>
+                {
+                    b.Navigation("Orders");
+
+                    b.Navigation("VoucherUsageHistories");
                 });
 #pragma warning restore 612, 618
         }

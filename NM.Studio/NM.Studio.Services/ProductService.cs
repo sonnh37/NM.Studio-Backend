@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
@@ -18,8 +17,8 @@ namespace NM.Studio.Services;
 
 public class ProductService : BaseService<Product>, IProductService
 {
-    private readonly IProductRepository _productRepository;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IProductRepository _productRepository;
 
     public ProductService(IMapper mapper,
         IUnitOfWork unitOfWork)
@@ -37,8 +36,8 @@ public class ProductService : BaseService<Product>, IProductService
                 .OrderByDescending(m => m.LastUpdatedDate)
                 .Include(c => c.SubCategories)
                 .ThenInclude(sc => sc.Products)
-                .ThenInclude(p => p.ProductXPhotos)
-                .ThenInclude(px => px.Photo);
+                .ThenInclude(p => p.ProductMedias)
+                .ThenInclude(px => px.MediaFile);
 
             var groupedCategories = await categories
                 .Select(c => new ProductRepresentativeByCategoryResult
@@ -57,25 +56,21 @@ public class ProductService : BaseService<Product>, IProductService
                             Id = p.Id,
                             Sku = p.Sku,
                             Slug = p.Slug,
-                            Src = p.ProductXPhotos
-                                .Where(px => px.Photo != null)
+                            Src = p.ProductMedias
+                                .Where(px => px.MediaFile != null)
                                 .OrderBy(px => px.LastUpdatedDate)
-                                .Select(px => px.Photo!.Src)
+                                .Select(px => px.MediaFile!.Src)
                                 .FirstOrDefault()
                         })
                         .SingleOrDefault()
                 })
                 .ToListAsync();
 
-            return new ResponseBuilder<ProductRepresentativeByCategoryResult>()
-                .WithData(groupedCategories)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return BusinessResult.Success(groupedCategories);
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 
@@ -87,28 +82,18 @@ public class ProductService : BaseService<Product>, IProductService
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Name);
             var product = _productRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
             if (product != null)
-                return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage("The product with name already exists.")
-                    .Build();
+                return BusinessResult.Fail("The product with name already exists.");
 
             var entity = await CreateOrUpdateEntity(createCommand);
             var result = _mapper.Map<TResult>(entity);
             if (result == null)
-                return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage(Const.FAIL_SAVE_MSG)
-                    .Build();
+                return BusinessResult.Fail();
 
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 
@@ -119,10 +104,8 @@ public class ProductService : BaseService<Product>, IProductService
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Name);
             var product = _productRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
 
-            if (product == null) return new ResponseBuilder()
-                .WithStatus(Const.NOT_FOUND_CODE)
-                .WithMessage(Const.NOT_FOUND_MSG)
-                .Build();
+            if (product == null)
+                return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
             // check if update input slug != current slug
             if (updateCommand.Slug != product?.Slug)
@@ -131,23 +114,16 @@ public class ProductService : BaseService<Product>, IProductService
                 var product_ = _productRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
                 if (product_ != null)
-                    return new ResponseBuilder()
-                        .WithStatus(Const.FAIL_CODE)
-                        .WithMessage("The product with name already exists.")
-                        .Build();
+                    return BusinessResult.Fail("The product with name already exists.");
             }
 
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 }

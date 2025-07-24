@@ -10,8 +10,7 @@ namespace NM.Studio.Handler.Commands;
 public class SubCategoryCommandHandler : BaseCommandHandler,
     IRequestHandler<SubCategoryUpdateCommand, BusinessResult>,
     IRequestHandler<SubCategoryDeleteCommand, BusinessResult>,
-    IRequestHandler<SubCategoryCreateCommand, BusinessResult>,
-    IRequestHandler<SubCategoryRestoreCommand, BusinessResult>
+    IRequestHandler<SubCategoryCreateCommand, BusinessResult>
 {
     protected readonly ISubCategoryService _subCategoryService;
 
@@ -31,16 +30,11 @@ public class SubCategoryCommandHandler : BaseCommandHandler,
         var msgView = await _baseService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
+    
 
     public async Task<BusinessResult> Handle(SubCategoryUpdateCommand request, CancellationToken cancellationToken)
     {
         var msgView = await _baseService.CreateOrUpdate<SubCategoryResult>(request);
         return msgView;
-    }
-
-    public async Task<BusinessResult> Handle(SubCategoryRestoreCommand request, CancellationToken cancellationToken)
-    {
-        var businessResult = await _subCategoryService.Restore<SubCategoryResult>(request);
-        return businessResult;
     }
 }

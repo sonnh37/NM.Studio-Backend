@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
-using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
-using NM.Studio.Domain.CQRS.Queries.Categories;
 using NM.Studio.Domain.CQRS.Queries.Sizes;
 
 namespace NM.Studio.API.Controllers;
@@ -54,7 +52,7 @@ public class SizeController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] SizeRestoreCommand command)
     {

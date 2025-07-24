@@ -3,24 +3,19 @@ using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using AutoMapper;
 using Google.Apis.Auth;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Utilities;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Services.Bases;
 using OtpNet;
 
@@ -28,13 +23,13 @@ namespace NM.Studio.Services;
 
 public class UserService : BaseService<User>, IUserService
 {
-    private readonly IConfiguration _configuration;
-    private readonly IUserRepository _userRepository;
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly int _expirationMinutes;
-    private readonly Dictionary<string, string> _otpStorage = new();
-    private readonly Dictionary<string, DateTime> _expiryStorage = new();
     private readonly string _clientId;
+    private readonly IConfiguration _configuration;
+    private readonly int _expirationMinutes;
+    private readonly Dictionary<string, DateTime> _expiryStorage = new();
+    private readonly Dictionary<string, string> _otpStorage = new();
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IUserRepository _userRepository;
 
     public UserService(IMapper mapper, IUnitOfWork unitOfWork, IConfiguration configuration)
         : base(mapper, unitOfWork)
@@ -45,36 +40,24 @@ public class UserService : BaseService<User>, IUserService
         _expirationMinutes = int.Parse(_configuration["TokenSetting:AccessTokenExpiryMinutes"] ?? "30");
     }
 
-    private string GenerateSecretKey(int length)
-    {
-        byte[] secretKey = KeyGeneration.GenerateRandomKey(length);
-        return Base32Encoding.ToString(secretKey);
-    }
-
     public async Task<BusinessResult> UpdatePassword(UserPasswordCommand userPasswordCommand)
     {
         try
         {
             var userCurrent = GetUser();
-            if (userCurrent == null) return HandlerFail("Please, login again.");
+            if (userCurrent == null) return BusinessResult.Fail("Please, login again.");
             userCurrent.Password = userPasswordCommand.Password;
-            InitializeBaseEntityForUpdate(userCurrent);
+            SetBaseEntityProperties(userCurrent, EntityOperation.Update);
             _userRepository.Update(userCurrent);
             var isSave = await _unitOfWork.SaveChanges();
 
-            if (!isSave)
-            {
-                return HandlerFail(Const.FAIL_SAVE_MSG);
-            }
+            if (!await _unitOfWork.SaveChanges()) return BusinessResult.Fail();
 
-            return new ResponseBuilder()
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return BusinessResult.Success();
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 
@@ -85,20 +68,11 @@ public class UserService : BaseService<User>, IUserService
             var entity = await CreateOrUpdateEntity(createCommand);
             var userResult = _mapper.Map<UserResult>(entity);
 
-            if (userResult == null)
-            {
-                return HandlerFail(Const.FAIL_SAVE_MSG);
-            }
-
-            return new ResponseBuilder<UserResult>()
-                .WithData(userResult)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return userResult == null ? BusinessResult.Fail() : BusinessResult.Success(userResult);
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 
@@ -109,21 +83,30 @@ public class UserService : BaseService<User>, IUserService
             var entity = await CreateOrUpdateEntity(updateCommand);
             var userResult = _mapper.Map<UserResult>(entity);
 
-            if (userResult == null)
-            {
-                return HandlerFail(Const.FAIL_SAVE_MSG);
-            }
+            return userResult == null ? BusinessResult.Fail() : BusinessResult.Success(userResult);
 
-            return new ResponseBuilder<UserResult>()
-                .WithData(userResult)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
+    }
+
+    private string GenerateSecretKey(int length)
+    {
+        var secretKey = KeyGeneration.GenerateRandomKey(length);
+        return Base32Encoding.ToString(secretKey);
+    }
+
+    private async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token)
+    {
+        var settings = new GoogleJsonWebSignature.ValidationSettings
+        {
+            Audience = new List<string> { _clientId }
+        };
+
+        var payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
+        return payload;
     }
 
     #region Business
@@ -132,8 +115,8 @@ public class UserService : BaseService<User>, IUserService
     {
         try
         {
-            string secret = GenerateSecretKey(10); // Bạn có thể chọn độ dài hợp lý, ví dụ: 10
-            string otp = GenerateOTP(secret); // Tạo OTP
+            var secret = GenerateSecretKey(10); // Bạn có thể chọn độ dài hợp lý, ví dụ: 10
+            var otp = GenerateOTP(secret); // Tạo OTP
 
             var fromAddress = new MailAddress("sonnh1106.se@gmail.com");
             var toAddress = new MailAddress(email);
@@ -155,21 +138,18 @@ public class UserService : BaseService<User>, IUserService
                    {
                        Subject = subject,
                        Body = otp,
-                       IsBodyHtml = false,
+                       IsBodyHtml = false
                    })
             {
                 smtp.Send(message);
                 _otpStorage[email] = otp; // Lưu trữ OTP cho email
                 _expiryStorage[email] = DateTime.UtcNow.AddMinutes(5); // OTP hết hạn sau 5 phút
-                return new ResponseBuilder()
-                    .WithStatus(Const.SUCCESS_CODE)
-                    .WithMessage(Const.SUCCESS_READ_MSG)
-                    .Build();
+                return BusinessResult.Success();
             }
         }
         catch (Exception ex)
         {
-            return HandlerError(ex.Message);
+            return BusinessResult.ExceptionError(ex.Message);
         }
     }
 
@@ -182,19 +162,12 @@ public class UserService : BaseService<User>, IUserService
 
     public BusinessResult ValidateOtp(string email, string otpInput)
     {
-        if (_otpStorage.TryGetValue(email, out string storedOtp) &&
-            _expiryStorage.TryGetValue(email, out DateTime expiry))
-        {
+        if (_otpStorage.TryGetValue(email, out var storedOtp) &&
+            _expiryStorage.TryGetValue(email, out var expiry))
             if (expiry > DateTime.UtcNow && storedOtp == otpInput)
-            {
-                return HandlerFail("OTP validation failed");
-            }
-        }
+                return BusinessResult.Fail("OTP validation failed");
 
-        return new ResponseBuilder()
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_READ_MSG)
-            .Build();
+        return BusinessResult.Success();
     }
 
 
@@ -204,16 +177,9 @@ public class UserService : BaseService<User>, IUserService
 
         var userResult = _mapper.Map<UserResult>(user);
 
-        if (userResult == null)
-        {
-            return HandlerNotFound("User not found");
-        }
+        if (userResult == null) return BusinessResult.Fail("User not found");
 
-        return new ResponseBuilder<UserResult>()
-            .WithData(userResult)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_READ_MSG)
-            .Build();
+        return BusinessResult.Success(userResult);
     }
 
     public BusinessResult DecodeToken(string token)
@@ -221,10 +187,7 @@ public class UserService : BaseService<User>, IUserService
         var handler = new JwtSecurityTokenHandler();
 
         // Kiểm tra nếu token không hợp lệ
-        if (!handler.CanReadToken(token))
-        {
-            throw new ArgumentException("Token không hợp lệ", nameof(token));
-        }
+        if (!handler.CanReadToken(token)) throw new ArgumentException("Token không hợp lệ", nameof(token));
 
         // Giải mã token
         var jwtToken = handler.ReadJwtToken(token);
@@ -242,14 +205,10 @@ public class UserService : BaseService<User>, IUserService
             Id = id,
             Name = name,
             Role = role,
-            Exp = long.Parse(exp),
+            Exp = long.Parse(exp)
         };
 
-        return new ResponseBuilder<DecodedToken>()
-            .WithData(decodedToken)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage("Decoded Token")
-            .Build();
+        return BusinessResult.Success(decodedToken);
     }
 
     // private (string token, string expiration) CreateToken(UserResult user)
@@ -295,11 +254,11 @@ public class UserService : BaseService<User>, IUserService
         var username = await _userRepository.FindUsernameOrEmail(user.Username);
         return username switch
         {
-            null => await base.CreateOrUpdate<UserResult>(user),
-            _ => HandlerFail("The account is already registered.")
+            null => await CreateOrUpdate<UserResult>(user),
+            _ => BusinessResult.Fail("The account is already registered.")
         };
     }
-    
+
     public async Task<BusinessResult> GetByUsernameOrEmail(string key)
     {
         var user = await _userRepository.FindUsernameOrEmail(key);
@@ -308,41 +267,23 @@ public class UserService : BaseService<User>, IUserService
 
         return userResult switch
         {
-            null => HandlerNotFound(),
-            _ => new ResponseBuilder()
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build()
+            null => BusinessResult.Fail(),
+            _ => BusinessResult.Success(userResult)
         };
     }
 
     public async Task<BusinessResult> GetByRefreshToken(UserGetByRefreshTokenQuery request)
     {
-        if (request.RefreshToken == null) return HandlerNotFound("Refresh token is null");
+        if (request.RefreshToken == null) return BusinessResult.Fail("Refresh token is null");
         var userRefreshToken = await _refreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
         var refreshTokenResult = _mapper.Map<RefreshTokenResult>(userRefreshToken);
 
-        if (refreshTokenResult == null) return HandlerNotFound("Not found refresh token");
+        if (refreshTokenResult == null) return BusinessResult.Fail("Not found refresh token");
 
-        return new ResponseBuilder<RefreshTokenResult>()
-            .WithData(userRefreshToken)
-            .WithStatus(Const.SUCCESS_CODE)
-            .WithMessage(Const.SUCCESS_READ_MSG)
-            .Build();
+        return BusinessResult.Success(refreshTokenResult);
     }
 
     #endregion
-
-    private async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(string token)
-    {
-        var settings = new GoogleJsonWebSignature.ValidationSettings()
-        {
-            Audience = new List<string> { _clientId }
-        };
-
-        GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(token, settings);
-        return payload;
-    }
 
     // public async Task<BusinessResult> VerifyGoogleTokenAsync(VerifyGoogleTokenRequest request)
     // {

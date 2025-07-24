@@ -1,7 +1,7 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Products;
 using NM.Studio.Domain.Models.Responses;
-using MediatR;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
@@ -10,8 +10,7 @@ namespace NM.Studio.Handler.Commands;
 public class ProductCommandHandler : BaseCommandHandler,
     IRequestHandler<ProductCreateCommand, BusinessResult>,
     IRequestHandler<ProductUpdateCommand, BusinessResult>,
-    IRequestHandler<ProductDeleteCommand, BusinessResult>,
-    IRequestHandler<ProductRestoreCommand, BusinessResult>
+    IRequestHandler<ProductDeleteCommand, BusinessResult>
 {
     protected readonly IProductService _productService;
 
@@ -36,11 +35,5 @@ public class ProductCommandHandler : BaseCommandHandler,
     {
         var msgView = await _productService.Update<ProductResult>(request);
         return msgView;
-    }
-
-    public async Task<BusinessResult> Handle(ProductRestoreCommand request, CancellationToken cancellationToken)
-    {
-        var businessResult = await _productService.Restore<ProductResult>(request);
-        return businessResult;
     }
 }

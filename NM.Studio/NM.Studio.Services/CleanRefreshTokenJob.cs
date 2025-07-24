@@ -1,18 +1,18 @@
-﻿namespace NM.Studio.Services;
+﻿using Microsoft.Extensions.Logging;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using Quartz;
-using System;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
+
+namespace NM.Studio.Services;
 
 public class CleanRefreshTokenJob : IJob
 {
+    private readonly ILogger<CleanRefreshTokenJob> _logger;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<CleanRefreshTokenJob> _logger;
 
-    public CleanRefreshTokenJob(IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork, ILogger<CleanRefreshTokenJob> logger)
+    public CleanRefreshTokenJob(IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork,
+        ILogger<CleanRefreshTokenJob> logger)
     {
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;

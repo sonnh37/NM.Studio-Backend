@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Albums;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("albums")]
 public class AlbumController : BaseController
 {
     public AlbumController(IMediator mediator) : base(mediator)
@@ -50,14 +49,6 @@ public class AlbumController : BaseController
     public async Task<IActionResult> Update([FromBody] AlbumUpdateCommand albumUpdateCommand)
     {
         var businessResult = await _mediator.Send(albumUpdateCommand);
-
-        return Ok(businessResult);
-    }
-    
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] AlbumRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
 
         return Ok(businessResult);
     }

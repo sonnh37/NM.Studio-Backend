@@ -9,7 +9,7 @@ public class UserUpdateCommand : UpdateCommand
 
     public string? LastName { get; set; }
 
-    public string? Avatar  { get; set; }
+    public string? Avatar { get; set; }
 
     public string? Email { get; set; }
 
@@ -28,6 +28,6 @@ public class UserUpdateCommand : UpdateCommand
     public Role? Role { get; set; }
 
     public UserStatus? Status { get; set; }
-    
-    public string? Preferences { get; set; } 
+
+    public string? Preferences { get; set; }
 }

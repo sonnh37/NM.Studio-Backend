@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.Categories;
 
 public class CategoryRestoreCommand : UpdateCommand
 {
-    
 }

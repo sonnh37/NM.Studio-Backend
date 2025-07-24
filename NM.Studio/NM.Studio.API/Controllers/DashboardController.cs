@@ -12,7 +12,7 @@ public class DashboardController : BaseController
     public DashboardController(IMediator mediator) : base(mediator)
     {
     }
-    
+
     [HttpGet("stats")]
     public async Task<IActionResult> GetStats([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
     {

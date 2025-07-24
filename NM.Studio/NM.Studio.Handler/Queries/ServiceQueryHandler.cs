@@ -1,8 +1,8 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.Services;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -20,7 +20,7 @@ public class ServiceQueryHandler :
     public async Task<BusinessResult> Handle(ServiceGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _serviceService.GetAll<ServiceResult>(request);
+        return await _serviceService.GetListByQueryAsync<ServiceResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ServiceGetByIdQuery request,

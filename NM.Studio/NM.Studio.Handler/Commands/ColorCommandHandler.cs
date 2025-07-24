@@ -1,8 +1,7 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.Models.Responses;
-using MediatR;
-using NM.Studio.Domain.CQRS.Commands.Categories;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Colors;
+using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
@@ -11,8 +10,7 @@ namespace NM.Studio.Handler.Commands;
 public class ColorCommandHandler : BaseCommandHandler,
     IRequestHandler<ColorUpdateCommand, BusinessResult>,
     IRequestHandler<ColorDeleteCommand, BusinessResult>,
-    IRequestHandler<ColorCreateCommand, BusinessResult>,
-    IRequestHandler<ColorRestoreCommand, BusinessResult>
+    IRequestHandler<ColorCreateCommand, BusinessResult>
 {
     protected readonly IColorService _colorService;
 
@@ -37,11 +35,5 @@ public class ColorCommandHandler : BaseCommandHandler,
     {
         var msgView = await _baseService.CreateOrUpdate<ColorResult>(request);
         return msgView;
-    }
-
-    public async Task<BusinessResult> Handle(ColorRestoreCommand request, CancellationToken cancellationToken)
-    {
-        var businessResult = await _colorService.Restore<ColorResult>(request);
-        return businessResult;
     }
 }

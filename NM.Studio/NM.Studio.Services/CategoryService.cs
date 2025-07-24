@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;

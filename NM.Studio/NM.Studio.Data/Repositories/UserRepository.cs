@@ -1,10 +1,9 @@
 ﻿using AutoMapper;
-using NM.Studio.Domain.Contracts.Repositories;
-using NM.Studio.Domain.CQRS.Queries.Users;
-using NM.Studio.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Data.Context;
 using NM.Studio.Data.Repositories.Base;
+using NM.Studio.Domain.Contracts.Repositories;
+using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Data.Repositories;
 
@@ -26,7 +25,7 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
         return result;
     }
-    
+
     public async Task<User?> GetByEmail(string keyword)
     {
         var queryable = GetQueryable();

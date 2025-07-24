@@ -18,5 +18,4 @@ public class ProductUpdateCommand : UpdateCommand
     public string? Description { get; set; }
 
     public ProductStatus Status { get; set; }
-
 }

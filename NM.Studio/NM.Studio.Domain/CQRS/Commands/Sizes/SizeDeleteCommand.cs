@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.CQRS.Commands.Sizes;
 
 public class SizeDeleteCommand : DeleteCommand
 {
-    
 }

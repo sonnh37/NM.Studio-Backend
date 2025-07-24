@@ -9,11 +9,13 @@ public class User : BaseEntity
 
     public string? LastName { get; set; }
 
-    public string? Avatar  { get; set; }
+    public string? FullName { get; set; }
+
+    public string? Avatar { get; set; }
 
     public string? Email { get; set; }
 
-    public DateTime? Dob { get; set; }
+    public DateTimeOffset? Dob { get; set; }
 
     public string? Address { get; set; }
 
@@ -28,10 +30,38 @@ public class User : BaseEntity
     public Role? Role { get; set; }
 
     public UserStatus? Status { get; set; }
-    
-    public string? Preferences { get; set; } 
-    
-    public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-    
+
+    public string? Cache { get; set; }
+
+    public string? Otp { get; set; }
+
+    public DateTimeOffset? OtpExpiration { get; set; }
+
+    // Account security and verification
+    public bool IsEmailVerified { get; set; }
+    public bool IsPhoneVerified { get; set; }
+    public bool TwoFactorEnabled { get; set; }
+
+    // Audit fields
+    public DateTimeOffset? LastLoginDate { get; set; }
+    public string? LastLoginIp { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTimeOffset? LockoutEnd { get; set; }
+
+    // Additional user info
+    public string? Nationality { get; set; }
+    public string? PreferredLanguage { get; set; }
+    public string? TimeZone { get; set; }
+
+    // Profile settings
+    public DateTimeOffset? PasswordChangedDate { get; set; }
+    public string? PasswordResetToken { get; set; }
+    public DateTimeOffset? PasswordResetExpiration { get; set; }
+
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+    public virtual ICollection<ServiceBooking> ServiceBookings { get; set; } = new List<ServiceBooking>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<VoucherUsageHistory> VoucherUsageHistories { get; set; } = new List<VoucherUsageHistory>();
+    public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
+    public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 }

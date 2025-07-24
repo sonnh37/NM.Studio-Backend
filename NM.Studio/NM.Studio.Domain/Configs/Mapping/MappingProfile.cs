@@ -1,16 +1,16 @@
 ﻿using AutoMapper;
 using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.CQRS.Commands.AlbumXPhotos;
+using NM.Studio.Domain.CQRS.Commands.AlbumMedias;
 using NM.Studio.Domain.CQRS.Commands.Blogs;
-using NM.Studio.Domain.CQRS.Commands.Bookings;
 using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.CQRS.Commands.Colors;
-using NM.Studio.Domain.CQRS.Commands.Photos;
+using NM.Studio.Domain.CQRS.Commands.MediaFiles;
 using NM.Studio.Domain.CQRS.Commands.Products;
-using NM.Studio.Domain.CQRS.Commands.ProductXColors;
-using NM.Studio.Domain.CQRS.Commands.ProductXPhotos;
-using NM.Studio.Domain.CQRS.Commands.ProductXSizes;
+using NM.Studio.Domain.CQRS.Commands.ProductColors;
+using NM.Studio.Domain.CQRS.Commands.ProductMedias;
+using NM.Studio.Domain.CQRS.Commands.ProductSizes;
 using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
+using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
 using NM.Studio.Domain.CQRS.Commands.Services;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
 using NM.Studio.Domain.CQRS.Commands.SubCategories;
@@ -28,7 +28,7 @@ public class MappingProfile : Profile
         SubCategoryMapping();
         UserMapping();
         ServiceMapping();
-        PhotoMapping();
+        MediaFileMapping();
         ProductMapping();
         AlbumMapping();
         SizeMapping();
@@ -43,16 +43,16 @@ public class MappingProfile : Profile
         CreateMap<Album, AlbumCreateCommand>().ReverseMap();
         CreateMap<Album, AlbumUpdateCommand>().ReverseMap();
 
-        CreateMap<AlbumXPhoto, AlbumXPhotoResult>().ReverseMap();
-        CreateMap<AlbumXPhoto, AlbumXPhotoCreateCommand>().ReverseMap();
-        CreateMap<AlbumXPhoto, AlbumXPhotoUpdateCommand>().ReverseMap();
+        CreateMap<AlbumMedia, AlbumMediaResult>().ReverseMap();
+        CreateMap<AlbumMedia, AlbumMediaCreateCommand>().ReverseMap();
+        CreateMap<AlbumMedia, AlbumMediaUpdateCommand>().ReverseMap();
     }
 
     private void BookingMapping()
     {
-        CreateMap<Booking, BookingResult>().ReverseMap();
-        CreateMap<Booking, BookingCreateCommand>().ReverseMap();
-        CreateMap<Booking, BookingUpdateCommand>().ReverseMap();
+        CreateMap<ServiceBooking, ServiceBookingResult>().ReverseMap();
+        CreateMap<ServiceBooking, ServiceBookingCreateCommand>().ReverseMap();
+        CreateMap<ServiceBooking, ServiceBookingUpdateCommand>().ReverseMap();
     }
 
     private void ProductMapping()
@@ -61,17 +61,17 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductCreateCommand>().ReverseMap();
         CreateMap<Product, ProductUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductXPhoto, ProductXPhotoResult>().ReverseMap();
-        CreateMap<ProductXPhoto, ProductXPhotoCreateCommand>().ReverseMap();
-        CreateMap<ProductXPhoto, ProductXPhotoUpdateCommand>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaResult>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaCreateCommand>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductXColor, ProductXColorResult>().ReverseMap();
-        CreateMap<ProductXColor, ProductXColorCreateCommand>().ReverseMap();
-        CreateMap<ProductXColor, ProductXColorUpdateCommand>().ReverseMap();
+        CreateMap<ProductColor, ProductColorResult>().ReverseMap();
+        CreateMap<ProductColor, ProductColorCreateCommand>().ReverseMap();
+        CreateMap<ProductColor, ProductColorUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductXSize, ProductXSizeResult>().ReverseMap();
-        CreateMap<ProductXSize, ProductXSizeCreateCommand>().ReverseMap();
-        CreateMap<ProductXSize, ProductXSizeUpdateCommand>().ReverseMap();
+        CreateMap<ProductSize, ProductSizeResult>().ReverseMap();
+        CreateMap<ProductSize, ProductSizeCreateCommand>().ReverseMap();
+        CreateMap<ProductSize, ProductSizeUpdateCommand>().ReverseMap();
     }
 
     private void ServiceMapping()
@@ -98,12 +98,12 @@ public class MappingProfile : Profile
         CreateMap<RefreshToken, RefreshTokenUpdateCommand>().ReverseMap();
     }
 
-    private void PhotoMapping()
+    private void MediaFileMapping()
     {
-        CreateMap<Photo, PhotoResult>().ReverseMap();
-        CreateMap<Photo, PhotoCreateCommand>().ReverseMap();
-        CreateMap<Photo, PhotoUpdateCommand>().ReverseMap();
-        CreateMap<PhotoResult, PhotoUpdateCommand>().ReverseMap();
+        CreateMap<MediaFile, MediaFileResult>().ReverseMap();
+        CreateMap<MediaFile, MediaFileCreateCommand>().ReverseMap();
+        CreateMap<MediaFile, MediaFileUpdateCommand>().ReverseMap();
+        CreateMap<MediaFileResult, MediaFileUpdateCommand>().ReverseMap();
     }
 
     private void SizeMapping()

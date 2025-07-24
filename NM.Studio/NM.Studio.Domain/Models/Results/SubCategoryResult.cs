@@ -9,7 +9,6 @@ public class SubCategoryResult : BaseResult
     public Guid? CategoryId { get; set; }
 
     public CategoryResult? Category { get; set; }
-    
-    public List<ProductResult> Products { get; set; } = new();
 
+    public List<ProductResult> Products { get; set; } = new();
 }

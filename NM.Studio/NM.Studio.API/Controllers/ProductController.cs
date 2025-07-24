@@ -1,9 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Products;
-using NM.Studio.Domain.CQRS.Queries.Products;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.CQRS.Commands.Products;
+using NM.Studio.Domain.CQRS.Queries.Products;
 
 namespace NM.Studio.API.Controllers;
 
@@ -23,7 +23,7 @@ public class ProductController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [AllowAnonymous]
     [HttpGet("representative-by-category")]
     public async Task<IActionResult> GetRepresentativeByCategory([FromQuery] ProductRepresentativeByCategoryQuery query)
@@ -62,7 +62,7 @@ public class ProductController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] ProductRestoreCommand command)
     {

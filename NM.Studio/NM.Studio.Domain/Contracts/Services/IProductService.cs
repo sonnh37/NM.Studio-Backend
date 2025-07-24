@@ -9,7 +9,7 @@ namespace NM.Studio.Domain.Contracts.Services;
 public interface IProductService : IBaseService
 {
     Task<BusinessResult> Create<TResult>(ProductCreateCommand createCommand) where TResult : BaseResult;
-    
+
     Task<BusinessResult> Update<TResult>(ProductUpdateCommand createCommand) where TResult : BaseResult;
 
     Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query);

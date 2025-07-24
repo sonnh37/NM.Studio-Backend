@@ -52,7 +52,7 @@ public class BlogController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] BlogRestoreCommand command)
     {
@@ -60,7 +60,7 @@ public class BlogController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] BlogDeleteCommand blogDeleteCommand)
     {

@@ -8,30 +8,30 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetEnv" Version="3.1.1" />
+        <PackageReference Include="DotNetEnv" Version="3.1.1"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.8"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.5"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
+        <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\NM.Studio.Data\NM.Studio.Data.csproj" />
-        <ProjectReference Include="..\NM.Studio.Domain\NM.Studio.Domain.csproj" />
-        <ProjectReference Include="..\NM.Studio.Handler\NM.Studio.Handler.csproj" />
-        <ProjectReference Include="..\NM.Studio.Services\NM.Studio.Services.csproj" />
-        <ProjectReference Include="..\NM.Studio.Validations\NM.Studio.Validations.csproj" />
+        <ProjectReference Include="..\NM.Studio.Data\NM.Studio.Data.csproj"/>
+        <ProjectReference Include="..\NM.Studio.Domain\NM.Studio.Domain.csproj"/>
+        <ProjectReference Include="..\NM.Studio.Handler\NM.Studio.Handler.csproj"/>
+        <ProjectReference Include="..\NM.Studio.Services\NM.Studio.Services.csproj"/>
+        <ProjectReference Include="..\NM.Studio.Validations\NM.Studio.Validations.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

@@ -6,5 +6,4 @@ namespace NM.Studio.Domain.CQRS.Queries.Products;
 
 public class ProductRepresentativeByCategoryQuery : BaseQuery, IRequest<BusinessResult>
 {
-    
 }

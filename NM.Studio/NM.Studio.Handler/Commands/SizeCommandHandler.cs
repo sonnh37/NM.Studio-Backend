@@ -1,8 +1,7 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.Models.Responses;
-using MediatR;
-using NM.Studio.Domain.CQRS.Commands.Categories;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
+using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Handler.Commands.Base;
 
@@ -11,8 +10,7 @@ namespace NM.Studio.Handler.Commands;
 public class SizeCommandHandler : BaseCommandHandler,
     IRequestHandler<SizeUpdateCommand, BusinessResult>,
     IRequestHandler<SizeDeleteCommand, BusinessResult>,
-    IRequestHandler<SizeCreateCommand, BusinessResult>,
-    IRequestHandler<SizeRestoreCommand, BusinessResult>
+    IRequestHandler<SizeCreateCommand, BusinessResult>
 {
     protected readonly ISizeService _sizeService;
 
@@ -33,15 +31,10 @@ public class SizeCommandHandler : BaseCommandHandler,
         return msgView;
     }
 
+
     public async Task<BusinessResult> Handle(SizeUpdateCommand request, CancellationToken cancellationToken)
     {
         var msgView = await _baseService.CreateOrUpdate<SizeResult>(request);
         return msgView;
-    }
-
-    public async Task<BusinessResult> Handle(SizeRestoreCommand request, CancellationToken cancellationToken)
-    {
-        var businessResult = await _sizeService.Restore<SizeResult>(request);
-        return businessResult;
     }
 }

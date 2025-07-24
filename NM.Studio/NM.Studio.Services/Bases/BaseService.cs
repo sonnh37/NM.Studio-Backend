@@ -1,7 +1,5 @@
-﻿using System.Linq.Expressions;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
 using NM.Studio.Domain.Contracts.Services.Bases;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -9,7 +7,6 @@ using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
@@ -25,9 +22,9 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     where TEntity : BaseEntity
 {
     private readonly IBaseRepository<TEntity> _baseRepository;
+    protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly IMapper _mapper;
     protected readonly IUnitOfWork _unitOfWork;
-    protected readonly IHttpContextAccessor _httpContextAccessor;
 
     protected BaseService(IMapper mapper, IUnitOfWork unitOfWork)
     {
@@ -37,124 +34,56 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         _httpContextAccessor ??= new HttpContextAccessor();
     }
 
-    public User? GetUser()
-    {
-        try
-        {
-            if (_httpContextAccessor?.HttpContext == null ||
-                !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                return null;
-
-            // Lấy thông tin UserId từ Claims
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
-                return null;
-
-            // Lấy thêm thông tin User từ database nếu cần
-            var userId = Guid.Parse(userIdClaim);
-            var user = _unitOfWork.UserRepository.GetById(userId).Result;
-
-            return user;
-        }
-        catch (Exception ex)
-        {
-            // Log lỗi nếu cần thiết
-            return null;
-        }
-    }
-    
-    public BusinessResult GetUserByCookie()
-    {
-        try
-        {
-            if (_httpContextAccessor?.HttpContext == null ||
-                !_httpContextAccessor.HttpContext.User.Identity.IsAuthenticated)
-                return HandlerNotFound("Not login yet");
-
-            // Lấy thông tin UserId từ Claims
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirst("Id")?.Value;
-            if (string.IsNullOrEmpty(userIdClaim))
-                return HandlerNotFound("No user claim found");
-
-            // Lấy thêm thông tin User từ database nếu cần
-            var userId = Guid.Parse(userIdClaim);
-            var user = _unitOfWork.UserRepository.GetById(userId).Result;
-            var userResult = _mapper.Map<UserResult>(user);
-
-            if (userResult == null) return HandlerNotFound();
-            
-            return new ResponseBuilder<UserResult>()
-                .WithData(userResult)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
-        }
-        catch (Exception ex)
-        {
-            return HandlerError(ex.Message);
-        }
-    }
-
     #region Queries
 
     public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
     {
         try
         {
-            var entity = await _baseRepository.GetById(id, true);
+            var entity = await _baseRepository.GetById(id);
             var result = _mapper.Map<TResult>(entity);
             if (result == null)
-                return new ResponseBuilder<TResult>()
-                    .WithData(result)
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage(Const.NOT_FOUND_MSG)
-                    .Build();
+                return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return BusinessResult.Success();
         }
         catch (Exception ex)
         {
-            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            var errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
 
-    
-    public async Task<BusinessResult> GetByOptions<TResult>(Expression<Func<TEntity, bool>> predicate) where TResult : BaseResult
-    {
-        try
-        {
-            var entity = await _baseRepository.GetByOptions(predicate);
-            var result = _mapper.Map<TResult>(entity);
-            if (result == null)
-                return new ResponseBuilder<TResult>()
-                    .WithData(result)
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage(Const.NOT_FOUND_MSG)
-                    .Build();
 
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
-        }
-        catch (Exception ex)
-        {
-            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
-        }
-    }
+    // public async Task<BusinessResult> GetByOptions<TResult>(Expression<Func<TEntity, bool>> predicate)
+    //     where TResult : BaseResult
+    // {
+    //     try
+    //     {
+    //         var entity = await _baseRepository.GetByOptions(predicate);
+    //         var result = _mapper.Map<TResult>(entity);
+    //         if (result == null)
+    //             return new ResponseBuilder<TResult>()
+    //                 .WithData(result)
+    //                 .WithStatus(Const.NOT_FOUND_CODE)
+    //                 .WithMessage(Const.NOT_FOUND_MSG)
+    //                 .Build();
+    //
+    //         return new ResponseBuilder<TResult>()
+    //             .WithData(result)
+    //             .WithStatus(Const.SUCCESS_CODE)
+    //             .WithMessage(Const.SUCCESS_READ_MSG)
+    //             .Build();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
+    //         return new ResponseBuilder()
+    //             .WithStatus(Const.FAIL_CODE)
+    //             .WithMessage(errorMessage)
+    //             .Build();
+    //     }
+    // }
 
     public async Task<BusinessResult> GetAll<TResult>() where TResult : BaseResult
     {
@@ -162,89 +91,30 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         {
             var entities = await _baseRepository.GetAll();
             var results = _mapper.Map<List<TResult>>(entities);
-            if (!results.Any())
-            {
-                return new ResponseBuilder<TResult>()
-                    .WithData(results)
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage(Const.NOT_FOUND_MSG)
-                    .Build();
-            }
 
-            return new ResponseBuilder<TResult>()
-                .WithData(results)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return BusinessResult.Success(results);
         }
         catch (Exception ex)
         {
-            string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            var errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
 
-    public async Task<BusinessResult> GetAll<TResult>(GetQueryableQuery x) where TResult : BaseResult
+    public async Task<BusinessResult> GetListByQueryAsync<TResult>(GetQueryableQuery query) where TResult : BaseResult
     {
         try
         {
-            List<TResult>? results;
+            var (entities, totalCount) = await _baseRepository.GetListByQueryAsync(query);
+            var results = _mapper.Map<List<TResult>>(entities);
+            var tableResponse = new QueryResult(results, totalCount, query);
 
-            if (!x.IsPagination)
-            {
-                var allData = await _baseRepository.GetAll(x);
-                results = _mapper.Map<List<TResult>>(allData);
-                if (!results.Any())
-                {
-                    return new ResponseBuilder<TResult>()
-                        .WithData(results)
-                        .WithStatus(Const.NOT_FOUND_CODE)
-                        .WithMessage(Const.NOT_FOUND_MSG)
-                        .Build();
-                }
-
-                return new ResponseBuilder<TResult>()
-                    .WithData(results)
-                    .WithStatus(Const.SUCCESS_CODE)
-                    .WithMessage(Const.SUCCESS_READ_MSG)
-                    .Build();
-            }
-
-            var tuple = await _baseRepository.GetPaged(x);
-            // create results table response
-            results = _mapper.Map<List<TResult>>(tuple.Item1);
-            var tableResponse = new ResultsTableResponse<TResult>
-            {
-                GetQueryableQuery = x,
-                Item = (results, tuple.Item2),
-            };
-
-            if (!results.Any())
-            {
-                return new ResponseBuilder<TResult>()
-                    .WithData(tableResponse)
-                    .WithStatus(Const.NOT_FOUND_CODE)
-                    .WithMessage(Const.NOT_FOUND_MSG)
-                    .Build();
-            }
-
-
-            return new ResponseBuilder<TResult>()
-                .WithData(tableResponse)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_READ_MSG)
-                .Build();
+            return BusinessResult.Success(tableResponse);
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred in {typeof(TResult).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
 
@@ -260,25 +130,14 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
             var result = _mapper.Map<TResult>(entity);
             if (result == null)
-                return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage(Const.FAIL_SAVE_MSG).Build();
+                return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
 
-            var msg = new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
-
-            return msg;
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
 
@@ -287,28 +146,27 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     {
         try
         {
-            var entity = await RestoreEntity(updateCommand);
+            TEntity? entity;
+
+            entity = await _baseRepository.GetById(updateCommand.Id);
+            if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+
+            entity.IsDeleted = false;
+
+            SetBaseEntityProperties(entity, EntityOperation.Update);
+            _baseRepository.Update(entity);
+
+            if (!await _unitOfWork.SaveChanges())
+                return BusinessResult.Fail();
+
             var result = _mapper.Map<TResult>(entity);
-            if (result == null)
-                return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage(Const.FAIL_SAVE_MSG)
-                    .Build();
 
-
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
 
@@ -316,52 +174,22 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     {
         try
         {
+            var entity = await _baseRepository.GetById(id);
+            if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+
             if (isPermanent)
-            {
-                var isDeleted = await DeleteEntityPermanently(id);
-                return isDeleted
-                    ? new ResponseBuilder()
-                        .WithStatus(Const.SUCCESS_CODE)
-                        .WithMessage(Const.SUCCESS_DELETE_MSG)
-                        .Build()
-                    : new ResponseBuilder()
-                        .WithStatus(Const.FAIL_CODE)
-                        .WithMessage(Const.FAIL_DELETE_MSG)
-                        .Build();
-            }
+                _baseRepository.DeletePermanently(entity);
+            else
+                _baseRepository.Delete(entity);
 
-            var entity = await DeleteEntity(id);
+            if (!await _unitOfWork.SaveChanges())
+                return BusinessResult.Fail();
 
-            return entity != null
-                ? new ResponseBuilder()
-                    .WithStatus(Const.SUCCESS_CODE)
-                    .WithMessage(Const.SUCCESS_SAVE_MSG)
-                    .Build()
-                : new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage(Const.FAIL_SAVE_MSG)
-                    .Build();
-        }
-        catch (DbUpdateException dbEx)
-        {
-            if (dbEx.InnerException?.Message.Contains("FOREIGN KEY") == true)
-            {
-                var errorMessage = "Không thể xóa vì dữ liệu đang được tham chiếu ở bảng khác.";
-                return new ResponseBuilder()
-                    .WithStatus(Const.FAIL_CODE)
-                    .WithMessage(errorMessage)
-                    .Build();
-            }
-
-            throw;
+            return BusinessResult.Success();
         }
         catch (Exception ex)
         {
-            var errorMessage = $"An error occurred while deleting {typeof(TEntity).Name} with ID {id}: {ex.Message}";
-            return new ResponseBuilder()
-                .WithStatus(Const.FAIL_CODE)
-                .WithMessage(errorMessage)
-                .Build();
+            return BusinessResult.Fail(ex.Message);
         }
     }
 
@@ -375,7 +203,7 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
             _mapper.Map(updateCommand, entity);
 
-            InitializeBaseEntityForUpdate(entity);
+            SetBaseEntityProperties(entity, EntityOperation.Update);
             _baseRepository.Update(entity);
         }
         else
@@ -383,106 +211,59 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
             entity = _mapper.Map<TEntity>(createOrUpdateCommand);
             if (entity == null) return null;
             entity.Id = Guid.NewGuid();
-            InitializeBaseEntityForCreate(entity);
+            SetBaseEntityProperties(entity, EntityOperation.Create);
             _baseRepository.Add(entity);
         }
 
         var saveChanges = await _unitOfWork.SaveChanges();
-        return saveChanges ? entity : default;
-    }
-
-    private async Task<TEntity?> RestoreEntity(UpdateCommand updateCommand)
-    {
-        TEntity? entity;
-
-        entity = await _baseRepository.GetById(updateCommand.Id);
-        if (entity == null) return null;
-
-        // update isdeleted
-        entity.IsDeleted = false;
-
-        InitializeBaseEntityForUpdate(entity);
-        _baseRepository.Update(entity);
-
-
-        var saveChanges = await _unitOfWork.SaveChanges();
-        return saveChanges ? entity : default;
+        return saveChanges ? entity : null;
     }
 
 
-    protected void InitializeBaseEntityForCreate(TEntity? entity)
+    protected void SetBaseEntityProperties<T>(T? entity, EntityOperation operation) where T : BaseEntity
     {
         if (entity == null) return;
 
-        var user = GetUser();
-
-        entity.CreatedDate = DateTime.UtcNow;
-        entity.LastUpdatedDate = DateTime.UtcNow;
-        entity.IsDeleted = false;
-
-        if (user == null) return;
-        entity.CreatedBy = user.Email;
-        entity.LastUpdatedBy = user.Email;
-    }
-
-    protected void InitializeBaseEntityForUpdate(TEntity? entity)
-    {
-        if (entity == null) return;
-
-        var user = GetUser();
-
         entity.LastUpdatedDate = DateTime.UtcNow;
 
+        if (operation == EntityOperation.Create)
+        {
+            entity.CreatedDate = DateTime.UtcNow;
+            entity.IsDeleted = false;
+        }
+
+        var user = GetUser();
         if (user == null) return;
         entity.LastUpdatedBy = user.Email;
-    }
 
-    private async Task<TEntity?> DeleteEntity(Guid id)
-    {
-        var entity = await _baseRepository.GetById(id);
-        if (entity == null) return null;
-
-        _baseRepository.Delete(entity);
-
-        var saveChanges = await _unitOfWork.SaveChanges();
-        return saveChanges ? entity : default;
-    }
-
-    private async Task<bool> DeleteEntityPermanently(Guid id)
-    {
-        var entity = await _baseRepository.GetById(id);
-        if (entity == null) return false;
-
-        _baseRepository.DeletePermanently(entity);
-
-        var saveChanges = await _unitOfWork.SaveChanges();
-        return saveChanges;
+        if (operation == EntityOperation.Create) entity.CreatedBy = user.Email;
     }
 
     #endregion
 
-    public BusinessResult HandlerError(string message)
+    protected User? GetUser()
     {
-        string errorMessage = $"An error {typeof(TEntity).Name}: {message}"; 
-        return new ResponseBuilder()
-            .WithStatus(Const.FAIL_CODE)
-            .WithMessage(errorMessage)
-            .Build();
+        if (!IsUserAuthenticated()) return null;
+
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext == null)
+            return null;
+
+        if (httpContext.Items.TryGetValue("CurrentUser", out var userObj))
+            return userObj as User;
+
+        return null;
     }
-    
-    public BusinessResult HandlerNotFound(string message = Const.NOT_FOUND_MSG)
+
+
+    private bool IsUserAuthenticated()
     {
-        return new ResponseBuilder()
-            .WithStatus(Const.NOT_FOUND_CODE)
-            .WithMessage(message)
-            .Build();
+        return _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true;
     }
-    
-    public BusinessResult HandlerFail(string message)
-    {
-        return new ResponseBuilder()
-            .WithStatus(Const.FAIL_CODE)
-            .WithMessage(message)
-            .Build();
-    }
+}
+
+public enum EntityOperation
+{
+    Create,
+    Update
 }

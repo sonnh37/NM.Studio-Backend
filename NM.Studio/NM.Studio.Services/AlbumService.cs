@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
@@ -23,60 +21,51 @@ public class AlbumService : BaseService<Album>, IAlbumService
     {
         _albumRepository = _unitOfWork.AlbumRepository;
     }
-    
+
     public async Task<BusinessResult> Create<TResult>(AlbumCreateCommand createCommand) where TResult : BaseResult
     {
         try
         {
             createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
             var album = _albumRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (album != null) return HandlerFail("Title already exists");
-            
+            if (album != null) return BusinessResult.Fail("An album with this title already exists");
+
             var entity = await CreateOrUpdateEntity(createCommand);
-            var result = _mapper.Map<TResult>(entity); 
-            
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
+            var result = _mapper.Map<TResult>(entity);
+
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumCreateCommand).Name}: {ex.Message}";
-            return HandlerFail(errorMessage);
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
-    
+
     public async Task<BusinessResult> Update<TResult>(AlbumUpdateCommand updateCommand) where TResult : BaseResult
     {
         try
         {
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Title);
-            var album = _albumRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();            
-            
+            var album = _albumRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
+
             if (album == null) throw new Exception();
-            
+
             if (updateCommand.Slug != album?.Slug)
             {
                 var album_ = _albumRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
 
-                if (album_ != null) HandlerFail("Title already exists");
+                if (album_ != null) return BusinessResult.Fail("An album with this title already exists");
             }
-            
+
             var entity = await CreateOrUpdateEntity(updateCommand);
             var result = _mapper.Map<TResult>(entity);
-            return new ResponseBuilder<TResult>()
-                .WithData(result)
-                .WithStatus(Const.SUCCESS_CODE)
-                .WithMessage(Const.SUCCESS_SAVE_MSG)
-                .Build();
+            return BusinessResult.Success(result);
         }
         catch (Exception ex)
         {
             var errorMessage = $"An error occurred while updating {typeof(AlbumUpdateCommand).Name}: {ex.Message}";
-            return HandlerFail(errorMessage);
+            return BusinessResult.ExceptionError(errorMessage);
         }
     }
-
 }

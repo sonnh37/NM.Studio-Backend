@@ -1,30 +1,30 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.ProductXColors;
+using NM.Studio.Domain.CQRS.Queries.ProductColors;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 
 namespace NM.Studio.Handler.Queries;
 
-public class ProductXColorQueryHandler :
-    IRequestHandler<ProductXColorGetAllQuery, BusinessResult>,
-    IRequestHandler<ProductXColorGetByIdQuery, BusinessResult>
+public class ProductColorQueryHandler :
+    IRequestHandler<ProductColorGetAllQuery, BusinessResult>,
+    IRequestHandler<ProductColorGetByIdQuery, BusinessResult>
 {
-    protected readonly IProductXColorService _productXColorService;
+    protected readonly IProductColorService ProductColorService;
 
-    public ProductXColorQueryHandler(IProductXColorService productXColorService)
+    public ProductColorQueryHandler(IProductColorService productColorService)
     {
-        _productXColorService = productXColorService;
+        ProductColorService = productColorService;
     }
 
-    public async Task<BusinessResult> Handle(ProductXColorGetAllQuery request,
+    public async Task<BusinessResult> Handle(ProductColorGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _productXColorService.GetAll<ProductXColorResult>(request);
+        return await ProductColorService.GetListByQueryAsync<ProductColorResult>(request);
     }
 
-    public async Task<BusinessResult> Handle(ProductXColorGetByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(ProductColorGetByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _productXColorService.GetById<ProductXColorResult>(request.Id);
+        return await ProductColorService.GetById<ProductColorResult>(request.Id);
     }
 }

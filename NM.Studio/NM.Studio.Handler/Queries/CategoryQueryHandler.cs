@@ -1,8 +1,8 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Queries.Categories;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
-using NM.Studio.Domain.CQRS.Queries.Categories;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -20,7 +20,7 @@ public class CategoryQueryHandler :
     public async Task<BusinessResult> Handle(CategoryGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _categoryService.GetAll<CategoryResult>(request);
+        return await _categoryService.GetListByQueryAsync<CategoryResult>(request);
     }
 
     public async Task<BusinessResult> Handle(CategoryGetByIdQuery request,

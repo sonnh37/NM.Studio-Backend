@@ -1,8 +1,8 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -20,7 +20,7 @@ public class AlbumQueryHandler :
     public async Task<BusinessResult> Handle(AlbumGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _albumService.GetAll<AlbumResult>(request);
+        return await _albumService.GetListByQueryAsync<AlbumResult>(request);
     }
 
     public async Task<BusinessResult> Handle(AlbumGetByIdQuery request, CancellationToken cancellationToken)

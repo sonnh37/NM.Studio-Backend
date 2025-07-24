@@ -1,30 +1,30 @@
-﻿using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Queries.Photos;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Queries.MediaFiles;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
 
 namespace NM.Studio.Handler.Queries;
 
-public class PhotoQueryHandler :
-    IRequestHandler<PhotoGetAllQuery, BusinessResult>,
-    IRequestHandler<PhotoGetByIdQuery, BusinessResult>
+public class MediaFileQueryHandler :
+    IRequestHandler<MediaFileGetAllQuery, BusinessResult>,
+    IRequestHandler<MediaFileGetByIdQuery, BusinessResult>
 {
-    protected readonly IPhotoService _photoService;
+    protected readonly IMediaFileService _mediaFileService;
 
-    public PhotoQueryHandler(IPhotoService photoService)
+    public MediaFileQueryHandler(IMediaFileService mediaFileService)
     {
-        _photoService = photoService;
+        _mediaFileService = mediaFileService;
     }
 
-    public async Task<BusinessResult> Handle(PhotoGetAllQuery request,
+    public async Task<BusinessResult> Handle(MediaFileGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _photoService.GetAll<PhotoResult>(request);
+        return await _mediaFileService.GetListByQueryAsync<MediaFileResult>(request);
     }
 
-    public async Task<BusinessResult> Handle(PhotoGetByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BusinessResult> Handle(MediaFileGetByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _photoService.GetById<PhotoResult>(request.Id);
+        return await _mediaFileService.GetById<MediaFileResult>(request.Id);
     }
 }

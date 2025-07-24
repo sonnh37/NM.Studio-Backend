@@ -1,9 +1,8 @@
-﻿using NM.Studio.Domain.Contracts.Services;
+﻿using MediatR;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.CQRS.Queries.Sizes;
 using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using MediatR;
-using NM.Studio.Domain.CQRS.Queries.Categories;
-using NM.Studio.Domain.CQRS.Queries.Sizes;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -21,7 +20,7 @@ public class SizeQueryHandler :
     public async Task<BusinessResult> Handle(SizeGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _sizeService.GetAll<SizeResult>(request);
+        return await _sizeService.GetListByQueryAsync<SizeResult>(request);
     }
 
     public async Task<BusinessResult> Handle(SizeGetByIdQuery request,

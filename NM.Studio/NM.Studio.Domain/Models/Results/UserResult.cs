@@ -9,7 +9,7 @@ public class UserResult : BaseResult
 
     public string? LastName { get; set; }
 
-    public string? Avatar  { get; set; }
+    public string? Avatar { get; set; }
 
     public string? Email { get; set; }
 
@@ -26,13 +26,13 @@ public class UserResult : BaseResult
     public Role? Role { get; set; }
 
     public UserStatus? Status { get; set; }
-    
-    public string? Preferences { get; set; } 
+
+    public string? Preferences { get; set; }
 }
 
 public class UserAccountResult : BaseResult
 {
-    public string? Avatar  { get; set; }
+    public string? Avatar { get; set; }
 
     public string? Email { get; set; }
 
@@ -44,7 +44,7 @@ public class UserAccountResult : BaseResult
 public class UserLoginResult
 {
     public string? Username { get; set; }
-    
+
     public string? FirstName { get; set; }
 
     public string? ImageUrl { get; set; }

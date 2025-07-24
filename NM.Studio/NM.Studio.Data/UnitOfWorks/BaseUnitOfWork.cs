@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
-using NM.Studio.Domain.Contracts.Repositories.Bases;
-using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.Entities.Bases;
 using Microsoft.Extensions.DependencyInjection;
 using NM.Studio.Data.Context;
 using NM.Studio.Data.Repositories.Base;
+using NM.Studio.Domain.Contracts.Repositories.Bases;
+using NM.Studio.Domain.Contracts.UnitOfWorks;
+using NM.Studio.Domain.Entities.Bases;
 
 namespace NM.Studio.Data.UnitOfWorks;
 

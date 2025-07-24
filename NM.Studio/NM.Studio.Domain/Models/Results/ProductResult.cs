@@ -21,11 +21,11 @@ public class ProductResult : BaseResult
 
     public ProductStatus Status { get; set; }
 
-    public ICollection<ProductXPhotoResult> ProductXPhotos { get; set; } = new List<ProductXPhotoResult>();
+    public ICollection<ProductMediaResult> ProductMedias { get; set; } = new List<ProductMediaResult>();
 
-    public ICollection<ProductXColorResult> ProductXColors { get; set; } = new List<ProductXColorResult>();
+    public ICollection<ProductColorResult> ProductColors { get; set; } = new List<ProductColorResult>();
 
-    public ICollection<ProductXSizeResult> ProductXSizes { get; set; } = new List<ProductXSizeResult>();
+    public ICollection<ProductSizeResult> ProductSizes { get; set; } = new List<ProductSizeResult>();
 }
 
 public class ProductRepresentativeByCategoryResult
@@ -33,13 +33,12 @@ public class ProductRepresentativeByCategoryResult
     public CategoryResult? Category { get; set; }
 
     public ProductRepresentativeResult? Product { get; set; }
-
 }
 
 public class ProductRepresentativeResult : BaseResult
 {
     public string? Sku { get; set; }
-    
+
     public string? Slug { get; set; }
 
     public string? Src { get; set; }

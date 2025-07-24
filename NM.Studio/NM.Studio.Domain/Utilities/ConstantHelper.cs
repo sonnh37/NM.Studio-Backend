@@ -1,82 +1,69 @@
-﻿using NM.Studio.Domain.Enums;
-
-namespace NM.Studio.Domain.Utilities;
+﻿namespace NM.Studio.Domain.Utilities;
 
 public class ConstantHelper
 {
     #region Url api
+
     private const string BaseApi = "api";
 
     public const string Albums = $"{BaseApi}/albums";
 
-    public const string AlbumXPhotos = $"{BaseApi}/albumXPhotos";
+    public const string AlbumMedias = $"{BaseApi}/albumMedias";
 
     public const string Categories = $"{BaseApi}/categories";
 
     public const string Products = $"{BaseApi}/products";
 
-    public const string ProductXPhoto = $"{BaseApi}/productXPhotos";
+    public const string ProductMedia = $"{BaseApi}/productMedias";
 
-    public const string Photos = $"{BaseApi}/photos";
+    public const string MediaFiles = $"{BaseApi}/mediaFiles";
 
     public const string Services = $"{BaseApi}/services";
 
     public const string Users = $"{BaseApi}/users";
 
     public const string SortFieldDefault = "CreatedDate";
+
     #endregion
 
-    
+
     #region Default get query
-    
+
     public const int PageNumberDefault = 1;
 
     public const bool IsPagination = false;
 
     public const int PageSizeDefault = 10;
 
-    public const SortOrder SortOrderDefault = SortOrder.Descending;
-    
+    // public const SortOrder SortOrderDefault = SortOrder.Descending;
+
     #endregion
 }
 
-public class Const
+public static class Const
 {
-    #region Error Codes
-
-    public const int ERROR_EXCEPTION_CODE = -4;
-
-
-    #endregion
-
-    #region Success Codes
+    #region Status Codes
 
     public const int SUCCESS_CODE = 1;
-   
-    public const string SUCCESS_SAVE_MSG = "Data has been saved successfully.";
-    public const string SUCCESS_READ_MSG = "Data retrieved successfully.";
-    public const string SUCCESS_READ_GOOGLE_TOKEN_MSG = "Google account has been verified.";
-    public const string SUCCESS_DELETE_MSG = "Data deleted successfully.";
-    public const string SUCCESS_LOGIN_MSG = "Login successful.";
-
-
-
-    #endregion
-
-    #region Fail code
-
     public const int FAIL_CODE = -1;
-    public const string FAIL_SAVE_MSG = "Save fail";
-    public const string FAIL_READ_MSG = "Get fail";
-    public const string FAIL_DELETE_MSG = "Delete fail";
+    public const int ERROR_EXCEPTION_CODE = -4;
 
     #endregion
-    
-    #region Not Found Codes
 
-    public const int NOT_FOUND_CODE = -2;
+    #region Success Messages
+
+    public const string SUCCESS_SAVE_MSG = "Save successful";
+    public const string SUCCESS_READ_MSG = "Read successful";
+    public const string SUCCESS_DELETE_MSG = "Delete successful";
+
+    #endregion
+
+    #region Error Messages
+
+    public const string FAIL_SAVE_MSG = "Save failed";
+    public const string FAIL_DUPLICATE_MSG = "Already exists";
     public const string NOT_FOUND_MSG = "Not found";
-    public const string NOT_FOUND_USER_LOGIN_BY_GOOGLE_MSG = "Not found user that login by google";
+    public const string FAIL_DELETE_MSG = "Delete failed";
 
     #endregion
 }

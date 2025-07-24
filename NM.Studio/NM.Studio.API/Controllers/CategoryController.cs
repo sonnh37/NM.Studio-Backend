@@ -52,7 +52,7 @@ public class CategoryController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] CategoryRestoreCommand command)
     {

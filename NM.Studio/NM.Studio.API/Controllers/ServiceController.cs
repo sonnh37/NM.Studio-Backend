@@ -1,10 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Services;
-using NM.Studio.Domain.CQRS.Queries.Services;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
-using NM.Studio.Domain.CQRS.Commands.Albums;
+using NM.Studio.Domain.CQRS.Commands.Services;
+using NM.Studio.Domain.CQRS.Queries.Services;
 
 namespace NM.Studio.API.Controllers;
 
@@ -53,7 +52,7 @@ public class ServiceController : BaseController
 
         return Ok(businessResult);
     }
-    
+
     [HttpPut("restore")]
     public async Task<IActionResult> UpdateIsDeleted([FromBody] ServiceRestoreCommand command)
     {
