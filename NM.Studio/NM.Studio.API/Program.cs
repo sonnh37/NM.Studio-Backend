@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Reflection;
+using System.Text.Json.Serialization;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -84,6 +85,14 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     });
+    
+    // New in .NET 8: Better organization with operation filters
+    // options.OperationFilter<SwaggerDefaultValues>();
+    
+    // Add enum descriptions
+    // options.SchemaFilter<EnumSchemaFilter>();
+    
+   
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -113,7 +122,18 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.DefaultModelsExpandDepth(-1); // Hide schemas by default
+        options.DisplayRequestDuration();
+        options.EnableDeepLinking();
+        options.EnableFilter();
+    
+        // New in .NET 8: Better dark mode support
+        // options.InjectStylesheet("/swagger-ui/custom.css");
+    
+        // Add OAuth configuration if needed
+    });
 }
 
 app.UseMiddleware<AuthenticationMiddleware>();
