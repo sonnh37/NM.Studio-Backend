@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Colors;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("colors")]
 public class ColorController : BaseController
 {
     public ColorController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class ColorController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] ColorGetByIdQuery request)
     {
-        var colorGetByIdQuery = new ColorGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(colorGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -52,14 +47,7 @@ public class ColorController : BaseController
 
         return Ok(businessResult);
     }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] ColorRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
+    
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ColorDeleteCommand colorDeleteCommand)

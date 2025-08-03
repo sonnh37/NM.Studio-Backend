@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.SubCategories;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("subcategories")]
 public class SubCategoryController : BaseController
 {
     public SubCategoryController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class SubCategoryController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] SubCategoryGetByIdQuery request)
     {
-        var subCategoryGetByIdQuery = new SubCategoryGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(subCategoryGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -49,14 +44,6 @@ public class SubCategoryController : BaseController
     public async Task<IActionResult> Update([FromBody] SubCategoryUpdateCommand subCategoryUpdateCommand)
     {
         var businessResult = await _mediator.Send(subCategoryUpdateCommand);
-
-        return Ok(businessResult);
-    }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] SubCategoryRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
 
         return Ok(businessResult);
     }

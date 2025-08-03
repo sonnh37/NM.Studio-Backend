@@ -1,19 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MediatR;
 using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.CQRS.Queries.Base;
 
 public abstract class BaseQuery
 {
-    public Guid? Id { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public bool? IsDeleted { get; set; }
-    public DateTime? FromDate { get; set; }
-    public DateTime? ToDate { get; set; }
+    public DateTimeOffset? FromDate { get; set; }
+    public DateTimeOffset? ToDate { get; set; }
 }
 
 public class PaginationParameters
@@ -83,7 +81,7 @@ public class GetQueryableQuery : BaseQuery
 // For GetByIdQuery, let's make it generic
 public class GetByIdQuery : BaseQuery, IRequest<BusinessResult>
 {
-    [Required] public new Guid Id { get; set; }
+    [Required] public Guid Id { get; set; }
 
     public string[]? IncludeProperties { get; set; }
 }

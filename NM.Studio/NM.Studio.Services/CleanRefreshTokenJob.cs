@@ -23,7 +23,7 @@ public class CleanRefreshTokenJob : IJob
     {
         try
         {
-            _logger.LogInformation($"Executing CleanRefreshTokenJob at {DateTime.UtcNow}");
+            _logger.LogInformation($"Executing CleanRefreshTokenJob at {DateTimeOffset.UtcNow}");
             await _refreshTokenRepository.CleanupExpiredTokensAsync();
             await _unitOfWork.SaveChanges();
         }

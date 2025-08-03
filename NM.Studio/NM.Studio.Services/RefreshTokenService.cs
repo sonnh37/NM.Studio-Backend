@@ -10,7 +10,6 @@ using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -76,7 +75,7 @@ public class RefreshTokenService : BaseService<RefreshToken>, IRefreshTokenServi
         // Kiểm tra refreshToken và IP address
         var storedRefreshToken = _refreshTokenRepository.GetByRefreshTokenAsync(refreshToken).Result;
 
-        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTime.UtcNow)
+        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTimeOffset.UtcNow)
             return BusinessResult.Fail("Your session has expired. Please log in again.");
 
         if (storedRefreshToken.IpAddress != ipAddress)
@@ -121,7 +120,7 @@ public class RefreshTokenService : BaseService<RefreshToken>, IRefreshTokenServi
             createCommand.IpAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
                                       ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
             createCommand.IpAddress = NormalizeIpAddress(createCommand.IpAddress);
-            createCommand.Expiry = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
+            createCommand.Expiry = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
             entity = _mapper.Map<RefreshToken>(createCommand);
             if (entity == null) return null;
             entity.Id = Guid.NewGuid();

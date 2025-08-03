@@ -1,4 +1,5 @@
 ﻿using NM.Studio.Domain.CQRS.Queries.Base;
+using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.CQRS.Queries.ServiceBookings;
@@ -15,7 +16,7 @@ public class ServiceBookingGetAllQuery : GetAllQuery
 
     public string? Phone { get; set; }
 
-    public DateTime? BookingDate { get; set; }
+    public DateTimeOffset? BookingDate { get; set; }
 
     public ServiceBookingStatus? Status { get; set; }
 }

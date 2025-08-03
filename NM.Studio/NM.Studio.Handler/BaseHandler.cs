@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-
-namespace NM.Studio.Handler;
+﻿namespace NM.Studio.Handler;
 
 public class BaseHandler
 {
-   
 }

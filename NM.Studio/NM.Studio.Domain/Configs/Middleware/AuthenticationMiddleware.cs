@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using System.Security.Claims;
+using NM.Studio.Domain.Models.Results.Bases;
 
-namespace NM.Studio.Domain.Middleware
+namespace NM.Studio.Domain.Configs.Middleware
 {
     public class AuthenticationMiddleware
     {
@@ -18,32 +20,42 @@ namespace NM.Studio.Domain.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            if (context.User?.Identity?.IsAuthenticated == true)
+            try
             {
-                var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                                  ?? context.User.FindFirst("Id")?.Value;
-
-                if (!string.IsNullOrEmpty(userIdClaim))
+                if (context.User?.Identity?.IsAuthenticated == true)
                 {
-                    using (var scope = _serviceScopeFactory.CreateScope())
+                    var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                                      ?? context.User.FindFirst("Id")?.Value;
+
+                    if (!string.IsNullOrEmpty(userIdClaim))
                     {
-                        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
-
-                        if (Guid.TryParse(userIdClaim, out var userId))
+                        using (var scope = _serviceScopeFactory.CreateScope())
                         {
-                            var user = await unitOfWork.UserRepository.GetById(userId);
+                            var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                            if (user != null)
+                            if (Guid.TryParse(userIdClaim, out var userId))
                             {
-                                context.Items["CurrentUser"] = user;
-                                context.Items["CurrentUserId"] = userId;
+                                var user = await unitOfWork.UserRepository.GetById(userId);
+
+                                if (user != null)
+                                {
+                                    context.Items["CurrentUser"] = user;
+                                    context.Items["CurrentUserId"] = userId;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            await _next(context);
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = 200;
+                context.Response.ContentType = "application/json";
+                var br = BusinessResult.ExceptionError(ex.Message);
+                await context.Response.WriteAsync(JsonSerializer.Serialize(br));
+            }
         }
     }
 }

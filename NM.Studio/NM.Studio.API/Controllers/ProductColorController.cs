@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.ProductColors;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("products/productColors")]
 public class ProductColorController : BaseController
 {
     public ProductColorController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class ProductColorController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] ProductColorGetByIdQuery request)
     {
-        var productColorGetByIdQuery = new ProductColorGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(productColorGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }

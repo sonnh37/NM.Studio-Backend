@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.MediaFiles;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("mediaFiles")]
 public class MediaFileController : BaseController
 {
     public MediaFileController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class MediaFileController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] MediaFileGetByIdQuery request)
     {
-        var mediaFileGetByIdQuery = new MediaFileGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(mediaFileGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -50,14 +45,6 @@ public class MediaFileController : BaseController
     public async Task<IActionResult> Update([FromBody] MediaFileUpdateCommand mediaFileUpdateCommand)
     {
         var businessResult = await _mediator.Send(mediaFileUpdateCommand);
-
-        return Ok(businessResult);
-    }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] MediaFileRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
 
         return Ok(businessResult);
     }

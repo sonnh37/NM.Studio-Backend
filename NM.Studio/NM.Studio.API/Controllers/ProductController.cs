@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Products;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("products")]
 public class ProductController : BaseController
 {
     public ProductController(IMediator mediator) : base(mediator)
@@ -34,14 +33,10 @@ public class ProductController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] ProductGetByIdQuery request)
     {
-        var productGetByIdQuery = new ProductGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(productGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -59,14 +54,6 @@ public class ProductController : BaseController
     public async Task<IActionResult> Update([FromBody] ProductUpdateCommand productUpdateCommand)
     {
         var businessResult = await _mediator.Send(productUpdateCommand);
-
-        return Ok(businessResult);
-    }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] ProductRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
 
         return Ok(businessResult);
     }

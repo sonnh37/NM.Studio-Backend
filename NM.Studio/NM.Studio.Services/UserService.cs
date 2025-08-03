@@ -13,8 +13,8 @@ using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
+using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 using NM.Studio.Services.Bases;
 using OtpNet;
@@ -26,7 +26,7 @@ public class UserService : BaseService<User>, IUserService
     private readonly string _clientId;
     private readonly IConfiguration _configuration;
     private readonly int _expirationMinutes;
-    private readonly Dictionary<string, DateTime> _expiryStorage = new();
+    private readonly Dictionary<string, DateTimeOffset> _expiryStorage = new();
     private readonly Dictionary<string, string> _otpStorage = new();
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserRepository _userRepository;
@@ -143,7 +143,7 @@ public class UserService : BaseService<User>, IUserService
             {
                 smtp.Send(message);
                 _otpStorage[email] = otp; // Lưu trữ OTP cho email
-                _expiryStorage[email] = DateTime.UtcNow.AddMinutes(5); // OTP hết hạn sau 5 phút
+                _expiryStorage[email] = DateTimeOffset.UtcNow.AddMinutes(5); // OTP hết hạn sau 5 phút
                 return BusinessResult.Success();
             }
         }
@@ -164,7 +164,7 @@ public class UserService : BaseService<User>, IUserService
     {
         if (_otpStorage.TryGetValue(email, out var storedOtp) &&
             _expiryStorage.TryGetValue(email, out var expiry))
-            if (expiry > DateTime.UtcNow && storedOtp == otpInput)
+            if (expiry > DateTimeOffset.UtcNow && storedOtp == otpInput)
                 return BusinessResult.Fail("OTP validation failed");
 
         return BusinessResult.Success();
@@ -218,7 +218,7 @@ public class UserService : BaseService<User>, IUserService
     //         new Claim("Id", user.Id.ToString()),
     //         new Claim("Role", user.Role.ToString()),
     //         new Claim("Expiration",
-    //             new DateTimeOffset(DateTime.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
+    //             new DateTimeOffset(DateTimeOffset.Now.AddMinutes(_expirationMinutes)).ToUnixTimeSeconds().ToString())
     //     };
     //
     //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
@@ -229,13 +229,13 @@ public class UserService : BaseService<User>, IUserService
     //
     //     var token = new JwtSecurityToken(
     //         claims: claims,
-    //         expires: DateTime.Now.AddMinutes(_expirationMinutes),
+    //         expires: DateTimeOffset.Now.AddMinutes(_expirationMinutes),
     //         signingCredentials: creds
     //     );
     //
     //     var jwt = new JwtSecurityTokenHandler().WriteToken(token);
     //
-    //     return (jwt, DateTime.Now.AddMinutes(_expirationMinutes).ToString("o"));
+    //     return (jwt, DateTimeOffset.Now.AddMinutes(_expirationMinutes).ToString("o"));
     // }
 
     private string GenerateRefreshToken()

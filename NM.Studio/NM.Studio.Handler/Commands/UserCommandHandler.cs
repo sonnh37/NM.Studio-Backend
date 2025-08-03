@@ -1,13 +1,11 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Users;
-using NM.Studio.Domain.Models.Responses;
-using NM.Studio.Domain.Models.Results;
-using NM.Studio.Handler.Commands.Base;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Commands;
 
-public class UserCommandHandler : BaseCommandHandler,
+public class UserCommandHandler :
     IRequestHandler<UserUpdateCommand, BusinessResult>,
     IRequestHandler<UserDeleteCommand, BusinessResult>,
     IRequestHandler<UserCreateCommand, BusinessResult>,
@@ -16,7 +14,7 @@ public class UserCommandHandler : BaseCommandHandler,
 {
     private readonly IUserService _userService;
 
-    public UserCommandHandler(IUserService userService) : base(userService)
+    public UserCommandHandler(IUserService userService)
     {
         _userService = userService;
     }

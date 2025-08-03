@@ -36,7 +36,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshToke
     {
         try
         {
-            var queryable = GetQueryable(token => token.Expiry < DateTime.UtcNow);
+            var queryable = GetQueryable(token => token.Expiry < DateTimeOffset.UtcNow);
             if (!queryable.Any()) return;
 
             var expiredTokens = await queryable.ToListAsync();

@@ -70,7 +70,7 @@ public static class FilterHelper
             queryable = queryable.Where(m =>
                 m.SubCategory!.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
 
-        if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory!.Category!.Id == query.Id);
+        // if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory!.Category!.Id == query.Id);
 
         if (!string.IsNullOrEmpty(query.SubCategoryName))
             queryable = queryable.Where(m =>
@@ -219,8 +219,8 @@ public static class FilterHelper
         if (!string.IsNullOrEmpty(query.Address))
             queryable = queryable.Where(e => e.Address.Contains(query.Address));
 
-        if (!string.IsNullOrEmpty(query.Role.ToString()))
-            queryable = queryable.Where(e => e.Role == query.Role);
+        // if (!string.IsNullOrEmpty(query.Role.ToString()))
+        //     queryable = queryable.Where(e => e.Role == query.Role);
 
         if (!string.IsNullOrEmpty(query.Phone))
             queryable = queryable.Where(e => e.Phone.Contains(query.Phone));

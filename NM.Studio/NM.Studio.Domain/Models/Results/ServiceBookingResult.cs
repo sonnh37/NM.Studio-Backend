@@ -14,7 +14,7 @@ public class ServiceBookingResult : BaseResult
 
     public string? Phone { get; set; }
 
-    public DateTime? BookingDate { get; set; }
+    public DateTimeOffset? BookingDate { get; set; }
 
     public ServiceBookingResult? Status { get; set; }
 }

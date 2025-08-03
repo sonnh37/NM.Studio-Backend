@@ -65,3 +65,24 @@ public class User : BaseEntity
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
     public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
 }
+
+public enum UserStatus
+{
+    Active,
+    Inactive,
+    Suspended
+}
+
+public enum Role
+{
+    Admin,
+    Staff,
+    Customer
+}
+
+public enum Gender
+{
+    Male,
+    Female,
+    Other
+}

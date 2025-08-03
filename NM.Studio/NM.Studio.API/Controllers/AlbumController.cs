@@ -7,7 +7,7 @@ using NM.Studio.Domain.CQRS.Queries.Albums;
 
 namespace NM.Studio.API.Controllers;
 
-[Authorize(Roles = "Admin,Staff")]
+// [Authorize(Roles = "Admin,Staff")]
 public class AlbumController : BaseController
 {
     public AlbumController(IMediator mediator) : base(mediator)
@@ -18,23 +18,17 @@ public class AlbumController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery albumGetAllQuery)
     {
-        var accessToken = Request.Cookies["accessToken"];
         var businessResult = await _mediator.Send(albumGetAllQuery);
 
         return Ok(businessResult);
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] AlbumGetByIdQuery request)
     {
-        var albumGetByIdQuery = new AlbumGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(albumGetByIdQuery);
-
-        return Ok(businessResult);
+        var result = await _mediator.Send(request);
+        return Ok(result);
     }
 
     [HttpPost]

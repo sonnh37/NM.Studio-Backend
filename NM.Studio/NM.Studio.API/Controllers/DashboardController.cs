@@ -14,7 +14,7 @@ public class DashboardController : BaseController
     }
 
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+    public async Task<IActionResult> GetStats([FromQuery] DateTimeOffset startDate, [FromQuery] DateTimeOffset endDate)
     {
         // Xử lý logic thống kê theo ngày
         var stats = new

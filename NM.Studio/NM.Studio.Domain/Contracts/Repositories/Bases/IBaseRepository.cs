@@ -18,7 +18,7 @@ public interface IBaseRepository<TEntity> : IBaseRepository
 
     Task<List<TEntity>> GetAll();
 
-    Task<int> GetTotalCount(DateTime? fromDate, DateTime? toDate);
+    Task<int> GetTotalCount(DateTimeOffset? fromDate, DateTimeOffset? toDate);
 
     Task<(List<TEntity>, int)> GetListByQueryAsync(GetQueryableQuery query);
 

@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.SubCategories;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -26,6 +26,6 @@ public class SubCategoryQueryHandler :
     public async Task<BusinessResult> Handle(SubCategoryGetByIdQuery request,
         CancellationToken cancellationToken)
     {
-        return await _subCategoryService.GetById<SubCategoryResult>(request.Id);
+        return await _subCategoryService.GetById<SubCategoryResult>(request);
     }
 }

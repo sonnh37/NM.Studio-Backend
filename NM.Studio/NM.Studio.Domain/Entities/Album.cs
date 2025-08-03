@@ -8,7 +8,7 @@ public class Album : BaseEntity
     public string? Slug { get; set; }
     public string? Description { get; set; }
     public string? Background { get; set; }
-    public DateTime? EventDate { get; set; }
+    public DateTimeOffset? EventDate { get; set; }
     public string? BrideName { get; set; }
     public string? GroomName { get; set; }
     public string? Location { get; set; }

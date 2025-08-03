@@ -1,7 +1,6 @@
 ﻿using NM.Studio.Domain.Contracts.Services.Bases;
 using NM.Studio.Domain.CQRS.Commands.Products;
 using NM.Studio.Domain.CQRS.Queries.Products;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;

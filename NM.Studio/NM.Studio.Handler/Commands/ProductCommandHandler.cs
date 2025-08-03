@@ -1,20 +1,19 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Products;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using NM.Studio.Handler.Commands.Base;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Commands;
 
-public class ProductCommandHandler : BaseCommandHandler,
+public class ProductCommandHandler :
     IRequestHandler<ProductCreateCommand, BusinessResult>,
     IRequestHandler<ProductUpdateCommand, BusinessResult>,
     IRequestHandler<ProductDeleteCommand, BusinessResult>
 {
     protected readonly IProductService _productService;
 
-    public ProductCommandHandler(IProductService serviceProduct) : base(serviceProduct)
+    public ProductCommandHandler(IProductService serviceProduct) 
     {
         _productService = serviceProduct;
     }

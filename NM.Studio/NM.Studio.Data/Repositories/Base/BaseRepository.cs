@@ -60,9 +60,18 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public static IQueryable<TEntity> Include(IQueryable<TEntity> queryable, string[]? includeProperties)
     {
-        if (includeProperties != null)
-            foreach (var property in includeProperties)
-                queryable = queryable.Include(property);
+        var validProperties = typeof(TEntity).GetProperties().Select(p => p.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (includeProperties == null) return queryable;
+        
+        foreach (var property in includeProperties)
+        {
+            if (string.IsNullOrWhiteSpace(property)) continue;
+            var match = validProperties.FirstOrDefault(p => p.Equals(property, StringComparison.OrdinalIgnoreCase));
+            if (match != null)
+                queryable = queryable.Include(match);
+        }
 
         return queryable;
     }
@@ -131,13 +140,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         queryable = Include(queryable, query.IncludeProperties);
         queryable = Sort(queryable, query);
 
-        var totalCount  = queryable.Count();
+        var totalCount = queryable.Count();
         queryable = query.Pagination.IsPagingEnabled ? GetQueryablePagination(queryable, query) : queryable;
 
-        return (await queryable.ToListAsync(), totalCount );
+        return (await queryable.ToListAsync(), totalCount);
     }
 
-    public async Task<int> GetTotalCount(DateTime? fromDate, DateTime? toDate)
+    public async Task<int> GetTotalCount(DateTimeOffset? fromDate, DateTimeOffset? toDate)
     {
         var queryable = GetQueryable();
 

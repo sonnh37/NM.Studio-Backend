@@ -8,8 +8,6 @@ public static class BaseFilterHelper
     public static IQueryable<TEntity> Base<TEntity>(IQueryable<TEntity> queryable, GetQueryableQuery query)
         where TEntity : BaseEntity
     {
-        if (query.Id != null) queryable = queryable.Where(m => m.Id == query.Id);
-
         if (!string.IsNullOrEmpty(query.CreatedBy))
             queryable = queryable.Where(m => m.CreatedBy != null && m.CreatedBy.Contains(query.CreatedBy));
 

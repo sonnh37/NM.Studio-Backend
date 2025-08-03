@@ -6,7 +6,6 @@ using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Products;
 using NM.Studio.Domain.CQRS.Queries.Products;
 using NM.Studio.Domain.Entities;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;

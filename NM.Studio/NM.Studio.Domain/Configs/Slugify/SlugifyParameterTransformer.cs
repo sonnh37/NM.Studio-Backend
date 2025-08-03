@@ -1,8 +1,7 @@
-﻿
-using Humanizer;
+﻿using Humanizer;
 using Microsoft.AspNetCore.Routing;
 
-namespace NM.Studio.Domain.Configs;
+namespace NM.Studio.Domain.Configs.Slugify;
 
 public class SlugifyParameterTransformer : IOutboundParameterTransformer
 {

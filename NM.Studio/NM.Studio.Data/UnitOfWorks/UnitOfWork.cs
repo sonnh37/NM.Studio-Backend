@@ -41,4 +41,12 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public IProductSizeRepository ProductSizeRepository => GetRepository<IProductSizeRepository>();
 
     public IProductColorRepository ProductColorRepository => GetRepository<IProductColorRepository>();
+    public IOrderRepository OrderRepository => GetRepository<IOrderRepository>();
+    public IOrderItemRepository OrderItemRepository => GetRepository<IOrderItemRepository>();
+    public IPaymentRepository PaymentRepository => GetRepository<IPaymentRepository>();
+    public IOrderStatusHistoryRepository OrderStatusHistoryRepository => GetRepository<IOrderStatusHistoryRepository>();
+    public ICartRepository CartRepository => GetRepository<ICartRepository>();
+    public ICartItemRepository CartItemRepository => GetRepository<ICartItemRepository>();
+    public IVoucherRepository VoucherRepository => GetRepository<IVoucherRepository>();
+    public IVoucherUsageHistoryRepository VoucherUsageHistoryRepository => GetRepository<IVoucherUsageHistoryRepository>();
 }

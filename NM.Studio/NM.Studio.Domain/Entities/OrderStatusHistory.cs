@@ -5,12 +5,10 @@ namespace NM.Studio.Domain.Entities;
 
 public class OrderStatusHistory : BaseEntity
 {
-    public Guid OrderId { get; set; }
+    public Guid? OrderId { get; set; }
     public OrderStatus Status { get; set; }
     public OrderStatus? PreviousStatus { get; set; }
     public string? Comment { get; set; }
-    public string? ChangedBy { get; set; } // User who made the change
-    public DateTimeOffset ChangedAt { get; set; }
 
     // Additional tracking
     public string? IPAddress { get; set; }
@@ -21,5 +19,5 @@ public class OrderStatusHistory : BaseEntity
     public bool IsCustomerNotified { get; set; }
     public string? NotificationError { get; set; }
 
-    public virtual Order Order { get; set; } = null!;
+    public virtual Order? Order { get; set; }
 }

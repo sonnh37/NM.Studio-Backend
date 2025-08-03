@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Sizes;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("sizes")]
 public class SizeController : BaseController
 {
     public SizeController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class SizeController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] SizeGetByIdQuery request)
     {
-        var sizeGetByIdQuery = new SizeGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(sizeGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -52,14 +47,7 @@ public class SizeController : BaseController
 
         return Ok(businessResult);
     }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] SizeRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
+    
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] SizeDeleteCommand sizeDeleteCommand)

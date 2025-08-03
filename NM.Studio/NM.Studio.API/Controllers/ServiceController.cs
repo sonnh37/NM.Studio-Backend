@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Services;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("services")]
 public class ServiceController : BaseController
 {
     public ServiceController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class ServiceController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] ServiceGetByIdQuery request)
     {
-        var serviceGetByIdQuery = new ServiceGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(serviceGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -52,15 +47,7 @@ public class ServiceController : BaseController
 
         return Ok(businessResult);
     }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] ServiceRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
-
+    
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ServiceDeleteCommand serviceDeleteCommand)
     {

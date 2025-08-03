@@ -2,7 +2,7 @@
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
-using NM.Studio.Domain.Models.Responses;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Queries;
 

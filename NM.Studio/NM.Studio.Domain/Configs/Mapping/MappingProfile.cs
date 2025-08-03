@@ -2,9 +2,15 @@
 using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.CQRS.Commands.AlbumMedias;
 using NM.Studio.Domain.CQRS.Commands.Blogs;
+using NM.Studio.Domain.CQRS.Commands.CartItems;
+using NM.Studio.Domain.CQRS.Commands.Carts;
 using NM.Studio.Domain.CQRS.Commands.Categories;
 using NM.Studio.Domain.CQRS.Commands.Colors;
 using NM.Studio.Domain.CQRS.Commands.MediaFiles;
+using NM.Studio.Domain.CQRS.Commands.OrderItems;
+using NM.Studio.Domain.CQRS.Commands.Orders;
+using NM.Studio.Domain.CQRS.Commands.OrderStatusHistories;
+using NM.Studio.Domain.CQRS.Commands.Payments;
 using NM.Studio.Domain.CQRS.Commands.Products;
 using NM.Studio.Domain.CQRS.Commands.ProductColors;
 using NM.Studio.Domain.CQRS.Commands.ProductMedias;
@@ -15,6 +21,8 @@ using NM.Studio.Domain.CQRS.Commands.Services;
 using NM.Studio.Domain.CQRS.Commands.Sizes;
 using NM.Studio.Domain.CQRS.Commands.SubCategories;
 using NM.Studio.Domain.CQRS.Commands.Users;
+using NM.Studio.Domain.CQRS.Commands.Vouchers;
+using NM.Studio.Domain.CQRS.Commands.VoucherUsageHistories;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.Results;
 
@@ -35,6 +43,14 @@ public class MappingProfile : Profile
         ColorMapping();
         BlogMapping();
         BookingMapping();
+        CartMapping();
+        CartItemMapping();
+        OrderMapping();
+        OrderItemMapping();
+        OrderStatusHistoryMapping();
+        PaymentMapping();
+        VoucherMapping();
+        VoucherUsageHistoryMapping();
     }
 
     private void AlbumMapping()
@@ -86,6 +102,62 @@ public class MappingProfile : Profile
         CreateMap<Blog, BlogResult>().ReverseMap();
         CreateMap<Blog, BlogCreateCommand>().ReverseMap();
         CreateMap<Blog, BlogUpdateCommand>().ReverseMap();
+    }
+    
+    private void CartMapping()
+    {
+        CreateMap<Cart, CartResult>().ReverseMap();
+        CreateMap<Cart, CartCreateCommand>().ReverseMap();
+        CreateMap<Cart, CartUpdateCommand>().ReverseMap();
+    }
+    
+    private void CartItemMapping()
+    {
+        CreateMap<CartItem, CartItemResult>().ReverseMap();
+        CreateMap<CartItem, CartItemCreateCommand>().ReverseMap();
+        CreateMap<CartItem, CartItemUpdateCommand>().ReverseMap();
+    }
+    
+    private void OrderMapping()
+    {
+        CreateMap<Order, OrderResult>().ReverseMap();
+        CreateMap<Order, OrderCreateCommand>().ReverseMap();
+        CreateMap<Order, OrderUpdateCommand>().ReverseMap();
+    }
+    
+    private void OrderItemMapping()
+    {
+        CreateMap<OrderItem, OrderItemResult>().ReverseMap();
+        CreateMap<OrderItem, OrderItemCreateCommand>().ReverseMap();
+        CreateMap<OrderItem, OrderItemUpdateCommand>().ReverseMap();
+    }
+    
+    private void OrderStatusHistoryMapping()
+    {
+        CreateMap<OrderStatusHistory, OrderStatusHistoryResult>().ReverseMap();
+        CreateMap<OrderStatusHistory, OrderStatusHistoryCreateCommand>().ReverseMap();
+        CreateMap<OrderStatusHistory, OrderStatusHistoryUpdateCommand>().ReverseMap();
+    }
+    
+    private void PaymentMapping()
+    {
+        CreateMap<Payment, PaymentResult>().ReverseMap();
+        CreateMap<Payment, PaymentCreateCommand>().ReverseMap();
+        CreateMap<Payment, PaymentUpdateCommand>().ReverseMap();
+    }
+    
+    private void VoucherMapping()
+    {
+        CreateMap<Voucher, VoucherResult>().ReverseMap();
+        CreateMap<Voucher, VoucherCreateCommand>().ReverseMap();
+        CreateMap<Voucher, VoucherUpdateCommand>().ReverseMap();
+    }
+    
+    private void VoucherUsageHistoryMapping()
+    {
+        CreateMap<VoucherUsageHistory, VoucherUsageHistoryResult>().ReverseMap();
+        CreateMap<VoucherUsageHistory, VoucherUsageHistoryCreateCommand>().ReverseMap();
+        CreateMap<VoucherUsageHistory, VoucherUsageHistoryUpdateCommand>().ReverseMap();
     }
 
     private void UserMapping()

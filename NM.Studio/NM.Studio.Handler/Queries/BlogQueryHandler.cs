@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Queries.Blogs;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Queries;
 
@@ -25,6 +25,6 @@ public class BlogQueryHandler :
 
     public async Task<BusinessResult> Handle(BlogGetByIdQuery request, CancellationToken cancellationToken)
     {
-        return await _blogService.GetById<BlogResult>(request.Id);
+        return await _blogService.GetById<BlogResult>(request);
     }
 }

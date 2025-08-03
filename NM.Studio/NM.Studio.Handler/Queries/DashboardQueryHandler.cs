@@ -25,7 +25,7 @@
 //
 //     public async Task<BusinessResult> Handle(DashboardGetByIdQuery request, CancellationToken cancellationToken)
 //     {
-//         return await _dashboardService.GetById<DashboardResult>(request.Id);
+//         return await _dashboardService.GetById<DashboardResult>(request);
 //     }
 // }
 

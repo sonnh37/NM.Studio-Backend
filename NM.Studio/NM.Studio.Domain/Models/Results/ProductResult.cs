@@ -1,4 +1,5 @@
-﻿using NM.Studio.Domain.Enums;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Enums;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Models.Results;

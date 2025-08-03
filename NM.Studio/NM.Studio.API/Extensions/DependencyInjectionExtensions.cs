@@ -29,6 +29,14 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IProductSizeService, ProductSizeService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<ICartItemService, CartItemService>();
+        services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderItemService, OrderItemService>();
+        services.AddScoped<IOrderStatusHistoryService, OrderStatusHistoryService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IVoucherService, VoucherService>();
+        services.AddScoped<IVoucherUsageHistoryService, VoucherUsageHistoryService>();
     }
     
     public static void AddRepositories(this IServiceCollection services)
@@ -50,6 +58,14 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IProductColorRepository, ProductColorRepository>();
         services.AddScoped<IProductSizeRepository, ProductSizeRepository>();
+        services.AddScoped<ICartItemRepository, CartItemRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+        services.AddScoped<IOrderStatusHistoryRepository, OrderStatusHistoryRepository>();
+        services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IVoucherRepository, VoucherRepository>();
+        services.AddScoped<IVoucherUsageHistoryRepository, VoucherUsageHistoryRepository>();
     }
     
     

@@ -5,7 +5,6 @@ using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 using NM.Studio.Services.Bases;
@@ -35,8 +34,6 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
             var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
             createCommand.Status = ServiceBookingStatus.Pending;
             // Giả sử BookingDate gốc là giờ UTC nhưng không có Kind
-            if (createCommand.BookingDate != null)
-                createCommand.BookingDate = DateTime.SpecifyKind(createCommand.BookingDate.Value, DateTimeKind.Utc);
 
             var service = _serviceRepository.GetById(createCommand.ServiceId!.Value).Result;
             if (service == null)

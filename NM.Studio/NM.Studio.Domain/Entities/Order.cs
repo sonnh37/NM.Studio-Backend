@@ -5,8 +5,8 @@ namespace NM.Studio.Domain.Entities;
 
 public class Order : BaseEntity
 {
-    public Guid UserId { get; set; }
-    public string OrderNumber { get; set; } = string.Empty;
+    public Guid? UserId { get; set; }
+    public string? OrderNumber { get; set; }
     public OrderStatus Status { get; set; }
 
     // Pricing
@@ -27,27 +27,48 @@ public class Order : BaseEntity
     public DateTimeOffset? CancelledDate { get; set; }
 
     // Shipping Details
-    public string ShippingAddress { get; set; } = string.Empty;
-    public string ShippingCity { get; set; } = string.Empty;
-    public string ShippingState { get; set; } = string.Empty;
-    public string ShippingZipCode { get; set; } = string.Empty;
-    public string ShippingCountry { get; set; } = string.Empty;
+    public string? ShippingAddress { get; set; }
+    public string? ShippingCity { get; set; }
+    public string? ShippingState { get; set; }
+    public string? ShippingZipCode { get; set; }
+    public string? ShippingCountry { get; set; } 
     public string? TrackingNumber { get; set; }
     public ShippingMethod ShippingMethod { get; set; }
 
     // Contact Info
-    public string CustomerName { get; set; } = string.Empty;
-    public string CustomerEmail { get; set; } = string.Empty;
-    public string CustomerPhone { get; set; } = string.Empty;
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
 
     // Notes
     public string? CustomerNotes { get; set; }
     public string? InternalNotes { get; set; }
 
     // Relationships
-    public virtual User User { get; set; } = null!;
+    public virtual User? User { get; set; }
     public virtual Voucher? Voucher { get; set; }
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public virtual ICollection<OrderStatusHistory> OrderStatusHistories { get; set; } = new List<OrderStatusHistory>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+}
+
+public enum ShippingMethod
+{
+    Standard,
+    Express,
+    NextDay,
+    PickupInStore
+}
+
+public enum OrderStatus {
+    Pending,
+    Confirmed,
+    Processing,
+    ReadyForShipment,
+    Shipped,
+    Delivered,
+    Completed,
+    Cancelled,
+    Refunded,
+    OnHold
 }

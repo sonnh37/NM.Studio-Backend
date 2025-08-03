@@ -16,7 +16,6 @@ using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Models;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -209,7 +208,7 @@ public class AuthService : IAuthService
                 refreshTokenEntity.Token = newRefreshToken;
                 refreshTokenEntity.PublicKey = newPublicKey;
                 refreshTokenEntity.KeyId = kid;
-                refreshTokenEntity.Expiry = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
+                refreshTokenEntity.Expiry = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
                 _refreshTokenRepository.Update(refreshTokenEntity);
                 var isSaveChanges = await _unitOfWork.SaveChanges();
                 if (!isSaveChanges)
@@ -318,7 +317,7 @@ public class AuthService : IAuthService
     //         HttpOnly = true,
     //         Secure = true,
     //         SameSite = SameSiteMode.None,
-    //         Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
+    //         Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes),
     //     };
     //
     //     _httpContextAccessor.HttpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);
@@ -342,8 +341,9 @@ public class AuthService : IAuthService
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
         if (string.IsNullOrEmpty(userId))
             return BusinessResult.Fail("Error the access token provided");
+        
 
-        var businessResult = await _userService.GetById<UserResult>(Guid.Parse(userId));
+        var businessResult = await _userService.GetById<UserResult>(new UserGetByIdQuery{Id = Guid.Parse(userId)});
 
         return businessResult;
     }
@@ -415,7 +415,7 @@ public class AuthService : IAuthService
                 return BusinessResult.Fail("No user found.");
 
             // Lấy thông tin người dùng từ database
-            var userResult = await _userService.GetById<UserResult>(userId.Value);
+            var userResult = await _userService.GetById<UserResult>(new UserGetByIdQuery{Id = userId.Value});
             return userResult;
         }
         catch (Exception ex)
@@ -450,8 +450,8 @@ public class AuthService : IAuthService
         var token = new JwtSecurityToken(
             claims: claims,
             expires: tokenType == "AccessToken"
-                ? DateTime.Now.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes) // Access token ngắn hạn
-                : DateTime.Now.AddDays(_tokenSetting.RefreshTokenExpiryDays), // Refresh token dài hạn
+                ? DateTimeOffset.Now.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes).UtcDateTime
+                : DateTimeOffset.Now.AddDays(_tokenSetting.RefreshTokenExpiryDays).UtcDateTime,
             signingCredentials: creds
         );
 
@@ -467,7 +467,7 @@ public class AuthService : IAuthService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes)
+            Expires = DateTimeOffset.UtcNow.AddMinutes(_tokenSetting.AccessTokenExpiryMinutes)
         };
 
         var refreshTokenOptions = new CookieOptions
@@ -475,7 +475,7 @@ public class AuthService : IAuthService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.None,
-            Expires = DateTime.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
+            Expires = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays)
         };
 
         httpContext.Response.Cookies.Append("accessToken", accessToken, accessTokenOptions);

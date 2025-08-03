@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.ProductSizes;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("products/productSizes")]
 public class ProductSizeController : BaseController
 {
     public ProductSizeController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class ProductSizeController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] ProductSizeGetByIdQuery request)
     {
-        var productSizeGetByIdQuery = new ProductSizeGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(productSizeGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }

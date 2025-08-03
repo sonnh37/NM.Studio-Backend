@@ -35,4 +35,20 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IProductSizeRepository ProductSizeRepository { get; }
 
     IProductColorRepository ProductColorRepository { get; }
+    
+    IOrderRepository OrderRepository { get; }
+    
+    IOrderItemRepository OrderItemRepository { get; }
+    
+    IPaymentRepository PaymentRepository { get; }
+    
+    IOrderStatusHistoryRepository OrderStatusHistoryRepository { get; }
+    
+    ICartRepository CartRepository { get; }
+    
+    ICartItemRepository CartItemRepository { get; }
+    
+    IVoucherRepository VoucherRepository { get; }
+    
+    IVoucherUsageHistoryRepository VoucherUsageHistoryRepository { get; }
 }

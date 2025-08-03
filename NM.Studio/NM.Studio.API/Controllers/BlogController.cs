@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Blogs;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("blogs")]
 public class BlogController : BaseController
 {
     public BlogController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class BlogController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] BlogGetByIdQuery request)
     {
-        var blogGetByIdQuery = new BlogGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(blogGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -52,14 +47,7 @@ public class BlogController : BaseController
 
         return Ok(businessResult);
     }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] BlogRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
+    
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] BlogDeleteCommand blogDeleteCommand)

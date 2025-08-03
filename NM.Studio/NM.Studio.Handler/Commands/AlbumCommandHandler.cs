@@ -1,20 +1,18 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using NM.Studio.Handler.Commands.Base;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Commands;
 
-public class AlbumCommandHandler : BaseCommandHandler,
-    IRequestHandler<AlbumUpdateCommand, BusinessResult>,
+public class AlbumCommandHandler : IRequestHandler<AlbumUpdateCommand, BusinessResult>,
     IRequestHandler<AlbumDeleteCommand, BusinessResult>,
     IRequestHandler<AlbumCreateCommand, BusinessResult>
 {
     protected readonly IAlbumService _albumService;
 
-    public AlbumCommandHandler(IAlbumService albumService) : base(albumService)
+    public AlbumCommandHandler(IAlbumService albumService)
     {
         _albumService = albumService;
     }
@@ -30,7 +28,7 @@ public class AlbumCommandHandler : BaseCommandHandler,
         var businessResult = await _albumService.DeleteById(request.Id, request.IsPermanent);
         return businessResult;
     }
-    
+
 
     public async Task<BusinessResult> Handle(AlbumUpdateCommand request, CancellationToken cancellationToken)
     {

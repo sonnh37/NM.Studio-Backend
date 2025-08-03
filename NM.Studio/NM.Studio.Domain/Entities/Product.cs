@@ -35,3 +35,21 @@ public class Product : BaseEntity
     public virtual ICollection<ProductColor> ProductColors { get; set; } = new List<ProductColor>();
     public virtual ICollection<ProductSize> ProductSizes { get; set; } = new List<ProductSize>();
 }
+
+public enum ProductStatus
+{
+    // Trạng thái không xác định hoặc chưa thiết lập
+    Unspecified,
+
+    // Trang phục có sẵn để thuê hoặc bán
+    Available,
+
+    // Trang phục đã được thuê và không còn sẵn
+    Rented,
+
+    // Trang phục đang được bảo dưỡng hoặc sửa chữa
+    InMaintenance,
+
+    // Trang phục đã bán hoặc không còn được sử dụng
+    Discontinued
+}

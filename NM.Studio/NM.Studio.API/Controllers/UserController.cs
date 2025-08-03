@@ -7,7 +7,6 @@ using NM.Studio.Domain.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 
-[Route("users")]
 public class UserController : BaseController
 {
     public UserController(IMediator mediator) : base(mediator)
@@ -24,14 +23,10 @@ public class UserController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] UserGetByIdQuery request)
     {
-        var userGetByIdQuery = new UserGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(userGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -53,16 +48,7 @@ public class UserController : BaseController
 
         return Ok(businessResult);
     }
-
-    [Authorize(Roles = "Admin,Staff")]
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] UserRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
-
+    
     [HttpPut("password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UserPasswordCommand userUpdateCommand)
     {

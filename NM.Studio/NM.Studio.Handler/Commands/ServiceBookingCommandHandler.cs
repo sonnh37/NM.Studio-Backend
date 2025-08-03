@@ -1,13 +1,12 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
-using NM.Studio.Handler.Commands.Base;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Handler.Commands;
 
-public class ServiceBookingCommandHandler : BaseCommandHandler,
+public class ServiceBookingCommandHandler :
     IRequestHandler<ServiceBookingUpdateCommand, BusinessResult>,
     IRequestHandler<ServiceBookingDeleteCommand, BusinessResult>,
     IRequestHandler<ServiceBookingCreateCommand, BusinessResult>,
@@ -15,7 +14,7 @@ public class ServiceBookingCommandHandler : BaseCommandHandler,
 {
     protected readonly IServiceBookingService ServiceBookingService;
 
-    public ServiceBookingCommandHandler(IServiceBookingService serviceBookingService) : base(serviceBookingService)
+    public ServiceBookingCommandHandler(IServiceBookingService serviceBookingService)
     {
         ServiceBookingService = serviceBookingService;
     }
@@ -34,13 +33,13 @@ public class ServiceBookingCommandHandler : BaseCommandHandler,
 
     public async Task<BusinessResult> Handle(ServiceBookingDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await ServiceBookingService.DeleteById(request.Id, request.IsPermanent);
         return msgView;
     }
 
     public async Task<BusinessResult> Handle(ServiceBookingUpdateCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _baseService.CreateOrUpdate<ServiceBookingResult>(request);
+        var msgView = await ServiceBookingService.CreateOrUpdate<ServiceBookingResult>(request);
         return msgView;
     }
 }

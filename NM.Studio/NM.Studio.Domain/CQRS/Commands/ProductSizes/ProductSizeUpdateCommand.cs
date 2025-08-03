@@ -8,5 +8,5 @@ public class ProductSizeUpdateCommand : UpdateCommand
 
     public Guid? SizeId { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 }

@@ -7,7 +7,6 @@ using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Models.Responses;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -36,22 +35,14 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
 
     #region Queries
 
-    public async Task<BusinessResult> GetById<TResult>(Guid id) where TResult : BaseResult
+    public async Task<BusinessResult> GetById<TResult>(GetByIdQuery request) where TResult : BaseResult
     {
-        try
-        {
-            var entity = await _baseRepository.GetById(id);
-            var result = _mapper.Map<TResult>(entity);
-            if (result == null)
-                return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+        var entity = await _baseRepository.GetById(request.Id, request.IncludeProperties);
+        var result = _mapper.Map<TResult>(entity);
+        if (result == null)
+            return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-            return BusinessResult.Success();
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
+        return BusinessResult.Success(result);
     }
 
 
@@ -224,11 +215,11 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     {
         if (entity == null) return;
 
-        entity.LastUpdatedDate = DateTime.UtcNow;
+        entity.LastUpdatedDate = DateTimeOffset.UtcNow;
 
         if (operation == EntityOperation.Create)
         {
-            entity.CreatedDate = DateTime.UtcNow;
+            entity.CreatedDate = DateTimeOffset.UtcNow;
             entity.IsDeleted = false;
         }
 

@@ -8,7 +8,6 @@ using NM.Studio.Domain.CQRS.Queries.Categories;
 namespace NM.Studio.API.Controllers;
 
 [Authorize(Roles = "Admin,Staff")]
-[Route("categories")]
 public class CategoryController : BaseController
 {
     public CategoryController(IMediator mediator) : base(mediator)
@@ -25,14 +24,10 @@ public class CategoryController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById([FromRoute] Guid id)
+    [HttpGet("id")]
+    public async Task<IActionResult> GetById([FromQuery] CategoryGetByIdQuery request)
     {
-        var categoryGetByIdQuery = new CategoryGetByIdQuery
-        {
-            Id = id
-        };
-        var businessResult = await _mediator.Send(categoryGetByIdQuery);
+        var businessResult = await _mediator.Send(request);
 
         return Ok(businessResult);
     }
@@ -52,14 +47,7 @@ public class CategoryController : BaseController
 
         return Ok(businessResult);
     }
-
-    [HttpPut("restore")]
-    public async Task<IActionResult> UpdateIsDeleted([FromBody] CategoryRestoreCommand command)
-    {
-        var businessResult = await _mediator.Send(command);
-
-        return Ok(businessResult);
-    }
+    
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] CategoryDeleteCommand categoryDeleteCommand)
