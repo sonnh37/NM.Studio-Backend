@@ -26,7 +26,7 @@ public class ServiceCommandHandler :
 
     public async Task<BusinessResult> Handle(ServiceDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _serviceService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _serviceService.Delete(request);
         return msgView;
     }
 

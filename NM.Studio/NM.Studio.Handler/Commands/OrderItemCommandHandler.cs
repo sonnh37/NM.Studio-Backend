@@ -26,7 +26,7 @@ public class OrderItemCommandHandler :
 
     public async Task<BusinessResult> Handle(OrderItemDeleteCommand request, CancellationToken cancellationToken)
     {
-        var businessResult = await _orderItemService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _orderItemService.Delete(request);
         return businessResult;
     }
 

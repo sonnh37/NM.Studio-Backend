@@ -22,7 +22,7 @@ public class ProductColorService : BaseService<ProductColor>, IProductColorServi
         _productColorRepository = _unitOfWork.ProductColorRepository;
     }
 
-    public async Task<BusinessResult> DeleteById(ProductColorDeleteCommand command)
+    public async Task<BusinessResult> Delete(ProductColorDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.ColorId == Guid.Empty)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
@@ -35,7 +35,7 @@ public class ProductColorService : BaseService<ProductColor>, IProductColorServi
         if (entity == null)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-        _productColorRepository.DeletePermanently(entity);
+        _productColorRepository.Delete(entity, true);
         var saveChanges = await _unitOfWork.SaveChanges();
         if (!saveChanges)
             return BusinessResult.Fail(Const.FAIL_SAVE_MSG);

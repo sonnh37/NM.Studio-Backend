@@ -20,7 +20,7 @@ public interface IBaseRepository<TEntity> : IBaseRepository
 
     Task<int> GetTotalCount(DateTimeOffset? fromDate, DateTimeOffset? toDate);
 
-    Task<(List<TEntity>, int)> GetListByQueryAsync(GetQueryableQuery query);
+    Task<(List<TEntity>, int)> GetAll(GetQueryableQuery query);
 
     Task<TEntity?> GetById(Guid id, string[]? includeProperties = null);
     Task<TEntity?> GetByOptions(Expression<Func<TEntity, bool>> predicate);
@@ -33,13 +33,9 @@ public interface IBaseRepository<TEntity> : IBaseRepository
 
     void UpdateRange(IEnumerable<TEntity> entities);
 
-    void Delete(TEntity entity);
+    void Delete(TEntity entity, bool IsPermanent = false);
 
-    void DeletePermanently(TEntity entity);
-
-    void DeleteRange(IEnumerable<TEntity> entities);
-
+    void DeleteRange(IEnumerable<TEntity> entities, bool isPermanent = false);
     void CheckCancellationToken(CancellationToken cancellationToken = default);
 
-    void DeleteRangePermanently(IEnumerable<TEntity> entities);
 }

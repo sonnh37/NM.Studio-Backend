@@ -20,7 +20,7 @@ public class OrderQueryHandler :
     public async Task<BusinessResult> Handle(OrderGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _orderService.GetListByQueryAsync<OrderResult>(request);
+        return await _orderService.GetAll<OrderResult>(request);
     }
 
     public async Task<BusinessResult> Handle(OrderGetByIdQuery request, CancellationToken cancellationToken)

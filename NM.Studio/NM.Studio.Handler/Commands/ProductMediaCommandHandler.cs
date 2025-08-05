@@ -26,7 +26,7 @@ public class ProductMediaCommandHandler :
 
     public async Task<BusinessResult> Handle(ProductMediaDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productMediaService.DeleteById(request);
+        var msgView = await _productMediaService.Delete(request);
         return msgView;
     }
 

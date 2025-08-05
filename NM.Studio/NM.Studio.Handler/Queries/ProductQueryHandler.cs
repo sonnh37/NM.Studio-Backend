@@ -21,7 +21,7 @@ public class ProductQueryHandler :
     public async Task<BusinessResult> Handle(ProductGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _productService.GetListByQueryAsync<ProductResult>(request);
+        return await _productService.GetAll<ProductResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ProductGetByIdQuery request,

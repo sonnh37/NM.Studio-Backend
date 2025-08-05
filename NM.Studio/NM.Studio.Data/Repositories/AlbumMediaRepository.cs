@@ -4,6 +4,7 @@ using NM.Studio.Data.Context;
 using NM.Studio.Data.Repositories.Base;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.CQRS.Commands.AlbumMedias;
+using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Data.Repositories;
@@ -23,8 +24,4 @@ public class AlbumMediaRepository : BaseRepository<AlbumMedia>, IAlbumMediaRepos
         return entity;
     }
 
-    public new void Delete(AlbumMedia entity)
-    {
-        DbSet.Remove(entity);
-    }
 }

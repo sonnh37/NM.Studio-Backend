@@ -6,7 +6,7 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IProductColorService : IBaseService
 {
-    Task<BusinessResult> DeleteById(ProductColorDeleteCommand command);
+    Task<BusinessResult> Delete(ProductColorDeleteCommand command);
 
     Task<BusinessResult> Update<TResult>(ProductColorUpdateCommand updateCommand) where TResult : BaseResult;
 }

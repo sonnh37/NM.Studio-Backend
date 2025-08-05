@@ -26,7 +26,7 @@ public class MediaFileCommandHandler :
 
     public async Task<BusinessResult> Handle(MediaFileDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _mediaFileService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _mediaFileService.Delete(request);
         return msgView;
     }
 

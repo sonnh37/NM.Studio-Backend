@@ -20,7 +20,7 @@ public class PaymentQueryHandler :
     public async Task<BusinessResult> Handle(PaymentGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _paymentService.GetListByQueryAsync<PaymentResult>(request);
+        return await _paymentService.GetAll<PaymentResult>(request);
     }
 
     public async Task<BusinessResult> Handle(PaymentGetByIdQuery request, CancellationToken cancellationToken)

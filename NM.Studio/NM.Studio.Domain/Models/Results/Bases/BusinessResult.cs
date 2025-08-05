@@ -5,7 +5,7 @@ namespace NM.Studio.Domain.Models.Results.Bases;
 public class BusinessResult
 {
     public bool IsSuccess { get; set; }
-    public int Code { get; set; }
+    public int Status { get; set; }
     public string Message { get; set; } = string.Empty;
     public string? Error { get; set; }
 
@@ -17,7 +17,7 @@ public class BusinessResult
         return new BusinessResult
         {
             IsSuccess = true,
-            Code = Const.SUCCESS_CODE,
+            Status = Const.SUCCESS_CODE,
             Message = message
         };
     }
@@ -27,7 +27,7 @@ public class BusinessResult
         return new BusinessResult
         {
             IsSuccess = true,
-            Code = Const.SUCCESS_CODE,
+            Status = Const.SUCCESS_CODE,
             Message = message,
             Data = data
         };
@@ -38,7 +38,7 @@ public class BusinessResult
         return new BusinessResult
         {
             IsSuccess = false,
-            Code = Const.FAIL_CODE,
+            Status = Const.FAIL_CODE,
             Message = "Fail",
             Error = error
         };
@@ -49,7 +49,7 @@ public class BusinessResult
         return new BusinessResult
         {
             IsSuccess = false,
-            Code = Const.ERROR_EXCEPTION_CODE,
+            Status = Const.ERROR_EXCEPTION_CODE,
             Message = "Exception error",
             Error = error
         };

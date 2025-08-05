@@ -20,7 +20,7 @@ public class AlbumQueryHandler :
     public async Task<BusinessResult> Handle(AlbumGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _albumService.GetListByQueryAsync<AlbumResult>(request);
+        return await _albumService.GetAll<AlbumResult>(request);
     }
 
     public async Task<BusinessResult> Handle(AlbumGetByIdQuery request, CancellationToken cancellationToken)

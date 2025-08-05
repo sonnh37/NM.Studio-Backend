@@ -45,68 +45,21 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         return BusinessResult.Success(result);
     }
 
-
-    // public async Task<BusinessResult> GetByOptions<TResult>(Expression<Func<TEntity, bool>> predicate)
-    //     where TResult : BaseResult
-    // {
-    //     try
-    //     {
-    //         var entity = await _baseRepository.GetByOptions(predicate);
-    //         var result = _mapper.Map<TResult>(entity);
-    //         if (result == null)
-    //             return new ResponseBuilder<TResult>()
-    //                 .WithData(result)
-    //                 .WithStatus(Const.NOT_FOUND_CODE)
-    //                 .WithMessage(Const.NOT_FOUND_MSG)
-    //                 .Build();
-    //
-    //         return new ResponseBuilder<TResult>()
-    //             .WithData(result)
-    //             .WithStatus(Const.SUCCESS_CODE)
-    //             .WithMessage(Const.SUCCESS_READ_MSG)
-    //             .Build();
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         string errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-    //         return new ResponseBuilder()
-    //             .WithStatus(Const.FAIL_CODE)
-    //             .WithMessage(errorMessage)
-    //             .Build();
-    //     }
-    // }
-
     public async Task<BusinessResult> GetAll<TResult>() where TResult : BaseResult
     {
-        try
-        {
-            var entities = await _baseRepository.GetAll();
-            var results = _mapper.Map<List<TResult>>(entities);
+        var entities = await _baseRepository.GetAll();
+        var results = _mapper.Map<List<TResult>>(entities);
 
-            return BusinessResult.Success(results);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error {typeof(TResult).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
+        return BusinessResult.Success(results);
     }
 
-    public async Task<BusinessResult> GetListByQueryAsync<TResult>(GetQueryableQuery query) where TResult : BaseResult
+    public async Task<BusinessResult> GetAll<TResult>(GetQueryableQuery query) where TResult : BaseResult
     {
-        try
-        {
-            var (entities, totalCount) = await _baseRepository.GetListByQueryAsync(query);
-            var results = _mapper.Map<List<TResult>>(entities);
-            var tableResponse = new QueryResult(results, totalCount, query);
+        var (entities, totalCount) = await _baseRepository.GetAll(query);
+        var results = _mapper.Map<List<TResult>>(entities);
+        var tableResponse = new QueryResult(results, totalCount, query);
 
-            return BusinessResult.Success(tableResponse);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error occurred in {typeof(TResult).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
+        return BusinessResult.Success(tableResponse);
     }
 
     #endregion
@@ -116,72 +69,46 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
     public async Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand)
         where TResult : BaseResult
     {
-        try
-        {
-            var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
-            var result = _mapper.Map<TResult>(entity);
-            if (result == null)
-                return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
+        var entity = await CreateOrUpdateEntity(createOrUpdateCommand);
+        var result = _mapper.Map<TResult>(entity);
+        if (result == null)
+            return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
 
-            return BusinessResult.Success(result);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
+        return BusinessResult.Success(result);
     }
 
     public async Task<BusinessResult> Restore<TResult>(UpdateCommand updateCommand)
         where TResult : BaseResult
     {
-        try
-        {
-            TEntity? entity;
+        TEntity? entity;
 
-            entity = await _baseRepository.GetById(updateCommand.Id);
-            if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+        entity = await _baseRepository.GetById(updateCommand.Id);
+        if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-            entity.IsDeleted = false;
+        entity.IsDeleted = false;
 
-            SetBaseEntityProperties(entity, EntityOperation.Update);
-            _baseRepository.Update(entity);
+        SetBaseEntityProperties(entity, EntityOperation.Update);
+        _baseRepository.Update(entity);
 
-            if (!await _unitOfWork.SaveChanges())
-                return BusinessResult.Fail();
+        if (!await _unitOfWork.SaveChanges())
+            return BusinessResult.Fail();
 
-            var result = _mapper.Map<TResult>(entity);
+        var result = _mapper.Map<TResult>(entity);
 
-            return BusinessResult.Success(result);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error occurred while updating {typeof(TEntity).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
+        return BusinessResult.Success(result);
     }
 
-    public async Task<BusinessResult> DeleteById(Guid id, bool isPermanent = false)
+    public async Task<BusinessResult> Delete(DeleteCommand command)
     {
-        try
-        {
-            var entity = await _baseRepository.GetById(id);
-            if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+        var entity = await _baseRepository.GetById(command.Id);
+        if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-            if (isPermanent)
-                _baseRepository.DeletePermanently(entity);
-            else
-                _baseRepository.Delete(entity);
+        _baseRepository.Delete(entity, command.IsPermanent);
 
-            if (!await _unitOfWork.SaveChanges())
-                return BusinessResult.Fail();
+        if (!await _unitOfWork.SaveChanges())
+            return BusinessResult.Fail();
 
-            return BusinessResult.Success();
-        }
-        catch (Exception ex)
-        {
-            return BusinessResult.Fail(ex.Message);
-        }
+        return BusinessResult.Success();
     }
 
     protected async Task<TEntity?> CreateOrUpdateEntity(CreateOrUpdateCommand createOrUpdateCommand)

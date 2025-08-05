@@ -6,5 +6,5 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IAlbumMediaService : IBaseService
 {
-    Task<BusinessResult> DeleteById(AlbumMediaDeleteCommand command);
+    Task<BusinessResult> Delete(AlbumMediaDeleteCommand command);
 }

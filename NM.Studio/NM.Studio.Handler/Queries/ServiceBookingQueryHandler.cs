@@ -20,7 +20,7 @@ public class ServiceBookingQueryHandler :
     public async Task<BusinessResult> Handle(ServiceBookingGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await ServiceBookingService.GetListByQueryAsync<ServiceBookingResult>(request);
+        return await ServiceBookingService.GetAll<ServiceBookingResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ServiceBookingGetByIdQuery request,

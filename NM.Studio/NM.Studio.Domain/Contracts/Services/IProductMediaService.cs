@@ -6,5 +6,5 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IProductMediaService : IBaseService
 {
-    Task<BusinessResult> DeleteById(ProductMediaDeleteCommand command);
+    Task<BusinessResult> Delete(ProductMediaDeleteCommand command);
 }

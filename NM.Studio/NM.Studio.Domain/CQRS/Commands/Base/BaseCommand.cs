@@ -24,5 +24,5 @@ public class DeleteCommand : BaseCommand, IRequest<BusinessResult>
 {
     public Guid Id { get; set; }
 
-    public bool IsPermanent { get; set; }
+    public bool IsPermanent { get; set; } = false;
 }

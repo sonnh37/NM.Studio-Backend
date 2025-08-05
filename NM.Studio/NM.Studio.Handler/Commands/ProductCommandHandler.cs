@@ -26,7 +26,7 @@ public class ProductCommandHandler :
 
     public async Task<BusinessResult> Handle(ProductDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _productService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _productService.Delete(request);
         return msgView;
     }
 

@@ -20,7 +20,7 @@ public class ProductSizeQueryHandler :
     public async Task<BusinessResult> Handle(ProductSizeGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await ProductSizeService.GetListByQueryAsync<ProductSizeResult>(request);
+        return await ProductSizeService.GetAll<ProductSizeResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ProductSizeGetByIdQuery request, CancellationToken cancellationToken)

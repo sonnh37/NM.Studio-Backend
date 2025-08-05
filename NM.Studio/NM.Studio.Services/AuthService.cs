@@ -241,7 +241,7 @@ public class AuthService : IAuthService
                 .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
             if (userRefreshToken == null)
                 return BusinessResult.Fail("You are not logged in, please log in to continue.");
-            _refreshTokenRepository.DeletePermanently(userRefreshToken);
+            _refreshTokenRepository.Delete(userRefreshToken, true);
 
             var isSaved = await _unitOfWork.SaveChanges();
             if (!isSaved) throw new Exception();

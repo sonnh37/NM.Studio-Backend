@@ -26,7 +26,7 @@ public class CartItemCommandHandler :
 
     public async Task<BusinessResult> Handle(CartItemDeleteCommand request, CancellationToken cancellationToken)
     {
-        var businessResult = await _cartItemService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _cartItemService.Delete(request);
         return businessResult;
     }
 

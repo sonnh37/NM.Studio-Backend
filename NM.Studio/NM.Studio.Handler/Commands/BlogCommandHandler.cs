@@ -25,7 +25,7 @@ public class BlogCommandHandler : IRequestHandler<BlogUpdateCommand, BusinessRes
 
     public async Task<BusinessResult> Handle(BlogDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _blogService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _blogService.Delete(request);
         return msgView;
     }
 

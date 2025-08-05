@@ -20,7 +20,7 @@ public class ColorQueryHandler :
     public async Task<BusinessResult> Handle(ColorGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _colorService.GetListByQueryAsync<ColorResult>(request);
+        return await _colorService.GetAll<ColorResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ColorGetByIdQuery request,

@@ -20,7 +20,7 @@ public class OrderStatusHistoryQueryHandler :
     public async Task<BusinessResult> Handle(OrderStatusHistoryGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _orderStatusHistoryService.GetListByQueryAsync<OrderStatusHistoryResult>(request);
+        return await _orderStatusHistoryService.GetAll<OrderStatusHistoryResult>(request);
     }
 
     public async Task<BusinessResult> Handle(OrderStatusHistoryGetByIdQuery request,

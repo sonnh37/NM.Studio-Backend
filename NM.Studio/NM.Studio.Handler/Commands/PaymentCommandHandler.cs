@@ -26,7 +26,7 @@ public class PaymentCommandHandler :
 
     public async Task<BusinessResult> Handle(PaymentDeleteCommand request, CancellationToken cancellationToken)
     {
-        var businessResult = await _paymentService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _paymentService.Delete(request);
         return businessResult;
     }
 

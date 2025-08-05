@@ -20,7 +20,7 @@
 //     public async Task<BusinessResult> Handle(DashboardGetAllQuery request,
 //         CancellationToken cancellationToken)
 //     {
-//         return await _dashboardService.GetListByQueryAsync<DashboardResult>(request);
+//         return await _dashboardService.GetAll<DashboardResult>(request);
 //     }
 //
 //     public async Task<BusinessResult> Handle(DashboardGetByIdQuery request, CancellationToken cancellationToken)

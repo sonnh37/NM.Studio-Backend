@@ -20,7 +20,7 @@ public class ServiceQueryHandler :
     public async Task<BusinessResult> Handle(ServiceGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _serviceService.GetListByQueryAsync<ServiceResult>(request);
+        return await _serviceService.GetAll<ServiceResult>(request);
     }
 
     public async Task<BusinessResult> Handle(ServiceGetByIdQuery request,

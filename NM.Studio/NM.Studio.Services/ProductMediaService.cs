@@ -21,7 +21,7 @@ public class ProductMediaService : BaseService<ProductMedia>, IProductMediaServi
         _productMediaRepository = _unitOfWork.ProductMediaRepository;
     }
 
-    public async Task<BusinessResult> DeleteById(ProductMediaDeleteCommand command)
+    public async Task<BusinessResult> Delete(ProductMediaDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.MediaFileId == Guid.Empty)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);

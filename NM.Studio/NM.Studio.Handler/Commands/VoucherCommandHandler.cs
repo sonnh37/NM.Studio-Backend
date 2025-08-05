@@ -26,7 +26,7 @@ public class VoucherCommandHandler :
 
     public async Task<BusinessResult> Handle(VoucherDeleteCommand request, CancellationToken cancellationToken)
     {
-        var businessResult = await _voucherService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _voucherService.Delete(request);
         return businessResult;
     }
 

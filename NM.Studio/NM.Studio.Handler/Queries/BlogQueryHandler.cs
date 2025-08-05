@@ -20,7 +20,7 @@ public class BlogQueryHandler :
     public async Task<BusinessResult> Handle(BlogGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _blogService.GetListByQueryAsync<BlogResult>(request);
+        return await _blogService.GetAll(request);
     }
 
     public async Task<BusinessResult> Handle(BlogGetByIdQuery request, CancellationToken cancellationToken)

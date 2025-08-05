@@ -41,7 +41,7 @@ public class RefreshTokenRepository : BaseRepository<RefreshToken>, IRefreshToke
 
             var expiredTokens = await queryable.ToListAsync();
 
-            if (expiredTokens.Count != 0) DeleteRangePermanently(expiredTokens);
+            if (expiredTokens.Count != 0) DeleteRange(expiredTokens, true);
         }
         catch (Exception ex)
         {

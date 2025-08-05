@@ -27,7 +27,7 @@ public class UserCommandHandler :
 
     public async Task<BusinessResult> Handle(UserDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _userService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _userService.Delete(request);
         return msgView;
     }
 

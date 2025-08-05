@@ -6,6 +6,6 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IProductSizeService : IBaseService
 {
-    Task<BusinessResult> DeleteById(ProductSizeDeleteCommand command);
+    Task<BusinessResult> Delete(ProductSizeDeleteCommand command);
     Task<BusinessResult> Update<TResult>(ProductSizeUpdateCommand updateCommand) where TResult : BaseResult;
 }

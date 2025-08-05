@@ -20,7 +20,7 @@ public class CategoryQueryHandler :
     public async Task<BusinessResult> Handle(CategoryGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _categoryService.GetListByQueryAsync<CategoryResult>(request);
+        return await _categoryService.GetAll<CategoryResult>(request);
     }
 
     public async Task<BusinessResult> Handle(CategoryGetByIdQuery request,

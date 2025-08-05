@@ -20,7 +20,7 @@ public class SubCategoryQueryHandler :
     public async Task<BusinessResult> Handle(SubCategoryGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _subCategoryService.GetListByQueryAsync<SubCategoryResult>(request);
+        return await _subCategoryService.GetAll(request);
     }
 
     public async Task<BusinessResult> Handle(SubCategoryGetByIdQuery request,

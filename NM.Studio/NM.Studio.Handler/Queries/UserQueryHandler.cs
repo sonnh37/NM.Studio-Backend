@@ -26,7 +26,7 @@ public class UserQueryHandler :
     public async Task<BusinessResult> Handle(UserGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _userService.GetListByQueryAsync<UserResult>(request);
+        return await _userService.GetAll<UserResult>(request);
     }
 
     public async Task<BusinessResult> Handle(UserGetByAccountQuery request, CancellationToken cancellationToken)

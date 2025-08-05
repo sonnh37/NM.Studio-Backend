@@ -7,5 +7,4 @@ namespace NM.Studio.Domain.Contracts.Repositories;
 public interface IAlbumMediaRepository : IBaseRepository<AlbumMedia>
 {
     Task<AlbumMedia?> GetById(AlbumMediaDeleteCommand command);
-    void Delete(AlbumMedia entity);
 }

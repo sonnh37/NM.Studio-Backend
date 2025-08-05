@@ -26,7 +26,7 @@ public class SubCategoryCommandHandler :
 
     public async Task<BusinessResult> Handle(SubCategoryDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _subCategoryService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _subCategoryService.Delete(request);
         return msgView;
     }
 

@@ -3,6 +3,7 @@ using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.AlbumMedias;
+using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -21,7 +22,7 @@ public class AlbumMediaService : BaseService<AlbumMedia>, IAlbumMediaService
         _albumMediaRepository = _unitOfWork.AlbumMediaRepository;
     }
 
-    public async Task<BusinessResult> DeleteById(AlbumMediaDeleteCommand command)
+    public async Task<BusinessResult> Delete(AlbumMediaDeleteCommand command)
     {
         if (command.AlbumId == Guid.Empty || command.MediaFileId == Guid.Empty)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
@@ -30,7 +31,7 @@ public class AlbumMediaService : BaseService<AlbumMedia>, IAlbumMediaService
         if (entity == null)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-        _albumMediaRepository.Delete(entity);
+        _albumMediaRepository.Delete(entity, command.IsPermanent);
         var saveChanges = await _unitOfWork.SaveChanges();
 
         if (!saveChanges)

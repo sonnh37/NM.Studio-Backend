@@ -3,7 +3,9 @@ using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Blogs;
+using NM.Studio.Domain.CQRS.Queries.Blogs;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
 using NM.Studio.Services.Bases;
@@ -19,6 +21,15 @@ public class BlogService : BaseService<Blog>, IBlogService
         : base(mapper, unitOfWork)
     {
         _blogRepository = _unitOfWork.BlogRepository;
+    }
+
+    public async Task<BusinessResult> GetAll(BlogGetAllQuery query)
+    {
+        var (entities, totalCount) = await _blogRepository.GetAll(query);
+        var results = _mapper.Map<List<BlogResult>>(entities);
+        var tableResponse = new QueryResult(results, totalCount, query);
+
+        return BusinessResult.Success(tableResponse);
     }
 
     public async Task<BusinessResult> Create<TResult>(BlogCreateCommand createCommand) where TResult : BaseResult

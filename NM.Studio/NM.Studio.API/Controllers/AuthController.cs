@@ -8,7 +8,8 @@ using NM.Studio.Domain.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 
-[Route("auth")]
+
+[Route("api/auth")]
 public class AuthController : BaseController
 {
     public AuthController(IMediator mediator) : base(mediator)

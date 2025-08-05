@@ -26,7 +26,7 @@ public class ProductColorCommandHandler :
 
     public async Task<BusinessResult> Handle(ProductColorDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await ProductColorService.DeleteById(request);
+        var msgView = await ProductColorService.Delete(request);
         return msgView;
     }
 

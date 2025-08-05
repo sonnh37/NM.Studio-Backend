@@ -20,7 +20,7 @@ public class VoucherUsageHistoryQueryHandler :
     public async Task<BusinessResult> Handle(VoucherUsageHistoryGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _voucherUsageHistoryService.GetListByQueryAsync<VoucherUsageHistoryResult>(request);
+        return await _voucherUsageHistoryService.GetAll<VoucherUsageHistoryResult>(request);
     }
 
     public async Task<BusinessResult> Handle(VoucherUsageHistoryGetByIdQuery request,

@@ -20,7 +20,7 @@ public class MediaFileQueryHandler :
     public async Task<BusinessResult> Handle(MediaFileGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _mediaFileService.GetListByQueryAsync<MediaFileResult>(request);
+        return await _mediaFileService.GetAll<MediaFileResult>(request);
     }
 
     public async Task<BusinessResult> Handle(MediaFileGetByIdQuery request, CancellationToken cancellationToken)

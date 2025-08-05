@@ -28,7 +28,7 @@ public class VoucherUsageHistoryCommandHandler :
     public async Task<BusinessResult> Handle(VoucherUsageHistoryDeleteCommand request,
         CancellationToken cancellationToken)
     {
-        var businessResult = await _voucherUsageHistoryService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _voucherUsageHistoryService.Delete(request);
         return businessResult;
     }
 

@@ -3,6 +3,7 @@ using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Albums;
+using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Utilities;
@@ -19,6 +20,15 @@ public class AlbumService : BaseService<Album>, IAlbumService
         : base(mapper, unitOfWork)
     {
         _albumRepository = _unitOfWork.AlbumRepository;
+    }
+
+    public async Task<BusinessResult> GetAll<TResult>(AlbumGetAllQuery query) where TResult : BaseResult
+    {
+        var (entities, totalCount) = await _albumRepository.GetAll(query);
+        var results = _mapper.Map<List<TResult>>(entities);
+        var tableResponse = new QueryResult(results, totalCount, query);
+
+        return BusinessResult.Success(tableResponse);
     }
 
     public async Task<BusinessResult> Create<TResult>(AlbumCreateCommand createCommand) where TResult : BaseResult

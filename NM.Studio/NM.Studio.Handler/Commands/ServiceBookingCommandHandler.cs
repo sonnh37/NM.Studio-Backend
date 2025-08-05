@@ -33,7 +33,7 @@ public class ServiceBookingCommandHandler :
 
     public async Task<BusinessResult> Handle(ServiceBookingDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await ServiceBookingService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await ServiceBookingService.Delete(request);
         return msgView;
     }
 

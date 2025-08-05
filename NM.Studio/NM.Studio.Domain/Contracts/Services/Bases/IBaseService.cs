@@ -13,11 +13,11 @@ public interface IBaseService
 {
     Task<BusinessResult> GetAll<TResult>() where TResult : BaseResult;
 
-    Task<BusinessResult> GetListByQueryAsync<TResult>(GetQueryableQuery query) where TResult : BaseResult;
+    Task<BusinessResult> GetAll<TResult>(GetQueryableQuery query) where TResult : BaseResult;
 
     Task<BusinessResult> GetById<TResult>(GetByIdQuery id) where TResult : BaseResult;
 
-    Task<BusinessResult> DeleteById(Guid id, bool isPermanent = false);
+    Task<BusinessResult> Delete(DeleteCommand deleteCommand);
 
     Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand)
         where TResult : BaseResult;

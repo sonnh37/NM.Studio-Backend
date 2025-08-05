@@ -64,7 +64,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         if (includeProperties == null) return queryable;
-        
+
         foreach (var property in includeProperties)
         {
             if (string.IsNullOrWhiteSpace(property)) continue;
@@ -98,27 +98,25 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         DbSet.UpdateRange(entities);
     }
 
-    public void Delete(TEntity entity)
+    public void Delete(TEntity entity, bool isPermanent = false)
     {
-        entity.IsDeleted = true;
-        DbSet.Update(entity);
+        if (isPermanent) DbSet.Remove(entity);
+        else
+        {
+            entity.IsDeleted = true;
+            DbSet.Update(entity);
+        }
     }
 
-    public void DeletePermanently(TEntity entity)
-    {
-        DbSet.Remove(entity);
-    }
 
-    public void DeleteRangePermanently(IEnumerable<TEntity> entities)
+    public void DeleteRange(IEnumerable<TEntity> entities, bool isPermanent = false)
     {
-        DbSet.RemoveRange(entities);
-    }
-
-    public void DeleteRange(IEnumerable<TEntity> entities)
-    {
-        var baseEntities = entities.ToList();
-        var enumerable = baseEntities.Where(e => e.IsDeleted == false ? e.IsDeleted = true : e.IsDeleted = false);
-        DbSet.UpdateRange(baseEntities);
+        if (isPermanent) DbSet.RemoveRange(entities);
+        else
+        {
+            var enumerable = entities.Where(e => e.IsDeleted == false ? e.IsDeleted = true : e.IsDeleted = false);
+            DbSet.UpdateRange(enumerable);
+        }
     }
 
     #endregion
@@ -133,7 +131,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return result;
     }
 
-    public async Task<(List<TEntity>, int)> GetListByQueryAsync(GetQueryableQuery query)
+    public async Task<(List<TEntity>, int)> GetAll(GetQueryableQuery query)
     {
         var queryable = GetQueryable();
         queryable = FilterHelper.Apply(queryable, query);
@@ -206,7 +204,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return dbSet;
     }
 
-    private IQueryable<TEntity> GetQueryablePagination(IQueryable<TEntity> queryable, GetQueryableQuery query)
+    protected IQueryable<TEntity> GetQueryablePagination(IQueryable<TEntity> queryable, GetQueryableQuery query)
     {
         queryable = queryable
             .Skip((query.Pagination.PageNumber - 1) * query.Pagination.PageSize)

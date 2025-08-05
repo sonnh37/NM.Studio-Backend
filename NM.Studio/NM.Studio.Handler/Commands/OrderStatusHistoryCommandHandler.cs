@@ -28,7 +28,7 @@ public class OrderStatusHistoryCommandHandler :
     public async Task<BusinessResult> Handle(OrderStatusHistoryDeleteCommand request,
         CancellationToken cancellationToken)
     {
-        var businessResult = await _orderStatusHistoryService.DeleteById(request.Id, request.IsPermanent);
+        var businessResult = await _orderStatusHistoryService.Delete(request);
         return businessResult;
     }
 

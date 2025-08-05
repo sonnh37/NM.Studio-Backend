@@ -26,7 +26,7 @@ public class SizeCommandHandler :
 
     public async Task<BusinessResult> Handle(SizeDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _sizeService.DeleteById(request.Id, request.IsPermanent);
+        var msgView = await _sizeService.Delete(request);
         return msgView;
     }
 

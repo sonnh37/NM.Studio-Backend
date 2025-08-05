@@ -26,7 +26,7 @@ public class AlbumMediaCommandHandler :
 
     public async Task<BusinessResult> Handle(AlbumMediaDeleteCommand request, CancellationToken cancellationToken)
     {
-        var msgView = await _albumMediaService.DeleteById(request);
+        var msgView = await _albumMediaService.Delete(request);
         return msgView;
     }
 

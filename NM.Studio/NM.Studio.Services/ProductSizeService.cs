@@ -22,7 +22,7 @@ public class ProductSizeService : BaseService<ProductSize>, IProductSizeService
         _productSizeRepository = _unitOfWork.ProductSizeRepository;
     }
 
-    public async Task<BusinessResult> DeleteById(ProductSizeDeleteCommand command)
+    public async Task<BusinessResult> Delete(ProductSizeDeleteCommand command)
     {
         if (command.ProductId == Guid.Empty || command.SizeId == Guid.Empty)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
@@ -35,7 +35,7 @@ public class ProductSizeService : BaseService<ProductSize>, IProductSizeService
         if (entity == null)
             return BusinessResult.Fail(Const.NOT_FOUND_MSG);
 
-        _productSizeRepository.DeletePermanently(entity);
+        _productSizeRepository.Delete(entity, true);
         var saveChanges = await _unitOfWork.SaveChanges();
 
         if (!saveChanges)

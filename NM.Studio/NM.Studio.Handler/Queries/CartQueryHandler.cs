@@ -20,7 +20,7 @@ public class CartQueryHandler :
     public async Task<BusinessResult> Handle(CartGetAllQuery request,
         CancellationToken cancellationToken)
     {
-        return await _cartService.GetListByQueryAsync<CartResult>(request);
+        return await _cartService.GetAll<CartResult>(request);
     }
 
     public async Task<BusinessResult> Handle(CartGetByIdQuery request, CancellationToken cancellationToken)
