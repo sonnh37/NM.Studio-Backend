@@ -5,7 +5,10 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using AutoMapper;
 using Google.Apis.Auth;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
@@ -76,6 +79,48 @@ public class UserService : BaseService<User>, IUserService
         }
     }
 
+    public async Task<BusinessResult> UpdateUserCacheAsync(UserUpdateCacheCommand newCacheJson)
+    {
+        var userId = GetUser()?.Id;
+        if (userId == null)
+            return BusinessResult.Fail("Not found");
+
+        var user = await _userRepository.GetQueryable(m => m.Id == userId).SingleOrDefaultAsync();
+        if (user == null) return BusinessResult.Fail("No user found.");
+
+        JObject existingCache;
+        try
+        {
+            existingCache = string.IsNullOrWhiteSpace(user.Cache) ? new JObject() : JObject.Parse(user.Cache);
+        }
+        catch (JsonReaderException ex)
+        {
+            Console.WriteLine($"Error parsing cache: {ex.Message}, Raw Data: {user.Cache}");
+            existingCache = new JObject(); // Nếu lỗi thì dùng cache mới
+        }
+
+        if (newCacheJson.Cache != null)
+        {
+            JObject newCache = JObject.Parse(newCacheJson.Cache);
+
+            existingCache.Merge(newCache, new JsonMergeSettings
+            {
+                MergeArrayHandling = MergeArrayHandling.Union
+            });
+        }
+
+        user.Cache = existingCache.ToString();
+        SetBaseEntityProperties(user, EntityOperation.Update);
+        ;
+        _userRepository.Update(user);
+        var isSaveChanges = await _unitOfWork.SaveChanges();
+        if (!isSaveChanges)
+            return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
+
+        return BusinessResult.Success();
+    }
+
+
     public async Task<BusinessResult> Update(UserUpdateCommand updateCommand)
     {
         try
@@ -84,7 +129,6 @@ public class UserService : BaseService<User>, IUserService
             var userResult = _mapper.Map<UserResult>(entity);
 
             return userResult == null ? BusinessResult.Fail() : BusinessResult.Success(userResult);
-
         }
         catch (Exception ex)
         {

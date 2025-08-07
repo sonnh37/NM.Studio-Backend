@@ -7,6 +7,7 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IUserService : IBaseService
 {
+    Task<BusinessResult> UpdateUserCacheAsync(UserUpdateCacheCommand newCacheJson);
     Task<BusinessResult> UpdatePassword(UserPasswordCommand userPasswordCommand);
 
     Task<BusinessResult> Create(UserCreateCommand createCommand);

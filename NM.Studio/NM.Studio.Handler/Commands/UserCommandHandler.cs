@@ -9,6 +9,7 @@ public class UserCommandHandler :
     IRequestHandler<UserUpdateCommand, BusinessResult>,
     IRequestHandler<UserDeleteCommand, BusinessResult>,
     IRequestHandler<UserCreateCommand, BusinessResult>,
+    IRequestHandler<UserUpdateCacheCommand, BusinessResult>,
     // IRequestHandler<UserCreateByGoogleTokenCommand, BusinessResult>,
     IRequestHandler<UserPasswordCommand, BusinessResult>
 {
@@ -44,6 +45,12 @@ public class UserCommandHandler :
     public async Task<BusinessResult> Handle(UserUpdateCommand request, CancellationToken cancellationToken)
     {
         var msgView = await _userService.Update(request);
+        return msgView;
+    }
+
+    public async Task<BusinessResult> Handle(UserUpdateCacheCommand request, CancellationToken cancellationToken)
+    {
+        var msgView = await _userService.UpdateUserCacheAsync(request);
         return msgView;
     }
 }

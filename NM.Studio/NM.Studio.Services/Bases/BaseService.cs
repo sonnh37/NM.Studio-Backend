@@ -77,26 +77,26 @@ public abstract class BaseService<TEntity> : BaseService, IBaseService
         return BusinessResult.Success(result);
     }
 
-    public async Task<BusinessResult> Restore<TResult>(UpdateCommand updateCommand)
-        where TResult : BaseResult
-    {
-        TEntity? entity;
-
-        entity = await _baseRepository.GetById(updateCommand.Id);
-        if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
-
-        entity.IsDeleted = false;
-
-        SetBaseEntityProperties(entity, EntityOperation.Update);
-        _baseRepository.Update(entity);
-
-        if (!await _unitOfWork.SaveChanges())
-            return BusinessResult.Fail();
-
-        var result = _mapper.Map<TResult>(entity);
-
-        return BusinessResult.Success(result);
-    }
+    // public async Task<BusinessResult> Restore<TResult>(UpdateCommand updateCommand)
+    //     where TResult : BaseResult
+    // {
+    //     TEntity? entity;
+    //
+    //     entity = await _baseRepository.GetById(updateCommand.Id);
+    //     if (entity == null) return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+    //
+    //     entity.IsDeleted = false;
+    //
+    //     SetBaseEntityProperties(entity, EntityOperation.Update);
+    //     _baseRepository.Update(entity);
+    //
+    //     if (!await _unitOfWork.SaveChanges())
+    //         return BusinessResult.Fail();
+    //
+    //     var result = _mapper.Map<TResult>(entity);
+    //
+    //     return BusinessResult.Success(result);
+    // }
 
     public async Task<BusinessResult> Delete(DeleteCommand command)
     {

@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
@@ -48,12 +49,21 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public static IQueryable<TEntity> Sort(IQueryable<TEntity> queryable, GetQueryableQuery query)
     {
-        var sortField = query.Sorting.SortField;
+        var sortFieldInput = query.Sorting.SortField;
         var sortDirection = query.Sorting.SortDirection;
 
+        var actualProp = typeof(TEntity)
+            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+            .FirstOrDefault(p => string.Equals(p.Name, sortFieldInput, StringComparison.OrdinalIgnoreCase));
+
+        if (actualProp == null)
+            throw new ArgumentException($"Property '{sortFieldInput}' does not exist on '{typeof(TEntity).Name}'");
+
+        var matchedFieldName = actualProp.Name;
+
         queryable = sortDirection == SortDirection.Ascending
-            ? queryable.OrderBy(e => EF.Property<object>(e, sortField))
-            : queryable.OrderByDescending(e => EF.Property<object>(e, sortField));
+            ? queryable.OrderBy(e => EF.Property<object>(e, matchedFieldName))
+            : queryable.OrderByDescending(e => EF.Property<object>(e, matchedFieldName));
 
         return queryable;
     }

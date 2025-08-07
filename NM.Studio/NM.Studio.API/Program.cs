@@ -137,7 +137,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseMiddleware<AuthenticationMiddleware>();
 
 // using (var scope = app.Services.CreateScope())
 // {
@@ -154,6 +153,9 @@ app.UseCors("AllowSpecificOrigins");
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseMiddleware<AuthenticationMiddleware>();
+
 
 app.MapControllers();
 

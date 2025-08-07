@@ -49,6 +49,16 @@ public class UserController : BaseController
         return Ok(businessResult);
     }
     
+    [Authorize(Roles = "Admin,Staff")]
+    [HttpPut("update-cache")]
+    public async Task<IActionResult> UpdateUserCache([FromBody] UserUpdateCacheCommand request)
+    {
+        var businessResult = await _mediator.Send(request);
+
+        return Ok(businessResult);
+    }
+
+    
     [HttpPut("password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UserPasswordCommand userUpdateCommand)
     {
