@@ -58,6 +58,16 @@ public class UserResult : BaseResult
     public DateTimeOffset? PasswordChangedDate { get; set; }
     public string? PasswordResetToken { get; set; }
     public DateTimeOffset? PasswordResetExpiration { get; set; }
+
+    public ICollection<RefreshTokenResult> RefreshTokens { get; set; } = new List<RefreshTokenResult>();
+    public ICollection<ServiceBookingResult> ServiceBookings { get; set; } = new List<ServiceBookingResult>();
+    public ICollection<OrderResult> Orders { get; set; } = new List<OrderResult>();
+
+    public ICollection<VoucherUsageHistoryResult> VoucherUsageHistories { get; set; } =
+        new List<VoucherUsageHistoryResult>();
+
+    public ICollection<BlogResult> Blogs { get; set; } = new List<BlogResult>();
+    public ICollection<CartResult> Carts { get; set; } = new List<CartResult>();
 }
 
 public class UserAccountResult : BaseResult

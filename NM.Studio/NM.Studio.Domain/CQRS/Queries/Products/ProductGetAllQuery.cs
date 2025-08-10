@@ -7,27 +7,26 @@ namespace NM.Studio.Domain.CQRS.Queries.Products;
 public class ProductGetAllQuery : GetAllQuery
 {
     public string? Sku { get; set; }
-
     public string? Slug { get; set; }
-
-    public Guid? SubCategoryId { get; set; }
-
     public string? Name { get; set; }
 
+    // Categorization
+    public Guid? SubCategoryId { get; set; }
+
+    // Pricing and Availability
     public decimal? Price { get; set; }
+    public decimal? RentalPrice { get; set; } // For rentable items
+    public decimal? Deposit { get; set; } // For rentable items
+    public bool? IsRentable { get; set; }
+    public bool? IsSaleable { get; set; }
 
+    // Details
     public string? Description { get; set; }
+    public string? Material { get; set; }
+    public string? Brand { get; set; }
+    public string? Style { get; set; }
+    public string? Care { get; set; } // Care instructions
 
-
-    public ProductStatus Status { get; set; }
-
-    public Guid? CategoryId { get; set; }
-
-    public string? CategoryName { get; set; }
-
-    public string? SubCategoryName { get; set; }
-
-    public List<string> Colors { get; set; } = new();
-
-    public List<string> Sizes { get; set; } = new();
+    // Status
+    public ProductStatus? Status { get; set; }
 }

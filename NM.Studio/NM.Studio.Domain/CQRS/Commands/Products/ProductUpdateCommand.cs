@@ -12,6 +12,7 @@ public class ProductUpdateCommand : UpdateCommand
 
     // Categorization
     public Guid? SubCategoryId { get; set; }
+
     // Pricing and Availability
     public decimal? Price { get; set; }
     public decimal? RentalPrice { get; set; } // For rentable items

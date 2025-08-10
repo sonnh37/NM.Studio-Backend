@@ -6,7 +6,5 @@ public class ProductMediaGetAllQuery : GetAllQuery
 {
     public Guid? ProductId { get; set; }
 
-    public Guid? ColorId { get; set; }
-
-    public bool? IsActive { get; set; }
+    public Guid? MediaFileId { get; set; }
 }

@@ -7,4 +7,6 @@ public class ProductSizeDeleteCommand : DeleteCommand
     public Guid? ProductId { get; set; }
 
     public Guid? SizeId { get; set; }
+
+    public bool IsActive { get; set; }
 }

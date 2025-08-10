@@ -9,8 +9,4 @@ public class AlbumMediaGetAllQuery : GetAllQuery
     public Guid? AlbumId { get; set; }
 
     public Guid? MediaFileId { get; set; }
-
-    public AlbumGetAllQuery? Album { get; set; }
-
-    public MediaFileGetAllQuery? MediaFile { get; set; }
 }

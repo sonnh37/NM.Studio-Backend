@@ -24,5 +24,6 @@ public class BlogCreateCommand : CreateCommand
     public int ViewCount { get; set; }
     
     public string? Tags { get; set; }
+    
     public Guid? AuthorId { get; set; }
 }

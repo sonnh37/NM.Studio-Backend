@@ -55,26 +55,26 @@ public static class FilterHelper
     private static IQueryable<Product> Product(IQueryable<Product> queryable, ProductGetAllQuery query)
     {
         // Lọc theo Size
-        if (query.Sizes.Any())
-            queryable = queryable.Where(product =>
-                product.ProductSizes.Any(size => query.Sizes.Contains(size.Size!.Name!)));
-
-        // Lọc theo Color
-        if (query.Colors.Any())
-            queryable = queryable.Where(product =>
-                product.ProductColors.Any(color => query.Colors.Contains(color.Color!.Name!)));
-
-        if (query.SubCategoryId != null) queryable = queryable.Where(m => m.SubCategoryId == query.SubCategoryId);
-
-        if (!string.IsNullOrEmpty(query.CategoryName))
-            queryable = queryable.Where(m =>
-                m.SubCategory!.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
-
-        // if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory!.Category!.Id == query.Id);
-
-        if (!string.IsNullOrEmpty(query.SubCategoryName))
-            queryable = queryable.Where(m =>
-                m.SubCategory!.Name!.ToLower().Trim() == query.SubCategoryName.ToLower().Trim());
+        // if (query.Sizes.Any())
+        //     queryable = queryable.Where(product =>
+        //         product.ProductSizes.Any(size => query.Sizes.Contains(size.Size!.Name!)));
+        //
+        // // Lọc theo Color
+        // if (query.Colors.Any())
+        //     queryable = queryable.Where(product =>
+        //         product.ProductColors.Any(color => query.Colors.Contains(color.Color!.Name!)));
+        //
+        // if (query.SubCategoryId != null) queryable = queryable.Where(m => m.SubCategoryId == query.SubCategoryId);
+        //
+        // if (!string.IsNullOrEmpty(query.CategoryName))
+        //     queryable = queryable.Where(m =>
+        //         m.SubCategory!.Category!.Name!.ToLower().Trim() == query.CategoryName.ToLower().Trim());
+        //
+        // // if (query.CategoryId != null) queryable = queryable.Where(m => m.SubCategory!.Category!.Id == query.Id);
+        //
+        // if (!string.IsNullOrEmpty(query.SubCategoryName))
+        //     queryable = queryable.Where(m =>
+        //         m.SubCategory!.Name!.ToLower().Trim() == query.SubCategoryName.ToLower().Trim());
 
         if (!string.IsNullOrEmpty(query.Name))
             queryable = queryable.Where(m => m.Name!.ToLower().Trim().Contains(query.Name.ToLower().Trim()));

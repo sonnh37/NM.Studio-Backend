@@ -14,9 +14,9 @@ public class MediaFileGetAllQuery : GetAllQuery
     public string? MediumSrc { get; set; }
     public string? LargeSrc { get; set; }
     public string? Href { get; set; }
-    public MediaType Type { get; set; }
+    public MediaType? Type { get; set; }
     public string? MimeType { get; set; }
-    public long FileSize { get; set; }
+    public long? FileSize { get; set; }
     public int? Width { get; set; }
     public int? Height { get; set; }
     public TimeSpan? Duration { get; set; }
@@ -24,11 +24,10 @@ public class MediaFileGetAllQuery : GetAllQuery
     public string? Format { get; set; }
     public string? Tag { get; set; }
     public bool? IsFeatured { get; set; }
-   
-    public int SortOrder { get; set; }
-    public MediaCategory Category { get; set; }
-    public bool IsActive { get; set; }
-    public bool IsWatermarked { get; set; }
+    public int? SortOrder { get; set; }
+    public MediaCategory? Category { get; set; }
+    public bool? IsActive { get; set; }
+    public bool? IsWatermarked { get; set; }
     public string? Copyright { get; set; }
     public string? CreatedMediaBy { get; set; }
     public DateTimeOffset? TakenMediaDate { get; set; }

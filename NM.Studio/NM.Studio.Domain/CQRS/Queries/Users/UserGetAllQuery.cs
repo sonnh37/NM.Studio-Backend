@@ -39,14 +39,14 @@ public class UserGetAllQuery : GetAllQuery
     public DateTimeOffset? OtpExpiration { get; set; }
 
     // Account security and verification
-    public bool IsEmailVerified { get; set; }
-    public bool IsPhoneVerified { get; set; }
-    public bool TwoFactorEnabled { get; set; }
+    public bool? IsEmailVerified { get; set; }
+    public bool? IsPhoneVerified { get; set; }
+    public bool? TwoFactorEnabled { get; set; }
 
     // Audit fields
     public DateTimeOffset? LastLoginDate { get; set; }
     public string? LastLoginIp { get; set; }
-    public int FailedLoginAttempts { get; set; }
+    public int? FailedLoginAttempts { get; set; }
     public DateTimeOffset? LockoutEnd { get; set; }
 
     // Additional user info
