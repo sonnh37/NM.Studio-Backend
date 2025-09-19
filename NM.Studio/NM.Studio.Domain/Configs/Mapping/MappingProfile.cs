@@ -1,26 +1,23 @@
 ﻿using AutoMapper;
+using NM.Studio.Domain.CQRS.Commands.AlbumImages;
 using NM.Studio.Domain.CQRS.Commands.Albums;
-using NM.Studio.Domain.CQRS.Commands.AlbumMedias;
 using NM.Studio.Domain.CQRS.Commands.Blogs;
 using NM.Studio.Domain.CQRS.Commands.CartItems;
 using NM.Studio.Domain.CQRS.Commands.Carts;
 using NM.Studio.Domain.CQRS.Commands.Categories;
-using NM.Studio.Domain.CQRS.Commands.Colors;
-using NM.Studio.Domain.CQRS.Commands.MediaFiles;
+using NM.Studio.Domain.CQRS.Commands.Images;
 using NM.Studio.Domain.CQRS.Commands.OrderItems;
 using NM.Studio.Domain.CQRS.Commands.Orders;
 using NM.Studio.Domain.CQRS.Commands.OrderStatusHistories;
 using NM.Studio.Domain.CQRS.Commands.Payments;
+using NM.Studio.Domain.CQRS.Commands.ProductImages;
 using NM.Studio.Domain.CQRS.Commands.Products;
-using NM.Studio.Domain.CQRS.Commands.ProductColors;
-using NM.Studio.Domain.CQRS.Commands.ProductMedias;
-using NM.Studio.Domain.CQRS.Commands.ProductSizes;
-using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
+using NM.Studio.Domain.CQRS.Commands.ProductVariants;
 using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
 using NM.Studio.Domain.CQRS.Commands.Services;
-using NM.Studio.Domain.CQRS.Commands.Sizes;
 using NM.Studio.Domain.CQRS.Commands.SubCategories;
 using NM.Studio.Domain.CQRS.Commands.Users;
+using NM.Studio.Domain.CQRS.Commands.UserTokens;
 using NM.Studio.Domain.CQRS.Commands.Vouchers;
 using NM.Studio.Domain.CQRS.Commands.VoucherUsageHistories;
 using NM.Studio.Domain.Entities;
@@ -36,11 +33,12 @@ public class MappingProfile : Profile
         SubCategoryMapping();
         UserMapping();
         ServiceMapping();
-        MediaFileMapping();
+        ImageMapping();
         ProductMapping();
         AlbumMapping();
-        SizeMapping();
-        ColorMapping();
+        MediaBaseMapping();
+        MediaUrlMapping();
+        VideoMapping();
         BlogMapping();
         BookingMapping();
         CartMapping();
@@ -59,9 +57,9 @@ public class MappingProfile : Profile
         CreateMap<Album, AlbumCreateCommand>().ReverseMap();
         CreateMap<Album, AlbumUpdateCommand>().ReverseMap();
 
-        CreateMap<AlbumMedia, AlbumMediaResult>().ReverseMap();
-        CreateMap<AlbumMedia, AlbumMediaCreateCommand>().ReverseMap();
-        CreateMap<AlbumMedia, AlbumMediaUpdateCommand>().ReverseMap();
+        CreateMap<AlbumImage, AlbumImageResult>().ReverseMap();
+        CreateMap<AlbumImage, AlbumImageCreateCommand>().ReverseMap();
+        CreateMap<AlbumImage, AlbumImageUpdateCommand>().ReverseMap();
     }
 
     private void BookingMapping()
@@ -77,17 +75,13 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductCreateCommand>().ReverseMap();
         CreateMap<Product, ProductUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductMedia, ProductMediaResult>().ReverseMap();
-        CreateMap<ProductMedia, ProductMediaCreateCommand>().ReverseMap();
-        CreateMap<ProductMedia, ProductMediaUpdateCommand>().ReverseMap();
+        CreateMap<ProductImage, ProductImageResult>().ReverseMap();
+        CreateMap<ProductImage, ProductImageCreateCommand>().ReverseMap();
+        CreateMap<ProductImage, ProductImageUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductColor, ProductColorResult>().ReverseMap();
-        CreateMap<ProductColor, ProductColorCreateCommand>().ReverseMap();
-        CreateMap<ProductColor, ProductColorUpdateCommand>().ReverseMap();
-
-        CreateMap<ProductSize, ProductSizeResult>().ReverseMap();
-        CreateMap<ProductSize, ProductSizeCreateCommand>().ReverseMap();
-        CreateMap<ProductSize, ProductSizeUpdateCommand>().ReverseMap();
+        CreateMap<ProductVariant, ProductVariantResult>().ReverseMap();
+        CreateMap<ProductVariant, ProductVariantCreateCommand>().ReverseMap();
+        CreateMap<ProductVariant, ProductVariantUpdateCommand>().ReverseMap();
     }
 
     private void ServiceMapping()
@@ -103,56 +97,56 @@ public class MappingProfile : Profile
         CreateMap<Blog, BlogCreateCommand>().ReverseMap();
         CreateMap<Blog, BlogUpdateCommand>().ReverseMap();
     }
-    
+
     private void CartMapping()
     {
         CreateMap<Cart, CartResult>().ReverseMap();
         CreateMap<Cart, CartCreateCommand>().ReverseMap();
         CreateMap<Cart, CartUpdateCommand>().ReverseMap();
     }
-    
+
     private void CartItemMapping()
     {
         CreateMap<CartItem, CartItemResult>().ReverseMap();
         CreateMap<CartItem, CartItemCreateCommand>().ReverseMap();
         CreateMap<CartItem, CartItemUpdateCommand>().ReverseMap();
     }
-    
+
     private void OrderMapping()
     {
         CreateMap<Order, OrderResult>().ReverseMap();
         CreateMap<Order, OrderCreateCommand>().ReverseMap();
         CreateMap<Order, OrderUpdateCommand>().ReverseMap();
     }
-    
+
     private void OrderItemMapping()
     {
         CreateMap<OrderItem, OrderItemResult>().ReverseMap();
         CreateMap<OrderItem, OrderItemCreateCommand>().ReverseMap();
         CreateMap<OrderItem, OrderItemUpdateCommand>().ReverseMap();
     }
-    
+
     private void OrderStatusHistoryMapping()
     {
         CreateMap<OrderStatusHistory, OrderStatusHistoryResult>().ReverseMap();
         CreateMap<OrderStatusHistory, OrderStatusHistoryCreateCommand>().ReverseMap();
         CreateMap<OrderStatusHistory, OrderStatusHistoryUpdateCommand>().ReverseMap();
     }
-    
+
     private void PaymentMapping()
     {
         CreateMap<Payment, PaymentResult>().ReverseMap();
         CreateMap<Payment, PaymentCreateCommand>().ReverseMap();
         CreateMap<Payment, PaymentUpdateCommand>().ReverseMap();
     }
-    
+
     private void VoucherMapping()
     {
         CreateMap<Voucher, VoucherResult>().ReverseMap();
         CreateMap<Voucher, VoucherCreateCommand>().ReverseMap();
         CreateMap<Voucher, VoucherUpdateCommand>().ReverseMap();
     }
-    
+
     private void VoucherUsageHistoryMapping()
     {
         CreateMap<VoucherUsageHistory, VoucherUsageHistoryResult>().ReverseMap();
@@ -165,31 +159,33 @@ public class MappingProfile : Profile
         CreateMap<User, UserResult>().ReverseMap();
         CreateMap<User, UserCreateCommand>().ReverseMap();
         CreateMap<User, UserUpdateCommand>().ReverseMap();
-        CreateMap<RefreshToken, RefreshTokenResult>().ReverseMap();
-        CreateMap<RefreshToken, RefreshTokenCreateCommand>().ReverseMap();
-        CreateMap<RefreshToken, RefreshTokenUpdateCommand>().ReverseMap();
+        CreateMap<UserToken, UserTokenResult>().ReverseMap();
+        CreateMap<UserToken, UserTokenCreateCommand>().ReverseMap();
+        CreateMap<UserToken, UserTokenUpdateCommand>().ReverseMap();
     }
 
-    private void MediaFileMapping()
+    private void ImageMapping()
     {
-        CreateMap<MediaFile, MediaFileResult>().ReverseMap();
-        CreateMap<MediaFile, MediaFileCreateCommand>().ReverseMap();
-        CreateMap<MediaFile, MediaFileUpdateCommand>().ReverseMap();
-        CreateMap<MediaFileResult, MediaFileUpdateCommand>().ReverseMap();
+        CreateMap<Image, ImageResult>().ReverseMap();
+        CreateMap<Image, ImageCreateCommand>().ReverseMap();
+        CreateMap<Image, ImageUpdateCommand>().ReverseMap();
     }
 
-    private void SizeMapping()
+    private void MediaBaseMapping()
     {
-        CreateMap<Size, SizeResult>().ReverseMap();
-        CreateMap<Size, SizeCreateCommand>().ReverseMap();
-        CreateMap<Size, SizeUpdateCommand>().ReverseMap();
+        CreateMap<MediaBase, MediaBaseResult>().ReverseMap();
+        // CreateMap<MediaBase, MediaBaseCreateCommand>().ReverseMap();
+        // CreateMap<MediaBase, MediaBaseUpdateCommand>().ReverseMap();
     }
 
-    private void ColorMapping()
+    private void MediaUrlMapping()
     {
-        CreateMap<Color, ColorResult>().ReverseMap();
-        CreateMap<Color, ColorCreateCommand>().ReverseMap();
-        CreateMap<Color, ColorUpdateCommand>().ReverseMap();
+        CreateMap<MediaUrl, MediaUrlResult>().ReverseMap();
+    }
+
+    private void VideoMapping()
+    {
+        CreateMap<Video, VideoResult>().ReverseMap();
     }
 
     private void CategoryMapping()

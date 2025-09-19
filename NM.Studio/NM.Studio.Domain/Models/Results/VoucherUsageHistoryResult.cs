@@ -9,7 +9,6 @@ public class VoucherUsageHistoryResult : BaseResult
     public Guid? OrderId { get; set; }
     public decimal DiscountAmount { get; set; }
     public DateTimeOffset UsedDate { get; set; }
-
     public VoucherResult? Voucher { get; set; }
     public UserResult? User { get; set; }
     public OrderResult? Order { get; set; }

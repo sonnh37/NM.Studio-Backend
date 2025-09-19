@@ -1,6 +1,5 @@
 ﻿using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.Entities;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.CQRS.Commands.Users;
 

@@ -1,6 +1,5 @@
 ﻿using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.Entities;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.CQRS.Commands.ServiceBookings;
 
@@ -11,7 +10,6 @@ public class ServiceBookingUpdateCommand : UpdateCommand
     public string? BookingNumber { get; set; }
     public ServiceBookingStatus Status { get; set; }
 
-    // Timing
     public DateTimeOffset AppointmentDate { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
@@ -24,9 +22,9 @@ public class ServiceBookingUpdateCommand : UpdateCommand
     public bool IsDepositPaid { get; set; }
 
     // Customer Info
-    public string? CustomerName { get; set; } 
-    public string? CustomerEmail { get; set; } 
-    public string? CustomerPhone { get; set; } 
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
 
     // Additional Details
     public string? SpecialRequirements { get; set; }

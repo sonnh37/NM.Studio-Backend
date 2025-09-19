@@ -2,7 +2,6 @@
 
 namespace NM.Studio.Domain.CQRS.Commands.Carts;
 
-public class CartDeleteCommand: DeleteCommand
+public class CartDeleteCommand : DeleteCommand
 {
-    
 }

@@ -12,41 +12,50 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IUserRepository UserRepository => GetRepository<IUserRepository>();
 
-    public IMediaFileRepository MediaFileRepository => GetRepository<IMediaFileRepository>();
-
     public IServiceRepository ServiceRepository => GetRepository<IServiceRepository>();
 
     public IProductRepository ProductRepository => GetRepository<IProductRepository>();
 
-    public IProductMediaRepository ProductMediaRepository => GetRepository<IProductMediaRepository>();
+    public IProductImageRepository ProductImageRepository => GetRepository<IProductImageRepository>();
 
     public IAlbumRepository AlbumRepository => GetRepository<IAlbumRepository>();
 
-    public IAlbumMediaRepository AlbumMediaRepository => GetRepository<IAlbumMediaRepository>();
+    public IAlbumImageRepository AlbumImageRepository => GetRepository<IAlbumImageRepository>();
 
     public ICategoryRepository CategoryRepository => GetRepository<ICategoryRepository>();
 
     public ISubCategoryRepository SubCategoryRepository => GetRepository<ISubCategoryRepository>();
 
-    public IColorRepository ColorRepository => GetRepository<IColorRepository>();
+    public IImageRepository ImageRepository => GetRepository<IImageRepository>();
 
-    public ISizeRepository SizeRepository => GetRepository<ISizeRepository>();
+    public IVideoRepository VideoRepository => GetRepository<IVideoRepository>();
+
+    public IMediaBaseRepository MediaBaseRepository => GetRepository<IMediaBaseRepository>();
 
     public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
 
     public IServiceBookingRepository ServiceBookingRepository => GetRepository<IServiceBookingRepository>();
 
-    public IRefreshTokenRepository RefreshTokenRepository => GetRepository<IRefreshTokenRepository>();
+    public IUserTokenRepository UserTokenRepository => GetRepository<IUserTokenRepository>();
 
-    public IProductSizeRepository ProductSizeRepository => GetRepository<IProductSizeRepository>();
+    public IMediaUrlRepository MediaUrlRepository => GetRepository<IMediaUrlRepository>();
 
-    public IProductColorRepository ProductColorRepository => GetRepository<IProductColorRepository>();
+    public IProductVariantRepository ProductVariantRepository => GetRepository<IProductVariantRepository>();
+
     public IOrderRepository OrderRepository => GetRepository<IOrderRepository>();
+
     public IOrderItemRepository OrderItemRepository => GetRepository<IOrderItemRepository>();
+
     public IPaymentRepository PaymentRepository => GetRepository<IPaymentRepository>();
+
     public IOrderStatusHistoryRepository OrderStatusHistoryRepository => GetRepository<IOrderStatusHistoryRepository>();
+
     public ICartRepository CartRepository => GetRepository<ICartRepository>();
+
     public ICartItemRepository CartItemRepository => GetRepository<ICartItemRepository>();
+
     public IVoucherRepository VoucherRepository => GetRepository<IVoucherRepository>();
-    public IVoucherUsageHistoryRepository VoucherUsageHistoryRepository => GetRepository<IVoucherUsageHistoryRepository>();
+
+    public IVoucherUsageHistoryRepository VoucherUsageHistoryRepository =>
+        GetRepository<IVoucherUsageHistoryRepository>();
 }

@@ -2,25 +2,30 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 
-
 [Route("api/auth")]
 public class AuthController : BaseController
 {
-    public AuthController(IMediator mediator) : base(mediator)
+    private readonly IAuthService _authService;
+    private readonly IUserService _userService;
+
+    public AuthController(IAuthService authService, IUserService userService)
     {
+        _authService = authService;
+        _userService = userService;
     }
 
     [AllowAnonymous]
     [HttpGet("info")]
     public IActionResult GetUserInfo([FromQuery] AuthGetByCookieQuery request)
     {
-        var businessResult = _mediator.Send(request).Result;
+        var businessResult = _authService.GetUserByCookie(request);
 
         return Ok(businessResult);
     }
@@ -29,7 +34,7 @@ public class AuthController : BaseController
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] AuthQuery authQuery)
     {
-        var businessResult = await _mediator.Send(authQuery);
+        var businessResult = await _authService.Login(authQuery);
 
         return Ok(businessResult);
     }
@@ -44,7 +49,7 @@ public class AuthController : BaseController
         {
             RefreshToken = refreshToken
         };
-        var businessResult = await _mediator.Send(userLogoutCommand);
+        var businessResult = await _authService.Logout(userLogoutCommand);
 
         return Ok(businessResult);
     }
@@ -59,7 +64,7 @@ public class AuthController : BaseController
         {
             RefreshToken = refreshToken
         };
-        var businessResult = await _mediator.Send(request);
+        var businessResult = await _authService.RefreshToken(request);
 
         return Ok(businessResult);
     }
@@ -69,10 +74,7 @@ public class AuthController : BaseController
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserCreateCommand request)
     {
-        var passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
-        request.Password = passwordHash;
-
-        var businessResult = await _mediator.Send(request);
+        var businessResult = await _userService.CreateOrUpdate(request);
         return Ok(businessResult);
     }
 
@@ -80,7 +82,7 @@ public class AuthController : BaseController
     // [HttpPost("verify-otp")]
     // public async Task<IActionResult> VerifyOTP([FromBody] VerifyOTPQuery request)
     // {
-    //     var businessResult = await _mediator.Send(request);
+    //     var businessResult = await _authService.Send(request);
     //     return Ok(businessResult);
     // }
     //
@@ -88,7 +90,7 @@ public class AuthController : BaseController
     // [HttpPost("login-by-google")]
     // public async Task<IActionResult> LoginByGoogle([FromBody] AuthByGoogleTokenQuery request)
     // {
-    //     var businessResult = await _mediator.Send(request);
+    //     var businessResult = await _authService.Send(request);
     //     return Ok(businessResult);
     // }
     //
@@ -96,7 +98,7 @@ public class AuthController : BaseController
     // [HttpPost("register-by-google")]
     // public async Task<IActionResult> RegisterByGoogle([FromBody] UserCreateByGoogleTokenCommand request)
     // {
-    //     var businessResult = await _mediator.Send(request);
+    //     var businessResult = await _authService.Send(request);
     //     return Ok(businessResult);
     // }
 }

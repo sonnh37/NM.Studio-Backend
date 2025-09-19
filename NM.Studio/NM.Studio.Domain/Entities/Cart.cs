@@ -11,6 +11,6 @@ public class Cart : BaseEntity
     public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
 
-    public virtual User? User { get; set; } 
+    public virtual User? User { get; set; }
     public virtual ICollection<CartItem> Items { get; set; } = new List<CartItem>();
 }

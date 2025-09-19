@@ -1,9 +1,7 @@
-﻿using MediatR;
-using NM.Studio.Domain.CQRS.Queries.Base;
-using NM.Studio.Domain.Models.Results.Bases;
+﻿using NM.Studio.Domain.CQRS.Queries.Base;
 
 namespace NM.Studio.Domain.CQRS.Queries.Products;
 
-public class ProductRepresentativeByCategoryQuery : BaseQuery, IRequest<BusinessResult>
+public class ProductRepresentativeByCategoryQuery : BaseQuery
 {
 }

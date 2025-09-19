@@ -5,5 +5,4 @@ namespace NM.Studio.Domain.Contracts.Repositories;
 
 public interface ICartRepository : IBaseRepository<Cart>
 {
-    
 }

@@ -2,7 +2,7 @@
 
 namespace NM.Studio.Domain.CQRS.Commands.Carts;
 
-public class CartCreateCommand: CreateCommand
+public class CartCreateCommand : CreateCommand
 {
     public Guid? UserId { get; set; }
     public DateTimeOffset ExpiryDate { get; set; }

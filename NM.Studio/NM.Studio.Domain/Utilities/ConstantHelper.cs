@@ -52,6 +52,7 @@ public static class Const
 
     #region Success Messages
 
+    public const string SUCCESS_MSG = "Success action";
     public const string SUCCESS_SAVE_MSG = "Save successful";
     public const string SUCCESS_READ_MSG = "Read successful";
     public const string SUCCESS_DELETE_MSG = "Delete successful";

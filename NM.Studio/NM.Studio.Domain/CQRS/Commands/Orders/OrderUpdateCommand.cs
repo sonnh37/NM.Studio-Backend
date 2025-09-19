@@ -31,7 +31,7 @@ public class OrderUpdateCommand : UpdateCommand
     public string? ShippingCity { get; set; }
     public string? ShippingState { get; set; }
     public string? ShippingZipCode { get; set; }
-    public string? ShippingCountry { get; set; } 
+    public string? ShippingCountry { get; set; }
     public string? TrackingNumber { get; set; }
     public ShippingMethod ShippingMethod { get; set; }
 

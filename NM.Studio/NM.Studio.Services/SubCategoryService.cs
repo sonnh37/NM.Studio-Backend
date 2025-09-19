@@ -1,16 +1,22 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Queries.Base;
+using NM.Studio.Domain.CQRS.Commands.Base;
+using NM.Studio.Domain.CQRS.Commands.SubCategories;
+using NM.Studio.Domain.CQRS.Queries.SubCategories;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
+using NM.Studio.Domain.Shared.Exceptions;
+using NM.Studio.Domain.Utilities;
+using NM.Studio.Domain.Utilities.Filters;
 using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class SubCategoryService : BaseService<SubCategory>, ISubCategoryService
+public class SubCategoryService : BaseService, ISubCategoryService
 {
     private readonly ISubCategoryRepository _subCategoryRepository;
 
@@ -20,13 +26,80 @@ public class SubCategoryService : BaseService<SubCategory>, ISubCategoryService
     {
         _subCategoryRepository = _unitOfWork.SubCategoryRepository;
     }
-    
-    public async Task<BusinessResult> GetAll(GetQueryableQuery query)
-    {
-        var (entities, totalCount) = await _subCategoryRepository.GetAll(query);
-        var results = _mapper.Map<List<SubCategoryResult>>(entities);
-        var tableResponse = new QueryResult(results, totalCount, query);
 
-        return BusinessResult.Success(tableResponse);
+    public async Task<BusinessResult> GetAll(SubCategoryGetAllQuery query)
+    {
+        var queryable = _subCategoryRepository.GetQueryable();
+
+        if (query.CategoryId != null)
+            queryable = queryable.Where(m => m.CategoryId != query.CategoryId);
+        // if (query.IsNullCategoryId.HasValue && query.IsNullCategoryId.Value)
+        //     queryable = queryable.Where(m => m.CategoryId == null);
+
+        queryable = FilterHelper.BaseEntity(queryable, query);
+        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
+        queryable = RepoHelper.Sort(queryable, query);
+
+        var totalCount = await queryable.CountAsync();
+        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
+        var results = _mapper.Map<List<SubCategoryResult>>(entities);
+        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+
+        return new BusinessResult(getQueryableResult);
+    }
+
+    public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
+    {
+        SubCategory? entity = null;
+        if (createOrUpdateCommand is SubCategoryUpdateCommand updateCommand)
+        {
+            entity = await _subCategoryRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
+
+            if (entity == null)
+                throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+            _mapper.Map(updateCommand, entity);
+            _subCategoryRepository.Update(entity);
+        }
+        else if (createOrUpdateCommand is SubCategoryCreateCommand createCommand)
+        {
+            entity = _mapper.Map<SubCategory>(createCommand);
+            if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+            entity.CreatedDate = DateTimeOffset.UtcNow;
+            _subCategoryRepository.Add(entity);
+        }
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<SubCategoryResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> GetById(SubCategoryGetByIdQuery request)
+    {
+        var queryable = _subCategoryRepository.GetQueryable(x => x.Id == request.Id);
+        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        var entity = await queryable.SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException("Not found");
+        var result = _mapper.Map<SubCategoryResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> Delete(SubCategoryDeleteCommand command)
+    {
+        var entity = await _subCategoryRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        _subCategoryRepository.Delete(entity, command.IsPermanent);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        return new BusinessResult();
     }
 }

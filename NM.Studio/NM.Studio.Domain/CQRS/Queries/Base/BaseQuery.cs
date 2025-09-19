@@ -1,7 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using MediatR;
 using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.CQRS.Queries.Base;
 
@@ -79,7 +77,7 @@ public class GetQueryableQuery : BaseQuery
 }
 
 // For GetByIdQuery, let's make it generic
-public class GetByIdQuery : BaseQuery, IRequest<BusinessResult>
+public class GetByIdQuery : BaseQuery
 {
     [Required] public Guid Id { get; set; }
 
@@ -87,6 +85,6 @@ public class GetByIdQuery : BaseQuery, IRequest<BusinessResult>
 }
 
 // For GetAllQuery, let's make it generic too
-public class GetAllQuery : GetQueryableQuery, IRequest<BusinessResult>
+public class GetAllQuery : GetQueryableQuery
 {
 }

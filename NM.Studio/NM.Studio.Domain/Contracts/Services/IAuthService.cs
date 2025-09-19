@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography;
-using NM.Studio.Domain.Contracts.Services.Bases;
 using NM.Studio.Domain.CQRS.Commands.Users;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
@@ -10,7 +9,7 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IAuthService
 {
-    BusinessResult Login(AuthQuery authQuery);
+    Task<BusinessResult> Login(AuthQuery authQuery);
 
     Task<RSA> GetRSAKeyFromTokenAsync(string token, string kid);
 

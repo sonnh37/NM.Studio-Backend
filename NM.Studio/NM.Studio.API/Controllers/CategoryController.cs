@@ -1,24 +1,29 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Categories;
+using NM.Studio.Domain.CQRS.Commands.Categories;
+using NM.Studio.Domain.CQRS.Queries.Categories;
 using NM.Studio.Domain.CQRS.Queries.Categories;
 
 namespace NM.Studio.API.Controllers;
 
-[Authorize(Roles = "Admin,Staff")]
+// [Authorize(Roles = "Admin,Staff")]
 public class CategoryController : BaseController
 {
-    public CategoryController(IMediator mediator) : base(mediator)
+    private readonly ICategoryService _categoryService;
+
+    public CategoryController(ICategoryService categoryService)
     {
+        _categoryService = categoryService;
     }
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] CategoryGetAllQuery categoryGetAllQuery)
+    public async Task<IActionResult> GetAll([FromQuery] CategoryGetAllQuery request)
     {
-        var businessResult = await _mediator.Send(categoryGetAllQuery);
+        var businessResult = await _categoryService.GetAll(request);
 
         return Ok(businessResult);
     }
@@ -27,32 +32,30 @@ public class CategoryController : BaseController
     [HttpGet("id")]
     public async Task<IActionResult> GetById([FromQuery] CategoryGetByIdQuery request)
     {
-        var businessResult = await _mediator.Send(request);
-
+        var businessResult = await _categoryService.GetById(request);
         return Ok(businessResult);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CategoryCreateCommand categoryCreateCommand)
+    public async Task<IActionResult> Create([FromBody] CategoryCreateCommand request)
     {
-        var businessResult = await _mediator.Send(categoryCreateCommand);
+        var businessResult = await _categoryService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CategoryUpdateCommand categoryUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] CategoryUpdateCommand request)
     {
-        var businessResult = await _mediator.Send(categoryUpdateCommand);
+        var businessResult = await _categoryService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
-    
 
     [HttpDelete]
-    public async Task<IActionResult> Delete([FromQuery] CategoryDeleteCommand categoryDeleteCommand)
+    public async Task<IActionResult> Delete([FromQuery] CategoryDeleteCommand request)
     {
-        var businessResult = await _mediator.Send(categoryDeleteCommand);
+        var businessResult = await  _categoryService.Delete(request);
 
         return Ok(businessResult);
     }

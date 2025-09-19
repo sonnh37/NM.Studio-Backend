@@ -9,32 +9,23 @@ public class VoucherResult : BaseResult
     public string? Description { get; set; }
     public VoucherType Type { get; set; }
     public VoucherStatus Status { get; set; }
-
-    // Discount Details
-    public decimal DiscountAmount { get; set; } // Fixed amount discount
-    public decimal DiscountPercentage { get; set; } // Percentage discount
-    public decimal MinimumSpend { get; set; } // Minimum order amount
-    public decimal MaximumDiscount { get; set; } // Maximum discount amount
-
-    // Usage Limits
-    public int MaxUsage { get; set; } // Maximum total uses
-    public int MaxUsagePerUser { get; set; } // Maximum uses per user
-    public int UsageCount { get; set; } // Current usage count
-
-    // Validity Period
+    public decimal DiscountAmount { get; set; }
+    public decimal DiscountPercentage { get; set; }
+    public decimal MinimumSpend { get; set; }
+    public decimal MaximumDiscount { get; set; }
+    public int MaxUsage { get; set; }
+    public int MaxUsagePerUser { get; set; }
+    public int UsageCount { get; set; }
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset EndDate { get; set; }
+    public bool IsFirstOrderOnly { get; set; }
+    public string? ApplicableProductIds { get; set; }
+    public string? ApplicableCategories { get; set; }
+    public decimal? MaximumSpend { get; set; }
+    public bool IsCombinableWithOther { get; set; }
+    public bool IsPublic { get; set; }
 
-    // Restrictions
-    public bool IsFirstOrderOnly { get; set; } // Only for first orders
-    public string? ApplicableProductIds { get; set; } // Comma-separated product IDs
-    public string? ApplicableCategories { get; set; } // Comma-separated categories
-    public decimal? MaximumSpend { get; set; } // Maximum order amount
-
-    // Additional Settings
-    public bool IsCombinableWithOther { get; set; } // Can be used with other vouchers
-    public bool IsPublic { get; set; } // Visible to all users
-    public string? UserGroupRestrictions { get; set; } // Specific user groups
+    public string? UserGroupRestrictions { get; set; }
 
     // Tracking
     public ICollection<OrderResult> Orders { get; set; } = new List<OrderResult>();

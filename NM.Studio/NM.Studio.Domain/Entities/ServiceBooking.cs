@@ -1,5 +1,4 @@
 ﻿using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.Entities;
 
@@ -10,7 +9,6 @@ public class ServiceBooking : BaseEntity
     public string? BookingNumber { get; set; }
     public ServiceBookingStatus Status { get; set; }
 
-    // Timing
     public DateTimeOffset AppointmentDate { get; set; }
     public TimeSpan StartTime { get; set; }
     public TimeSpan EndTime { get; set; }
@@ -23,17 +21,17 @@ public class ServiceBooking : BaseEntity
     public bool IsDepositPaid { get; set; }
 
     // Customer Info
-    public string? CustomerName { get; set; } 
-    public string? CustomerEmail { get; set; } 
-    public string? CustomerPhone { get; set; } 
+    public string? CustomerName { get; set; }
+    public string? CustomerEmail { get; set; }
+    public string? CustomerPhone { get; set; }
 
     // Additional Details
     public string? SpecialRequirements { get; set; }
     public string? StaffNotes { get; set; }
     public string? CancellationReason { get; set; }
 
-    public virtual User? User { get; set; } 
-    public virtual Service? Service { get; set; } 
+    public virtual User? User { get; set; }
+    public virtual Service? Service { get; set; }
 }
 
 public enum ServiceBookingStatus

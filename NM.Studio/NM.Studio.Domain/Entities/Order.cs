@@ -1,5 +1,4 @@
 ﻿using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.Entities;
 
@@ -31,7 +30,7 @@ public class Order : BaseEntity
     public string? ShippingCity { get; set; }
     public string? ShippingState { get; set; }
     public string? ShippingZipCode { get; set; }
-    public string? ShippingCountry { get; set; } 
+    public string? ShippingCountry { get; set; }
     public string? TrackingNumber { get; set; }
     public ShippingMethod ShippingMethod { get; set; }
 
@@ -60,7 +59,8 @@ public enum ShippingMethod
     PickupInStore
 }
 
-public enum OrderStatus {
+public enum OrderStatus
+{
     Pending,
     Confirmed,
     Processing,

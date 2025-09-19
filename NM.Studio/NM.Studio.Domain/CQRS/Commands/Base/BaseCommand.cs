@@ -18,7 +18,7 @@ public class CreateCommand : CreateOrUpdateCommand
 public class UpdateCommand : CreateOrUpdateCommand
 {
     public Guid Id { get; set; }
-    
+
     public bool IsDeleted { get; set; } = false;
 }
 

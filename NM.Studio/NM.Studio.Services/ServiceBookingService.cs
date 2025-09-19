@@ -1,20 +1,25 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
+using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
+using NM.Studio.Domain.CQRS.Queries.ServiceBookings;
 using NM.Studio.Domain.Entities;
-using NM.Studio.Domain.Enums;
+using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
+using NM.Studio.Domain.Shared.Exceptions;
 using NM.Studio.Domain.Utilities;
+using NM.Studio.Domain.Utilities.Filters;
 using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookingService
+public class ServiceBookingService : BaseService, IServiceBookingService
 {
-    private readonly IServiceBookingRepository _serviceBookingRepository;
     private readonly IEmailService _emailService;
+    private readonly IServiceBookingRepository _serviceBookingRepository;
     private readonly IServiceRepository _serviceRepository;
 
     public ServiceBookingService(IMapper mapper, IEmailService emailService,
@@ -26,26 +31,30 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
         _serviceRepository = _unitOfWork.ServiceRepository;
     }
 
-    public async Task<BusinessResult> Create<TResult>(ServiceBookingCreateCommand createCommand)
-        where TResult : BaseResult
+    public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
-        try
+        ServiceBooking? entity = null;
+        if (createOrUpdateCommand is ServiceBookingUpdateCommand updateCommand)
+        {
+            entity = await _serviceBookingRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
+            if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+            _mapper.Map(updateCommand, entity);
+            _serviceBookingRepository.Update(entity);
+        }
+        else if (createOrUpdateCommand is ServiceBookingCreateCommand createCommand)
         {
             var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
             createCommand.Status = ServiceBookingStatus.Pending;
             // Giả sử BookingDate gốc là giờ UTC nhưng không có Kind
 
-            var service = _serviceRepository.GetById(createCommand.ServiceId!.Value).Result;
+            var service = await _serviceRepository.GetQueryable(m => m.Id == createCommand.ServiceId)
+                .SingleOrDefaultAsync();
             if (service == null)
-                return BusinessResult.Fail("Error creating booking by serviceId null");
-
-            var entity = await CreateOrUpdateEntity(createCommand);
-            if (entity == null)
-                return BusinessResult.Fail();
+                throw new DomainException("Error creating booking by serviceId null");
 
             // Gửi email
             // Tạo nội dung email dạng HTML
-            var cancelLink = $"{frontendUrl}/cancel-booking/{entity.Id}"; // Link cancel booking
+            var cancelLink = $"{frontendUrl}/cancel-booking/{service.Id}"; // Link cancel booking
 
             var emailBody = $@"
 <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#f7f7f9;padding:0;margin:0;'>
@@ -59,7 +68,7 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
         </tr>
         <tr>
           <td style='padding:0 32px 12px 32px;'>
-            <p style='font-size:18px;margin-bottom:4px;'>Xin chào <b>{entity.CustomerName}</b>,</p>
+            <p style='font-size:18px;margin-bottom:4px;'>Xin chào <b>{createCommand.CustomerName}</b>,</p>
             <p style='margin-top:0;margin-bottom:16px;'>Cảm ơn bạn đã đặt lịch với chúng tôi.<br/>Sau đây là thông tin chi tiết lịch hẹn của bạn:</p>
           </td>
         </tr>
@@ -68,11 +77,11 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
             <table cellpadding='0' cellspacing='0' border='0' style='width:100%;margin-bottom:14px;'>
               <tr>
                 <td style='font-weight:bold;width:150px;padding:8px 0;'>Họ & tên:</td>
-                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{entity.CustomerName}</td>
+                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{createCommand.CustomerName}</td>
               </tr>
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Số điện thoại:</td>
-                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{entity.CustomerPhone}</td>
+                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{createCommand.CustomerPhone}</td>
               </tr>
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Dịch vụ:</td>
@@ -81,7 +90,7 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Ngày đến:</td>
                 <td style='padding:8px 0;'>
-                  {entity.AppointmentDate:dd/MM/yyyy HH:mm} 
+                  {createCommand.AppointmentDate:dd/MM/yyyy HH:mm} 
                 </td>
               </tr>
             </table>
@@ -109,40 +118,81 @@ public class ServiceBookingService : BaseService<ServiceBooking>, IServiceBookin
   </tr>
 </table>
 ";
-            await _emailService.SendEmailAsync(entity.CustomerEmail, "Booking Confirmation", emailBody);
+            await _emailService.SendEmailAsync(createCommand.CustomerEmail, "Booking Confirmation", emailBody);
 
-            var result = _mapper.Map<TResult>(entity);
+            entity = _mapper.Map<ServiceBooking>(createCommand);
+            if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+            entity.CreatedDate = DateTimeOffset.UtcNow;
+            _serviceBookingRepository.Add(entity);
+        }
 
-            return BusinessResult.Success(result, "Send email successfully.");
-        }
-        catch (Exception ex)
-        {
-            return BusinessResult.ExceptionError(ex.Message);
-        }
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<ServiceBookingResult>(entity);
+
+        return new BusinessResult(result);
     }
 
-    public async Task<BusinessResult> Cancel<TResult>(ServiceBookingCancelCommand cancelCommand) where TResult : BaseResult
+    public async Task<BusinessResult> Cancel(ServiceBookingCancelCommand cancelCommand)
+
     {
-        try
-        {
-            //check and set status cancelled
-            var booking = await _serviceBookingRepository.GetById(cancelCommand.Id);
+        //check and set status cancelled
+        var booking = await _serviceBookingRepository.GetQueryable(m => m.Id == cancelCommand.Id)
+            .SingleOrDefaultAsync();
 
-            if (booking == null)
-                return BusinessResult.Fail(Const.NOT_FOUND_MSG);
-            booking.Status = ServiceBookingStatus.Cancelled;
+        if (booking == null)
+            throw new NotFoundException(Const.NOT_FOUND_MSG);
+        booking.Status = ServiceBookingStatus.Cancelled;
 
-            _serviceBookingRepository.Update(booking);
-            var saveChanges = await _unitOfWork.SaveChanges();
-            if (!saveChanges)
-                return BusinessResult.Fail();
-            var result = _mapper.Map<TResult>(booking);
+        _serviceBookingRepository.Update(booking);
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+        var result = _mapper.Map<ServiceBookingResult>(booking);
 
-            return BusinessResult.Success(result);
-        }
-        catch (Exception ex)
-        {
-            return BusinessResult.ExceptionError(ex.Message);
-        }
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> GetAll(ServiceBookingGetAllQuery query)
+    {
+        var queryable = _serviceBookingRepository.GetQueryable();
+
+        queryable = FilterHelper.BaseEntity(queryable, query);
+        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
+        queryable = RepoHelper.Sort(queryable, query);
+
+        var totalCount = await queryable.CountAsync();
+        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
+        var results = _mapper.Map<List<ServiceBookingResult>>(entities);
+        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+
+        return new BusinessResult(getQueryableResult);
+    }
+
+    public async Task<BusinessResult> GetById(ServiceBookingGetByIdQuery request)
+    {
+        var queryable = _serviceBookingRepository.GetQueryable(x => x.Id == request.Id);
+        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        var entity = await queryable.SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException("Not found");
+        var result = _mapper.Map<ServiceBookingResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> Delete(ServiceBookingDeleteCommand command)
+    {
+        var entity = await _serviceBookingRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        _serviceBookingRepository.Delete(entity, command.IsPermanent);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        return new BusinessResult();
     }
 }

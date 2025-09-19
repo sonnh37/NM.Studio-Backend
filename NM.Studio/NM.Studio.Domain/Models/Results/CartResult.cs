@@ -4,5 +4,4 @@ namespace NM.Studio.Domain.Models.Results;
 
 public class CartResult : BaseResult
 {
-    
 }

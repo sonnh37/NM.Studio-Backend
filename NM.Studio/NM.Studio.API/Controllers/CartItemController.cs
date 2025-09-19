@@ -1,7 +1,7 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.CartItems;
 using NM.Studio.Domain.CQRS.Queries.CartItems;
 
@@ -10,15 +10,18 @@ namespace NM.Studio.API.Controllers;
 // [Authorize(Roles = "Admin,Staff")]
 public class CartItemController : BaseController
 {
-    public CartItemController(IMediator mediator) : base(mediator)
+    private readonly ICartItemService _cartItemService;
+
+    public CartItemController(ICartItemService cartItemService)
     {
+        _cartItemService = cartItemService;
     }
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] CartItemGetAllQuery cartItemGetAllQuery)
+    public async Task<IActionResult> GetAll([FromQuery] CartItemGetAllQuery request)
     {
-        var businessResult = await _mediator.Send(cartItemGetAllQuery);
+        var businessResult = await _cartItemService.GetAll(request);
 
         return Ok(businessResult);
     }
@@ -27,31 +30,30 @@ public class CartItemController : BaseController
     [HttpGet("id")]
     public async Task<IActionResult> GetById([FromQuery] CartItemGetByIdQuery request)
     {
-        var businessResult = await _mediator.Send(request);
-
+        var businessResult = await _cartItemService.GetById(request);
         return Ok(businessResult);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CartItemCreateCommand cartItemCreateCommand)
+    public async Task<IActionResult> Create([FromBody] CartItemCreateCommand request)
     {
-        var businessResult = await _mediator.Send(cartItemCreateCommand);
+        var businessResult = await _cartItemService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] CartItemUpdateCommand cartItemUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] CartItemUpdateCommand request)
     {
-        var businessResult = await _mediator.Send(cartItemUpdateCommand);
+        var businessResult = await _cartItemService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete([FromQuery] CartItemDeleteCommand cartItemDeleteCommand)
+    public async Task<IActionResult> Delete([FromQuery] CartItemDeleteCommand request)
     {
-        var businessResult = await _mediator.Send(cartItemDeleteCommand);
+        var businessResult = await  _cartItemService.Delete(request);
 
         return Ok(businessResult);
     }

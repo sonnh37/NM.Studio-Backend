@@ -1,17 +1,22 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.CQRS.Commands.Albums;
+using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Queries.Albums;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
+using NM.Studio.Domain.Shared.Exceptions;
 using NM.Studio.Domain.Utilities;
+using NM.Studio.Domain.Utilities.Filters;
 using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class AlbumService : BaseService<Album>, IAlbumService
+public class AlbumService : BaseService, IAlbumService
 {
     private readonly IAlbumRepository _albumRepository;
 
@@ -22,59 +27,97 @@ public class AlbumService : BaseService<Album>, IAlbumService
         _albumRepository = _unitOfWork.AlbumRepository;
     }
 
-    public async Task<BusinessResult> GetAll<TResult>(AlbumGetAllQuery query) where TResult : BaseResult
+    public async Task<BusinessResult> GetAll(AlbumGetAllQuery query)
     {
-        var (entities, totalCount) = await _albumRepository.GetAll(query);
-        var results = _mapper.Map<List<TResult>>(entities);
-        var tableResponse = new QueryResult(results, totalCount, query);
+        var queryable = _albumRepository.GetQueryable();
 
-        return BusinessResult.Success(tableResponse);
+        if (!string.IsNullOrEmpty(query.Title))
+            queryable = queryable.Where(m => m.Title!.ToLower().Trim().Contains(query.Title.ToLower().Trim()));
+
+        if (!string.IsNullOrEmpty(query.Description))
+            queryable = queryable.Where(m => m.Description!.ToLower().Contains(query.Description.ToLower()));
+
+        if (!string.IsNullOrEmpty(query.Slug))
+            queryable = queryable.Where(m => m.Slug!.ToLower().Trim() == query.Slug.ToLower().Trim());
+
+        queryable = FilterHelper.BaseEntity(queryable, query);
+        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
+        queryable = RepoHelper.Sort(queryable, query);
+
+        var totalCount = await queryable.CountAsync();
+        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
+        var results = _mapper.Map<List<AlbumResult>>(entities);
+        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+
+        return new BusinessResult(getQueryableResult);
     }
 
-    public async Task<BusinessResult> Create<TResult>(AlbumCreateCommand createCommand) where TResult : BaseResult
+    public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
-        try
-        {
-            createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
-            var album = _albumRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (album != null) return BusinessResult.Fail("An album with this title already exists");
-
-            var entity = await CreateOrUpdateEntity(createCommand);
-            var result = _mapper.Map<TResult>(entity);
-
-            return BusinessResult.Success(result);
-        }
-        catch (Exception ex)
-        {
-            var errorMessage = $"An error occurred while updating {typeof(AlbumCreateCommand).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
-        }
-    }
-
-    public async Task<BusinessResult> Update<TResult>(AlbumUpdateCommand updateCommand) where TResult : BaseResult
-    {
-        try
+        Album? entity = null;
+        if (createOrUpdateCommand is AlbumUpdateCommand updateCommand)
         {
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Title);
-            var album = _albumRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
+            entity = await _albumRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
 
-            if (album == null) throw new Exception();
+            if (entity == null)
+                throw new NotFoundException(Const.NOT_FOUND_MSG);
 
-            if (updateCommand.Slug != album?.Slug)
+            if (updateCommand.Slug != entity.Slug)
             {
-                var album_ = _albumRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
+                var slugExists = await _albumRepository
+                    .GetQueryable(m => m.Slug == updateCommand.Slug && m.Id != updateCommand.Id)
+                    .AnyAsync();
 
-                if (album_ != null) return BusinessResult.Fail("An album with this title already exists");
+                if (slugExists)
+                    throw new DomainException("An album with this title already exists");
             }
 
-            var entity = await CreateOrUpdateEntity(updateCommand);
-            var result = _mapper.Map<TResult>(entity);
-            return BusinessResult.Success(result);
+            _mapper.Map(updateCommand, entity);
+            _albumRepository.Update(entity);
         }
-        catch (Exception ex)
+        else if (createOrUpdateCommand is AlbumCreateCommand createCommand)
         {
-            var errorMessage = $"An error occurred while updating {typeof(AlbumUpdateCommand).Name}: {ex.Message}";
-            return BusinessResult.ExceptionError(errorMessage);
+            createCommand.Slug = SlugHelper.ToSlug(createCommand.Title);
+            var isExistSlug = await _albumRepository.GetQueryable(m => m.Slug == createCommand.Slug).AnyAsync();
+            if (isExistSlug) throw new DomainException("An album with this title already exists");
+
+            entity = _mapper.Map<Album>(createCommand);
+            entity.CreatedDate = DateTimeOffset.UtcNow;
+            _albumRepository.Add(entity);
         }
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<AlbumResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> GetById(AlbumGetByIdQuery request)
+    {
+        var queryable = _albumRepository.GetQueryable(x => x.Id == request.Id);
+        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        var entity = await queryable.SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException("Not found");
+        var result = _mapper.Map<AlbumResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> Delete(AlbumDeleteCommand command)
+    {
+        var entity = await _albumRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        _albumRepository.Delete(entity, command.IsPermanent);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        return new BusinessResult();
     }
 }

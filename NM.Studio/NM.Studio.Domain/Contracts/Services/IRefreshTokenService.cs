@@ -6,8 +6,6 @@ namespace NM.Studio.Domain.Contracts.Services;
 
 public interface IRefreshTokenService : IBaseService
 {
-    Task<BusinessResult> CreateOrUpdate<TResult>(CreateOrUpdateCommand createOrUpdateCommand)
-        where TResult : BaseResult;
-
+    Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand);
     BusinessResult ValidateRefreshTokenIpMatch();
 }

@@ -1,7 +1,7 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.CQRS.Commands.Albums;
 using NM.Studio.Domain.CQRS.Queries.Albums;
 
@@ -10,15 +10,18 @@ namespace NM.Studio.API.Controllers;
 // [Authorize(Roles = "Admin,Staff")]
 public class AlbumController : BaseController
 {
-    public AlbumController(IMediator mediator) : base(mediator)
+    private readonly IAlbumService _albumService;
+
+    public AlbumController(IAlbumService albumService)
     {
+        _albumService = albumService;
     }
 
     [AllowAnonymous]
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery albumGetAllQuery)
+    public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery request)
     {
-        var businessResult = await _mediator.Send(albumGetAllQuery);
+        var businessResult = await _albumService.GetAll(request);
 
         return Ok(businessResult);
     }
@@ -27,30 +30,30 @@ public class AlbumController : BaseController
     [HttpGet("id")]
     public async Task<IActionResult> GetById([FromQuery] AlbumGetByIdQuery request)
     {
-        var result = await _mediator.Send(request);
-        return Ok(result);
+        var businessResult = await _albumService.GetById(request);
+        return Ok(businessResult);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] AlbumCreateCommand albumCreateCommand)
+    public async Task<IActionResult> Create([FromBody] AlbumCreateCommand request)
     {
-        var businessResult = await _mediator.Send(albumCreateCommand);
+        var businessResult = await _albumService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
 
     [HttpPut]
-    public async Task<IActionResult> Update([FromBody] AlbumUpdateCommand albumUpdateCommand)
+    public async Task<IActionResult> Update([FromBody] AlbumUpdateCommand request)
     {
-        var businessResult = await _mediator.Send(albumUpdateCommand);
+        var businessResult = await _albumService.CreateOrUpdate(request);
 
         return Ok(businessResult);
     }
 
     [HttpDelete]
-    public async Task<IActionResult> Delete([FromQuery] AlbumDeleteCommand albumDeleteCommand)
+    public async Task<IActionResult> Delete([FromQuery] AlbumDeleteCommand request)
     {
-        var businessResult = await _mediator.Send(albumDeleteCommand);
+        var businessResult = await  _albumService.Delete(request);
 
         return Ok(businessResult);
     }

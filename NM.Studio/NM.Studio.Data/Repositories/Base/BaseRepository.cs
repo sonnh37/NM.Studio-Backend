@@ -1,36 +1,24 @@
 ﻿using System.Linq.Expressions;
-using System.Reflection;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
-using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Enums;
-using NM.Studio.Domain.Utilities;
-using NM.Studio.Domain.Utilities.Filters;
 
 namespace NM.Studio.Data.Repositories.Base;
 
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : BaseEntity
 {
     private readonly DbContext _dbContext;
-    protected readonly IMapper Mapper;
 
     public BaseRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public BaseRepository(DbContext dbContext, IMapper mapper) : this(dbContext)
-    {
-        Mapper = mapper;
-    }
-
-    public DbSet<TEntity> DbSet
+    private DbSet<TEntity> DbSet
     {
         get
         {
-            var dbSet = GetDbSet<TEntity>();
+            var dbSet = GetDbSet();
             return dbSet;
         }
     }
@@ -41,50 +29,6 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             throw new OperationCanceledException("Request was cancelled");
     }
 
-
-    public DbSet<TEntity> Context()
-    {
-        return DbSet;
-    }
-
-    public static IQueryable<TEntity> Sort(IQueryable<TEntity> queryable, GetQueryableQuery query)
-    {
-        var sortFieldInput = query.Sorting.SortField;
-        var sortDirection = query.Sorting.SortDirection;
-
-        var actualProp = typeof(TEntity)
-            .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-            .FirstOrDefault(p => string.Equals(p.Name, sortFieldInput, StringComparison.OrdinalIgnoreCase));
-
-        if (actualProp == null)
-            throw new ArgumentException($"Property '{sortFieldInput}' does not exist on '{typeof(TEntity).Name}'");
-
-        var matchedFieldName = actualProp.Name;
-
-        queryable = sortDirection == SortDirection.Ascending
-            ? queryable.OrderBy(e => EF.Property<object>(e, matchedFieldName))
-            : queryable.OrderByDescending(e => EF.Property<object>(e, matchedFieldName));
-
-        return queryable;
-    }
-
-    public static IQueryable<TEntity> Include(IQueryable<TEntity> queryable, string[]? includeProperties)
-    {
-        var validProperties = typeof(TEntity).GetProperties().Select(p => p.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        if (includeProperties == null) return queryable;
-
-        foreach (var property in includeProperties)
-        {
-            if (string.IsNullOrWhiteSpace(property)) continue;
-            var match = validProperties.FirstOrDefault(p => p.Equals(property, StringComparison.OrdinalIgnoreCase));
-            if (match != null)
-                queryable = queryable.Include(match);
-        }
-
-        return queryable;
-    }
 
     #region Commands
 
@@ -110,7 +54,10 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public void Delete(TEntity entity, bool isPermanent = false)
     {
-        if (isPermanent) DbSet.Remove(entity);
+        if (isPermanent)
+        {
+            DbSet.Remove(entity);
+        }
         else
         {
             entity.IsDeleted = true;
@@ -121,10 +68,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     public void DeleteRange(IEnumerable<TEntity> entities, bool isPermanent = false)
     {
-        if (isPermanent) DbSet.RemoveRange(entities);
+        if (isPermanent)
+        {
+            DbSet.RemoveRange(entities);
+        }
         else
         {
-            var enumerable = entities.Where(e => e.IsDeleted == false ? e.IsDeleted = true : e.IsDeleted = false);
+            var enumerable = entities.Where(e => !e.IsDeleted ? e.IsDeleted = true : e.IsDeleted = false);
             DbSet.UpdateRange(enumerable);
         }
     }
@@ -133,99 +83,48 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
     #region Queries
 
-    // Gets all entities without any filtering or pagination
-    public async Task<List<TEntity>> GetAll()
-    {
-        var queryable = GetQueryable();
-        var result = await queryable.ToListAsync();
-        return result;
-    }
+    // public virtual async Task<(List<TEntity>, int)> GetAll(GetQueryableQuery query)
+    // {
+    //     var queryable = GetQueryable();
+    //     queryable = RepoHelper.Include(queryable, query.IncludeProperties);
+    //     queryable = RepoHelper.Sort(queryable, query);
+    //     var total = queryable.CountAsync();
+    //     queryable = query.Pagination.IsPagingEnabled ? RepoHelper.GetQueryablePagination(queryable, query) : queryable;
+    //     var listData = queryable.ToListAsync();
+    //     await Task.WhenAll(listData, total);
+    //
+    //     return (await listData, await total);
+    // }
 
-    public async Task<(List<TEntity>, int)> GetAll(GetQueryableQuery query)
-    {
-        var queryable = GetQueryable();
-        queryable = FilterHelper.Apply(queryable, query);
-        queryable = Include(queryable, query.IncludeProperties);
-        queryable = Sort(queryable, query);
-
-        var totalCount = queryable.Count();
-        queryable = query.Pagination.IsPagingEnabled ? GetQueryablePagination(queryable, query) : queryable;
-
-        return (await queryable.ToListAsync(), totalCount);
-    }
-
-    public async Task<int> GetTotalCount(DateTimeOffset? fromDate, DateTimeOffset? toDate)
-    {
-        var queryable = GetQueryable();
-
-        if (fromDate.HasValue)
-            queryable = queryable.Where(entity => entity.CreatedDate >= fromDate.Value);
-
-        if (toDate.HasValue)
-            queryable = queryable.Where(entity => entity.CreatedDate <= toDate.Value);
-
-        return await queryable.CountAsync();
-    }
-
-    // end
-
-    public virtual async Task<TEntity?> GetById(Guid id, string[]? includeProperties = null)
-    {
-        var queryable = GetQueryable(x => x.Id == id);
-        queryable = includeProperties != null ? Include(queryable, includeProperties) : queryable;
-        var entity = await queryable.SingleOrDefaultAsync();
-
-        return entity;
-    }
-
-    public virtual async Task<TEntity?> GetByOptions(Expression<Func<TEntity, bool>> predicate)
-    {
-        var queryable = GetQueryable(predicate);
-        queryable = IncludeHelper.Apply(queryable);
-        var entity = await queryable.FirstOrDefaultAsync();
-
-        return entity;
-    }
-
-    public IQueryable<TEntity> GetQueryable(CancellationToken cancellationToken = default)
-    {
-        CheckCancellationToken(cancellationToken);
-        var queryable = GetQueryable<TEntity>();
-        return queryable;
-    }
-
-    public IQueryable<T> GetQueryable<T>()
-        where T : BaseEntity
-    {
-        IQueryable<T> queryable = GetDbSet<T>(); // like DbSet in this
-        return queryable;
-    }
+    // public virtual async Task<TEntity?> GetById(Guid id, string[]? includeProperties = null)
+    // {
+    //     var queryable = GetQueryable(x => x.Id == id);
+    //     queryable = includeProperties != null
+    //         ? RepoHelper.Include(queryable, includeProperties)
+    //         : queryable;
+    //     var entity = await queryable.SingleOrDefaultAsync();
+    //
+    //     return entity;
+    // }
 
     public IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate)
     {
-        var queryable = GetQueryable<TEntity>();
+        var queryable = GetQueryable();
         queryable = queryable.Where(predicate);
         return queryable;
     }
 
-    private DbSet<T> GetDbSet<T>() where T : BaseEntity
+    public IQueryable<TEntity> GetQueryable()
     {
-        var dbSet = _dbContext.Set<T>();
-        return dbSet;
-    }
-
-    protected IQueryable<TEntity> GetQueryablePagination(IQueryable<TEntity> queryable, GetQueryableQuery query)
-    {
-        queryable = queryable
-            .Skip((query.Pagination.PageNumber - 1) * query.Pagination.PageSize)
-            .Take(query.Pagination.PageSize);
+        IQueryable<TEntity> queryable = GetDbSet();
         return queryable;
     }
 
-    public async Task<long> GetTotalCount()
+
+    private DbSet<TEntity> GetDbSet()
     {
-        var result = await GetQueryable().LongCountAsync();
-        return result;
+        var dbSet = _dbContext.Set<TEntity>();
+        return dbSet;
     }
 
     #endregion

@@ -5,50 +5,27 @@ namespace NM.Studio.Domain.Contracts.UnitOfWorks;
 public interface IUnitOfWork : IBaseUnitOfWork
 {
     IUserRepository UserRepository { get; }
-
-    IMediaFileRepository MediaFileRepository { get; }
-
     IServiceRepository ServiceRepository { get; }
-
     IProductRepository ProductRepository { get; }
-
-    IProductMediaRepository ProductMediaRepository { get; }
-
+    IProductVariantRepository ProductVariantRepository { get; }
+    IProductImageRepository ProductImageRepository { get; }
     IAlbumRepository AlbumRepository { get; }
-
-    IAlbumMediaRepository AlbumMediaRepository { get; }
-
+    IAlbumImageRepository AlbumImageRepository { get; }
     ICategoryRepository CategoryRepository { get; }
-
     ISubCategoryRepository SubCategoryRepository { get; }
-
-    IColorRepository ColorRepository { get; }
-
-    ISizeRepository SizeRepository { get; }
-
+    IImageRepository ImageRepository { get; }
+    IMediaBaseRepository MediaBaseRepository { get; }
     IBlogRepository BlogRepository { get; }
-
     IServiceBookingRepository ServiceBookingRepository { get; }
-
-    IRefreshTokenRepository RefreshTokenRepository { get; }
-
-    IProductSizeRepository ProductSizeRepository { get; }
-
-    IProductColorRepository ProductColorRepository { get; }
-    
+    IUserTokenRepository UserTokenRepository { get; }
+    IMediaUrlRepository MediaUrlRepository { get; }
     IOrderRepository OrderRepository { get; }
-    
     IOrderItemRepository OrderItemRepository { get; }
-    
     IPaymentRepository PaymentRepository { get; }
-    
     IOrderStatusHistoryRepository OrderStatusHistoryRepository { get; }
-    
     ICartRepository CartRepository { get; }
-    
     ICartItemRepository CartItemRepository { get; }
-    
     IVoucherRepository VoucherRepository { get; }
-    
+    IVideoRepository VideoRepository { get; }
     IVoucherUsageHistoryRepository VoucherUsageHistoryRepository { get; }
 }

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NM.Studio.Data.Context;
 using NM.Studio.Data.Repositories.Base;
 using NM.Studio.Domain.Contracts.Repositories;
@@ -9,7 +8,7 @@ namespace NM.Studio.Data.Repositories;
 
 public class UserRepository : BaseRepository<User>, IUserRepository
 {
-    public UserRepository(StudioContext dbContext, IMapper mapper) : base(dbContext, mapper)
+    public UserRepository(StudioContext dbContext) : base(dbContext)
     {
     }
 

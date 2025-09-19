@@ -8,15 +8,24 @@
 
     <ItemGroup>
         <PackageReference Include="AutoMapper" Version="13.0.1"/>
-        <PackageReference Include="Humanizer.Core" Version="3.0.0-beta.96" />
-        <PackageReference Include="MediatR" Version="13.0.0" />
+        <PackageReference Include="Humanizer.Core" Version="3.0.0-beta.96"/>
+        <PackageReference Include="MediatR" Version="13.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.9"/>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Quartz.Extensions.Hosting" Version="3.13.1"/>
+        <PackageReference Include="Serilog" Version="4.3.0"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="9.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
         <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.2.0"/>
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Configs\Middleware\"/>
+        <Folder Include="Middlewares\" />
+        <Folder Include="Shared\"/>
     </ItemGroup>
 
 </Project>

@@ -1,16 +1,14 @@
-﻿namespace NM.Studio.Domain.Entities.Bases;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace NM.Studio.Domain.Entities.Bases;
 
 public abstract class BaseEntity
 {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
 
-    public string? CreatedBy { get; set; }
-
     public DateTimeOffset? CreatedDate { get; set; }
-
-    public string? LastUpdatedBy { get; set; }
-
-    public DateTimeOffset? LastUpdatedDate { get; set; }
-
     public bool IsDeleted { get; set; }
 }

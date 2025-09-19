@@ -1,9 +1,6 @@
-﻿using MediatR;
-using NM.Studio.Domain.Models.Results.Bases;
+﻿namespace NM.Studio.Domain.CQRS.Commands.ServiceBookings;
 
-namespace NM.Studio.Domain.CQRS.Commands.ServiceBookings;
-
-public class ServiceBookingCancelCommand : IRequest<BusinessResult>
+public class ServiceBookingCancelCommand
 {
     public Guid Id { get; set; }
 }

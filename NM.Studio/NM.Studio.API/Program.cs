@@ -1,41 +1,24 @@
-﻿using System.Reflection;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using DotNetEnv;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using NM.Studio.API.Extensions;
-using NM.Studio.Data.Context;
-using NM.Studio.Domain.Configs;
 using NM.Studio.Domain.Configs.Mapping;
-using NM.Studio.Domain.Configs.Middleware;
 using NM.Studio.Domain.Configs.Slugify;
-using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.Models;
-using NM.Studio.Handler;
-using NM.Studio.Services;
-using Quartz;
+using NM.Studio.Domain.Shared.Handler;
 
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddLogging();
-builder.Services.AddQuartz(q =>
-{
-    q.UseMicrosoftDependencyInjectionJobFactory();
-
-    var jobKey = new JobKey("CleanRefreshTokenJob");
-    q.AddJob<CleanRefreshTokenJob>(opts => opts.WithIdentity(jobKey));
-
-    q.AddTrigger(opts => opts
-        .ForJob(jobKey)
-        .WithIdentity("CleanRefreshTokenJob-trigger")
-        .WithCronSchedule("0 0 0 * * ?")); // Cron schedule chạy vào 00:00 mỗi ngày
-});
-
+builder.Host.AddAppConfiguration();
+// Add Cors
+builder.Services.ConfigureCors(builder.Configuration);
+// Add serilog
+builder.Host.AddSerilog(builder.Configuration);
+// Exception handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+builder.Services.ConfigureQuartz();
 builder.Services.AddControllersWithViews(options =>
 {
     options.Conventions.Add(
@@ -43,120 +26,50 @@ builder.Services.AddControllersWithViews(options =>
     );
 });
 
-builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
-
-#region Add-DbContext
-
-builder.Services.AddDbContext<StudioContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-        npgsqlOptions => npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
-    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-});
-
-#endregion
-
+builder.Services.ConfigureContext(builder.Configuration);
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    // options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-builder.Services.AddSwaggerGen(options =>
-{
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        In = ParameterLocation.Header,
-        Description = "Please enter token",
-        Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        BearerFormat = "JWT",
-        Scheme = "bearer"
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
-    
-    // New in .NET 8: Better organization with operation filters
-    // options.OperationFilter<SwaggerDefaultValues>();
-    
-    // Add enum descriptions
-    // options.SchemaFilter<EnumSchemaFilter>();
-    
-   
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
-
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<BaseHandler>());
-
-
+builder.Services.ConfigureBind();
+builder.Services.ConfigureAuth();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
-
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.Configure<TokenSetting>(builder.Configuration.GetSection("TokenSetting"));
-
-builder.Services.AddAuth();
-
-builder.Services.AddCORS();
-
-
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.ConfigureSwaggerGen();
 
 // -----------------app-------------------------
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.DefaultModelsExpandDepth(-1); // Hide schemas by default
+        options.DefaultModelsExpandDepth(-1);
         options.DisplayRequestDuration();
         options.EnableDeepLinking();
         options.EnableFilter();
-    
-        // New in .NET 8: Better dark mode support
-        // options.InjectStylesheet("/swagger-ui/custom.css");
-    
-        // Add OAuth configuration if needed
     });
 }
-
-
-// using (var scope = app.Services.CreateScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<StudioContext>();
-//     DummyData.SeedDatabase(context);
-// }
 
 app.UseHttpsRedirection();
 app.UseRouting();
 
-
-app.UseCors("AllowSpecificOrigins");
-
+app.UseCors(ServiceExtensions.CorsPolicyName);
 app.UseAuthentication();
-
 app.UseAuthorization();
-
 app.UseMiddleware<AuthenticationMiddleware>();
-
-
 app.MapControllers();
+
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    logger.LogInformation("[Successfully] Server started successfully and is listening for requests...");
+});
 
 app.Run();

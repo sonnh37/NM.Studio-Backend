@@ -2,6 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
+using NM.Studio.Domain.Contracts.Services;
+using NM.Studio.Domain.Models;
+using NM.Studio.Services;
 
 namespace NM.Studio.API.Controllers;
 
@@ -9,20 +12,19 @@ namespace NM.Studio.API.Controllers;
 [Route("dashboard")]
 public class DashboardController : BaseController
 {
-    public DashboardController(IMediator mediator) : base(mediator)
+    private readonly IDashboardService _dashboardService;
+
+    public DashboardController(IDashboardService dashboardService)
     {
+        _dashboardService = dashboardService;
     }
 
+
     [HttpGet("stats")]
-    public async Task<IActionResult> GetStats([FromQuery] DateTimeOffset startDate, [FromQuery] DateTimeOffset endDate)
+    public async Task<IActionResult> GetStats([FromQuery] DashboardGetStatsQuery request)
     {
-        // Xử lý logic thống kê theo ngày
-        var stats = new
-        {
-            TotalSales = 500000,
-            NewUsers = 300,
-            CompletedOrders = 120
-        };
-        return Ok(stats);
+        var businessResult = await _dashboardService.GetStats(request);
+        
+        return Ok(businessResult);
     }
 }

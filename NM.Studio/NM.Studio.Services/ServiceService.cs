@@ -1,16 +1,22 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
+using NM.Studio.Domain.CQRS.Commands.Base;
 using NM.Studio.Domain.CQRS.Commands.Services;
+using NM.Studio.Domain.CQRS.Queries.Services;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
+using NM.Studio.Domain.Shared.Exceptions;
 using NM.Studio.Domain.Utilities;
+using NM.Studio.Domain.Utilities.Filters;
 using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class ServiceService : BaseService<Service>, IServiceService
+public class ServiceService : BaseService, IServiceService
 {
     private readonly IServiceRepository _serviceRepository;
 
@@ -21,53 +27,87 @@ public class ServiceService : BaseService<Service>, IServiceService
         _serviceRepository = _unitOfWork.ServiceRepository;
     }
 
-    public async Task<BusinessResult> Create<TResult>(ServiceCreateCommand createCommand) where TResult : BaseResult
+    public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
-        try
-        {
-            createCommand.Slug = SlugHelper.ToSlug(createCommand.Name);
-            var service = _serviceRepository.GetQueryable(m => m.Slug == createCommand.Slug).SingleOrDefault();
-            if (service != null) return BusinessResult.Fail("The service's name already exists");
-
-            var entity = await CreateOrUpdateEntity(createCommand);
-            var result = _mapper.Map<TResult>(entity);
-
-            if (result == null) return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
-            return BusinessResult.Success(result);
-        }
-        catch (Exception ex)
-        {
-            return BusinessResult.ExceptionError(ex.Message);
-        }
-    }
-
-    public async Task<BusinessResult> Update<TResult>(ServiceUpdateCommand updateCommand) where TResult : BaseResult
-    {
-        try
+        Service? entity = null;
+        if (createOrUpdateCommand is ServiceUpdateCommand updateCommand)
         {
             updateCommand.Slug = SlugHelper.ToSlug(updateCommand.Name);
-            var service = _serviceRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
+            entity = _serviceRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefault();
 
-            if (service == null) return BusinessResult.Fail("NotFound");
+            if (entity == null) throw new NotFoundException("NotFound");
 
             // check if update input slug != current slug
-            if (updateCommand.Slug != service?.Slug)
+            if (updateCommand.Slug != entity.Slug)
             {
                 // continue check if input slug == any slug
-                var service_ = _serviceRepository.GetQueryable(m => m.Slug == updateCommand.Slug).SingleOrDefault();
+                var isExistSlug = await _serviceRepository.GetQueryable(m => m.Slug == updateCommand.Slug).AnyAsync();
 
-                if (service_ != null) return BusinessResult.Fail("The service's name already exists");
+                if (isExistSlug) throw new DomainException("The service's name already exists");
             }
 
-            var entity = await CreateOrUpdateEntity(updateCommand);
-            var result = _mapper.Map<TResult>(entity);
-
-            if (result == null) return BusinessResult.Fail(Const.FAIL_SAVE_MSG);
-            return BusinessResult.Success(result);
+            _mapper.Map(updateCommand, entity);
+            _serviceRepository.Update(entity);
         }
-        catch (Exception ex)
+        else if (createOrUpdateCommand is ServiceCreateCommand createCommand)
         {
-            return BusinessResult.ExceptionError(ex.Message);
+            createCommand.Slug = SlugHelper.ToSlug(createCommand.Name);
+            var isExistSlug = await _serviceRepository.GetQueryable(m => m.Slug == createCommand.Slug).AnyAsync();
+            if (isExistSlug) throw new DomainException("The service's name already exists");
+
+            entity = _mapper.Map<Service>(createCommand);
+            if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+            entity.CreatedDate = DateTimeOffset.UtcNow;
+            _serviceRepository.Add(entity);
         }
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<ServiceResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> GetAll(ServiceGetAllQuery query)
+    {
+        var queryable = _serviceRepository.GetQueryable();
+
+        queryable = FilterHelper.BaseEntity(queryable, query);
+        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
+        queryable = RepoHelper.Sort(queryable, query);
+
+        var totalCount = await queryable.CountAsync();
+        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
+        var results = _mapper.Map<List<ServiceResult>>(entities);
+        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+
+        return new BusinessResult(getQueryableResult);
+    }
+
+    public async Task<BusinessResult> GetById(ServiceGetByIdQuery request)
+    {
+        var queryable = _serviceRepository.GetQueryable(x => x.Id == request.Id);
+        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        var entity = await queryable.SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException("Not found");
+        var result = _mapper.Map<ServiceResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> Delete(ServiceDeleteCommand command)
+    {
+        var entity = await _serviceRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        _serviceRepository.Delete(entity, command.IsPermanent);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        return new BusinessResult();
     }
 }

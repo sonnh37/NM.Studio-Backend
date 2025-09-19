@@ -1,0 +1,15 @@
+﻿using NM.Studio.Domain.Contracts.Services.Bases;
+using NM.Studio.Domain.CQRS.Commands.Base;
+using NM.Studio.Domain.CQRS.Commands.ProductImages;
+using NM.Studio.Domain.Models.Results.Bases;
+
+namespace NM.Studio.Domain.Contracts.Services;
+
+public interface IProductImageService : IBaseService
+{
+    // Task<BusinessResult> GetAll(ProductImageGetAllQuery query);
+    Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand);
+
+    // Task<BusinessResult> GetById(ProductImageGetByIdQuery request);
+    Task<BusinessResult> Delete(ProductImageDeleteCommand command);
+}

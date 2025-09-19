@@ -4,8 +4,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NM.Studio.API", "NM.Studio.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NM.Studio.Domain", "NM.Studio.Domain\NM.Studio.Domain.csproj", "{CE44E343-97C0-4468-B23A-651EE6717291}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NM.Studio.Handler", "NM.Studio.Handler\NM.Studio.Handler.csproj", "{94EFFCF3-27BF-4DC3-9724-1FFD29429A8E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NM.Studio.Services", "NM.Studio.Services\NM.Studio.Services.csproj", "{345527D7-45FB-49A8-9AEB-A1358391EB28}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NM.Studio.Validations", "NM.Studio.Validations\NM.Studio.Validations.csproj", "{2B10B263-086B-48E0-95EB-4B389A6ECEF9}"
@@ -26,10 +24,6 @@ Global
 		{CE44E343-97C0-4468-B23A-651EE6717291}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE44E343-97C0-4468-B23A-651EE6717291}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE44E343-97C0-4468-B23A-651EE6717291}.Release|Any CPU.Build.0 = Release|Any CPU
-		{94EFFCF3-27BF-4DC3-9724-1FFD29429A8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{94EFFCF3-27BF-4DC3-9724-1FFD29429A8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94EFFCF3-27BF-4DC3-9724-1FFD29429A8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{94EFFCF3-27BF-4DC3-9724-1FFD29429A8E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{345527D7-45FB-49A8-9AEB-A1358391EB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{345527D7-45FB-49A8-9AEB-A1358391EB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{345527D7-45FB-49A8-9AEB-A1358391EB28}.Release|Any CPU.ActiveCfg = Release|Any CPU

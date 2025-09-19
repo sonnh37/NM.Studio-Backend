@@ -1,5 +1,4 @@
 ﻿using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.Entities;
 
@@ -10,58 +9,54 @@ public class Voucher : BaseEntity
     public VoucherType Type { get; set; }
     public VoucherStatus Status { get; set; }
 
-    // Discount Details
-    public decimal DiscountAmount { get; set; } // Fixed amount discount
-    public decimal DiscountPercentage { get; set; } // Percentage discount
-    public decimal MinimumSpend { get; set; } // Minimum order amount
-    public decimal MaximumDiscount { get; set; } // Maximum discount amount
+    public decimal DiscountAmount { get; set; }
+    public decimal DiscountPercentage { get; set; }
+    public decimal MinimumSpend { get; set; }
+    public decimal MaximumDiscount { get; set; }
 
-    // Usage Limits
-    public int MaxUsage { get; set; } // Maximum total uses
-    public int MaxUsagePerUser { get; set; } // Maximum uses per user
-    public int UsageCount { get; set; } // Current usage count
+    public int MaxUsage { get; set; }
+    public int MaxUsagePerUser { get; set; }
+    public int UsageCount { get; set; }
 
-    // Validity Period
     public DateTimeOffset StartDate { get; set; }
     public DateTimeOffset EndDate { get; set; }
 
-    // Restrictions
-    public bool IsFirstOrderOnly { get; set; } // Only for first orders
-    public string? ApplicableProductIds { get; set; } // Comma-separated product IDs
-    public string? ApplicableCategories { get; set; } // Comma-separated categories
-    public decimal? MaximumSpend { get; set; } // Maximum order amount
+    public bool IsFirstOrderOnly { get; set; }
+    public string? ApplicableProductIds { get; set; }
+    public string? ApplicableCategories { get; set; }
+    public decimal? MaximumSpend { get; set; }
 
-    // Additional Settings
-    public bool IsCombinableWithOther { get; set; } // Can be used with other vouchers
-    public bool IsPublic { get; set; } // Visible to all users
-    public string? UserGroupRestrictions { get; set; } // Specific user groups
+    public bool IsCombinableWithOther { get; set; }
+    public bool IsPublic { get; set; }
+    public string? UserGroupRestrictions { get; set; }
 
-    // Tracking
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-    public virtual ICollection<VoucherUsageHistory> VoucherUsageHistories { get; set; } = new List<VoucherUsageHistory>();
+
+    public virtual ICollection<VoucherUsageHistory> VoucherUsageHistories { get; set; } =
+        new List<VoucherUsageHistory>();
 }
 
 public enum VoucherType
 {
-    FixedAmount, // Fixed amount off (e.g., $10 off)
-    Percentage, // Percentage off (e.g., 15% off)
-    FreeShipping, // Free shipping
-    BuyOneGetOne, // BOGO deals
-    FirstOrder, // First order discount
-    ReferralReward, // Referral program voucher
-    Seasonal, // Seasonal promotion
-    BirthdaySpecial, // Birthday special discount
-    LoyaltyReward, // Loyalty program reward
-    WelcomeBack // Re-engagement campaign
+    FixedAmount,
+    Percentage,
+    FreeShipping,
+    BuyOneGetOne,
+    FirstOrder,
+    ReferralReward,
+    Seasonal,
+    BirthdaySpecial,
+    LoyaltyReward,
+    WelcomeBack
 }
 
 public enum VoucherStatus
 {
-    Active, // Voucher is active and can be used
-    Inactive, // Voucher is temporarily inactive
-    Expired, // Voucher has expired
-    FullyRedeemed, // Maximum usage limit reached
-    Cancelled, // Voucher was cancelled
-    Scheduled, // Scheduled for future activation
-    Draft // In draft/preview mode
+    Active,
+    Inactive,
+    Expired,
+    FullyRedeemed,
+    Cancelled,
+    Scheduled,
+    Draft
 }

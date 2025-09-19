@@ -1,5 +1,4 @@
 ﻿using NM.Studio.Domain.Entities.Bases;
-using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.Entities;
 

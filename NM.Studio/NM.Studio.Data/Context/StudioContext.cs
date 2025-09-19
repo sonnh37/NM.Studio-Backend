@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using NM.Studio.Domain;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Utilities;
 
 namespace NM.Studio.Data.Context;
 
@@ -13,21 +13,23 @@ public partial class StudioContext : BaseDbContext
     }
 
     public virtual DbSet<Product> Products { get; set; }
-    public virtual DbSet<Color> Colors { get; set; }
-    public virtual DbSet<Size> Sizes { get; set; }
+    public virtual DbSet<ProductImage> ProductImages { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
-    public virtual DbSet<MediaFile> MediaFiles { get; set; }
-    public virtual DbSet<ProductMedia> ProductMedias { get; set; }
-    public virtual DbSet<AlbumMedia> AlbumMedias { get; set; }
+    public virtual DbSet<SubCategory> SubCategories { get; set; }
+    public virtual DbSet<MediaBase> MediaBases { get; set; }
+    public virtual DbSet<MediaUrl> MediaUrls { get; set; }
+    public virtual DbSet<AlbumImage> AlbumImages { get; set; }
     public virtual DbSet<Album> Albums { get; set; }
+    public virtual DbSet<Image> Images { get; set; }
+    public virtual DbSet<Video> Videos { get; set; }
     public virtual DbSet<Service> Services { get; set; }
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<UserSession> UserSessions { get; set; }
+    public virtual DbSet<UserSetting> UserSettings { get; set; }
     public virtual DbSet<Blog> Blogs { get; set; }
     public virtual DbSet<ServiceBooking> ServiceBookings { get; set; }
-    public virtual DbSet<ProductSize> ProductSizes { get; set; }
-    public virtual DbSet<ProductColor> ProductColors { get; set; }
-    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
-
+    public virtual DbSet<ProductVariant> ProductSizes { get; set; }
+    public virtual DbSet<UserToken> UserTokens { get; set; }
     public virtual DbSet<Cart> Carts { get; set; }
     public virtual DbSet<CartItem> CartItems { get; set; }
     public virtual DbSet<Order> Orders { get; set; }
@@ -36,23 +38,6 @@ public partial class StudioContext : BaseDbContext
     public virtual DbSet<Payment> Payments { get; set; }
     public virtual DbSet<Voucher> Vouchers { get; set; }
     public virtual DbSet<VoucherUsageHistory> VoucherUsageHistories { get; set; }
-
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured) optionsBuilder.UseNpgsql(GetConnectionString());
-    }
-
-    private string GetConnectionString()
-    {
-        IConfiguration config = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", true, true)
-            .Build();
-        var strConn = config.GetConnectionString("DefaultConnection");
-
-        return strConn;
-    }
 
     // Auto Enum Convert Int To String
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -64,104 +49,109 @@ public partial class StudioContext : BaseDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Model.GetEntityTypes()
+            .ToList()
+            .ForEach(e =>
+            {
+                e.SetTableName(NamingHelper.ToSnakeCase(e.DisplayName()));
+
+                foreach (var p in e.GetProperties())
+                    p.SetColumnName(NamingHelper.ToSnakeCase(p.Name));
+            });
+
         modelBuilder.Entity<User>(entity =>
         {
-            entity.ToTable("User");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.ServiceBookings)
-                .WithOne(m => m.User)
-                .HasForeignKey(m => m.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(m => m.RefreshTokens)
+            entity.HasMany(m => m.UserTokens)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasMany(m => m.Blogs)
-                .WithOne(m => m.Author)
-                .HasForeignKey(m => m.AuthorId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
-            entity.HasMany(m => m.Carts)
+            entity.HasMany(m => m.UserTokens)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasMany(m => m.VoucherUsageHistories)
+            entity.HasMany(m => m.UserSessions)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             
-            entity.HasMany(m => m.Orders)
+            entity.HasMany(m => m.UserOtps)
                 .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.Avatar)
+                .WithOne()
+                .HasForeignKey<User>(m => m.AvatarId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
+        
+        modelBuilder.Entity<UserSession>(entity =>
+        {
+        });
+        
+        modelBuilder.Entity<UserSetting>(entity =>
+        {
+            entity.HasOne(m => m.User)
+                .WithOne(m => m.UserSetting)
+                .HasForeignKey<UserSetting>(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+
+        modelBuilder.Entity<Service>(entity =>
+        {
+            entity.HasOne(m => m.Thumbnail)
+                .WithOne()
+                .HasForeignKey<Service>(m => m.ThumbnailId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.BackgroundCover)
+                .WithOne()
+                .HasForeignKey<Service>(m => m.BackgroundCoverId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasMany(c => c.Bookings)
+                .WithOne(sc => sc.Service)
+                .HasForeignKey(sc => sc.ServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
 
         modelBuilder.Entity<ServiceBooking>(entity =>
         {
-            entity.ToTable("ServiceBooking");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
+            entity.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<RefreshToken>(entity =>
+        modelBuilder.Entity<UserToken>(entity =>
         {
-            entity.ToTable("RefreshToken");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
+            
         });
 
         modelBuilder.Entity<Blog>(entity =>
         {
-            entity.ToTable("Blog");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-        });
-
-        modelBuilder.Entity<Size>(entity =>
-        {
-            entity.ToTable("Size");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.ProductSizes)
-                .WithOne(m => m.Size)
-                .HasForeignKey(m => m.SizeId).OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<Color>(entity =>
-        {
-            entity.ToTable("Color");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.ProductColors)
-                .WithOne(m => m.Color)
-                .HasForeignKey(m => m.ColorId)
+            entity.HasOne(m => m.Thumbnail)
+                .WithOne()
+                .HasForeignKey<Blog>(m => m.ThumbnailId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.BackgroundCover)
+                .WithOne()
+                .HasForeignKey<Blog>(m => m.BackgroundCoverId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.Author)
+                .WithMany()
+                .HasForeignKey(m => m.AuthorId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.ToTable("Category");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.HasMany(c => c.SubCategories)
                 .WithOne(sc => sc.Category)
                 .HasForeignKey(sc => sc.CategoryId)
@@ -170,118 +160,81 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<SubCategory>(entity =>
         {
-            entity.ToTable("SubCategory");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.Products)
-                .WithOne(m => m.SubCategory)
-                .HasForeignKey(m => m.SubCategoryId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.ToTable("Product");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
-
-            entity.HasMany(m => m.ProductMedias)
+            entity.HasMany(m => m.Variants)
                 .WithOne(m => m.Product)
                 .HasForeignKey(m => m.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(m => m.ProductColors)
-                .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasMany(m => m.ProductSizes)
-                .WithOne(m => m.Product)
-                .HasForeignKey(m => m.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        modelBuilder.Entity<ProductSize>(entity =>
-        {
-            entity.ToTable("ProductSize");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-        });
-
-        modelBuilder.Entity<ProductColor>(entity =>
-        {
-            entity.ToTable("ProductColor");
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
         });
 
         modelBuilder.Entity<Album>(entity =>
         {
-            entity.ToTable("Album");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.AlbumMedias)
+            entity.HasMany(m => m.AlbumImages)
                 .WithOne(m => m.Album)
                 .HasForeignKey(m => m.AlbumId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<MediaFile>(entity =>
+        modelBuilder.Entity<MediaBase>(entity => {  });
+
+        modelBuilder.Entity<MediaUrl>(entity => {  });
+
+        modelBuilder.Entity<Image>(entity =>
         {
-            entity.ToTable("MediaFile");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
-            entity.HasMany(m => m.AlbumMedias)
-                .WithOne(m => m.MediaFile)
-                .HasForeignKey(mediaFile => mediaFile.MediaFileId)
+            entity.HasOne(m => m.MediaBase)
+                .WithOne(m => m.Image)
+                .HasForeignKey<Image>(m => m.MediaBaseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            entity.HasMany(m => m.ProductMedias)
-                .WithOne(m => m.MediaFile)
-                .HasForeignKey(mediaFile => mediaFile.MediaFileId)
+            entity.HasOne(m => m.MediaUrl)
+                .WithOne(m => m.Image)
+                .HasForeignKey<Image>(m => m.MediaUrlId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+        });
+
+        modelBuilder.Entity<Video>(entity =>
+        {
+            entity.HasOne(m => m.MediaBase)
+                .WithOne(m => m.Video)
+                .HasForeignKey<Video>(m => m.MediaBaseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(m => m.MediaUrl)
+                .WithOne(m => m.Video)
+                .HasForeignKey<Video>(m => m.MediaUrlId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-
-        modelBuilder.Entity<AlbumMedia>(entity =>
+        modelBuilder.Entity<AlbumImage>(entity =>
         {
-            entity.ToTable("AlbumMedia");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
+            entity.HasOne(m => m.Image)
+                .WithMany()
+                .HasForeignKey(m => m.ImageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ProductMedia>(entity =>
+        modelBuilder.Entity<ProductVariant>(entity =>
         {
-            entity.ToTable("ProductMedia");
+            entity.HasMany(m => m.ProductImages)
+                .WithOne(m => m.ProductVariant)
+                .HasForeignKey(m => m.ProductVariantId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
+        modelBuilder.Entity<ProductImage>(entity =>
+        {
+            entity.HasOne(m => m.Image)
+                .WithMany()
+                .HasForeignKey(m => m.ImageId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Cart>(entity =>
         {
-            entity.ToTable("Cart");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.SubTotal).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
@@ -290,28 +243,21 @@ public partial class StudioContext : BaseDbContext
                 .WithOne(m => m.Cart)
                 .HasForeignKey(m => m.CartId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<CartItem>(entity =>
         {
-            entity.ToTable("CartItem");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalPrice).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.ToTable("OrderItem");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.Subtotal).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
@@ -320,12 +266,6 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.ToTable("Order");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.SubTotal).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
@@ -346,36 +286,24 @@ public partial class StudioContext : BaseDbContext
                 .WithOne(m => m.Order)
                 .HasForeignKey(m => m.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.ToTable("Payment");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.Amount).HasColumnType("decimal(18, 2)");
         });
 
         modelBuilder.Entity<OrderStatusHistory>(entity =>
         {
-            entity.ToTable("OrderStatusHistory");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
         });
 
         modelBuilder.Entity<Voucher>(entity =>
         {
-            entity.ToTable("Voucher");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.DiscountPercentage).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.MinimumSpend).HasColumnType("decimal(18, 2)");
@@ -395,15 +323,15 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<VoucherUsageHistory>(entity =>
         {
-            entity.ToTable("VoucherUsageHistory");
-
-            entity.Property(e => e.Id)
-                .ValueGeneratedOnAdd()
-                .HasDefaultValueSql("gen_random_uuid()");
-
             entity.Property(e => e.DiscountAmount).HasColumnType("decimal(18, 2)");
+            
+            entity.HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
-
+        
+       
 
         OnModelCreatingPartial(modelBuilder);
     }

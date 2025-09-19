@@ -5,19 +5,23 @@ using System.Security.Cryptography;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.RefreshTokens;
 using NM.Studio.Domain.CQRS.Commands.Users;
+using NM.Studio.Domain.CQRS.Commands.UserTokens;
 using NM.Studio.Domain.CQRS.Queries.Auths;
 using NM.Studio.Domain.CQRS.Queries.Users;
+using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models;
+using NM.Studio.Domain.Models.Options;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
+using NM.Studio.Domain.Shared.Exceptions;
 using NM.Studio.Domain.Utilities;
 
 namespace NM.Studio.Services;
@@ -28,8 +32,8 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly IMapper _mapper;
-    private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly IRefreshTokenService _refreshTokenService;
+    private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IRefreshTokenService _userTokenService;
     protected readonly TokenSetting _tokenSetting;
     protected readonly IUnitOfWork _unitOfWork;
     private readonly IUserRepository _userRepository;
@@ -50,8 +54,8 @@ public class AuthService : IAuthService
         _tokenSetting = tokenSetting.Value;
         _userRepository = _unitOfWork.UserRepository;
         _userService = userService;
-        _refreshTokenService = refreshTokenService;
-        _refreshTokenRepository = _unitOfWork.RefreshTokenRepository;
+        _userTokenService = refreshTokenService;
+        _userTokenRepository = _unitOfWork.UserTokenRepository;
     }
 
     public async Task<RSA> GetRSAKeyFromTokenAsync(string token, string kid)
@@ -62,11 +66,11 @@ public class AuthService : IAuthService
         // * nên sử dụng kid ở trong token do nó được tạo chung bởi rsa
         var userId = GetUserIdFromToken(token);
 
-        var refreshTokenEntity = await _refreshTokenRepository.GetByUserIdAndKeyIdAsync(Guid.Parse(userId), kid);
+        var refreshTokenEntity = await _userTokenRepository.GetByUserIdAndKeyIdAsync(Guid.Parse(userId), kid);
         if (refreshTokenEntity == null) throw new Exception("RefreshToken entity not found");
 
         // Bước 2: Xác thực chữ ký JWT bằng public key
-        var isValid = ValidateJwtSignature(refreshTokenEntity.Token, refreshTokenEntity.PublicKey);
+        var isValid = ValidateJwtSignature(token, refreshTokenEntity.PublicKey);
         if (!isValid) throw new Exception("Invalid refresh token signature.");
 
         // Bước 3: Check ipAddress trùng với db 
@@ -81,14 +85,14 @@ public class AuthService : IAuthService
     }
 
 
-    public BusinessResult Login(AuthQuery query)
+    public async Task<BusinessResult> Login(AuthQuery query)
     {
-        var user = _userRepository.FindUsernameOrEmail(query.Account).Result;
+        var user = await _userRepository.FindUsernameOrEmail(query.Account);
         if (user == null)
-            return BusinessResult.Fail(Const.NOT_FOUND_MSG);
+            throw new NotFoundException(Const.NOT_FOUND_MSG);
 
         if (!BCrypt.Net.BCrypt.Verify(query.Password, user.Password))
-            return BusinessResult.Fail("The password does not match.");
+            throw new DomainException("The password does not match.");
 
         var result = _mapper.Map<UserResult>(user);
 
@@ -98,14 +102,15 @@ public class AuthService : IAuthService
             try
             {
                 var publicKey = rsa.ToXmlString(false);
+                var privateKey = rsa.ToXmlString(true);
 
-                var kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(publicKey)));
+                var kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(privateKey)));
 
                 var accessToken = CreateToken(result, rsa, "AccessToken", kid);
 
-                var refreshTokenValue = CreateToken(result, rsa, "RefreshToken", kid);
+                var refreshTokenValue = GenerateRefreshToken();
 
-                var refreshTokenCreateCommand = new RefreshTokenCreateCommand
+                var refreshTokenCreateCommand = new UserTokenCreateCommand
                 {
                     UserId = user.Id,
                     Token = refreshTokenValue,
@@ -113,16 +118,20 @@ public class AuthService : IAuthService
                     KeyId = kid
                 };
 
-                var res = _refreshTokenService.CreateOrUpdate<RefreshTokenResult>(refreshTokenCreateCommand).Result;
+                var res = _userTokenService.CreateOrUpdate(refreshTokenCreateCommand).Result;
 
-                if (!res.IsSuccess)
-                    return BusinessResult.Fail("Error while saving refresh token.");
+                if (res.Status != Status.OK)
+                    return res;
 
-                var refreshToken = res.Data as RefreshTokenResult;
+                var refreshToken = res.Data as UserTokenResult;
 
                 SaveHttpOnlyCookie(accessToken, refreshToken?.Token);
 
-                return BusinessResult.Success("Login Successfully.");
+
+                return new BusinessResult
+                {
+                    Message = "Login Successfully."
+                };
             }
             finally
             {
@@ -139,7 +148,7 @@ public class AuthService : IAuthService
 
         var refreshToken = _httpContextAccessor.HttpContext.Request.Cookies["refreshToken"];
         businessResult = ValidateRefreshTokenIpAdMatch(refreshToken);
-        if (!businessResult.IsSuccess) return businessResult;
+        if (businessResult.Status != Status.OK) return businessResult;
 
         #endregion
 
@@ -148,9 +157,9 @@ public class AuthService : IAuthService
         var accessToken = _httpContextAccessor.HttpContext.Request.Cookies["accessToken"];
         if (accessToken != null)
         {
-            var br = GetUserByClaims().Result;
+            var user = GetUserByClaims().Result;
 
-            return br;
+            return new BusinessResult(user);
         }
 
         #endregion
@@ -162,7 +171,7 @@ public class AuthService : IAuthService
             RefreshToken = refreshToken
         }).Result;
 
-        if (!businessResult.IsSuccess) return businessResult;
+        if (businessResult.Status != Status.OK) return businessResult;
 
         #endregion
 
@@ -178,83 +187,86 @@ public class AuthService : IAuthService
 
     public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
     {
-        var refreshTokenEntity = await _refreshTokenRepository.GetByRefreshTokenAsync(request.RefreshToken);
-        if (refreshTokenEntity == null)
-            return BusinessResult.Fail("Refresh token not found.");
+        var refreshTokenEntity = await _userTokenRepository.GetQueryable(x =>
+                x.Token != null && request.RefreshToken != null && x.Token.ToLower() == request.RefreshToken.ToLower())
+            .SingleOrDefaultAsync();
 
-        var isValid = ValidateJwtSignature(request.RefreshToken, refreshTokenEntity.PublicKey);
-        if (!isValid)
-            return BusinessResult.Fail("Invalid refresh token signature.");
-
-        var businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
-
-        if (!businessResult.IsSuccess)
-            return BusinessResult.Fail("IP address mismatch.");
+        if (refreshTokenEntity == null || refreshTokenEntity.Token != request.RefreshToken || refreshTokenEntity.Expiry <= DateTimeOffset.UtcNow)
+        {
+            throw new UnauthorizedException("Invalid refresh token");
+        }
+        
+        var businessResult = _userTokenService.ValidateRefreshTokenIpMatch();
+        if (businessResult.Status != Status.OK)
+            return businessResult;
 
         using (var rsa = new RSACryptoServiceProvider(2048))
         {
             try
             {
                 var newPublicKey = rsa.ToXmlString(false);
+                var newPrivateKey = rsa.ToXmlString(true);
 
-                var user = await _userRepository.GetById(refreshTokenEntity.UserId!.Value);
+                var user = await _userRepository.GetQueryable(m => m.Id == refreshTokenEntity.UserId)
+                    .SingleOrDefaultAsync();
                 var userResult = _mapper.Map<UserResult>(user);
-                var kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(newPublicKey)));
+                var kid = Convert.ToBase64String(SHA256.HashData(Encoding.UTF8.GetBytes(newPrivateKey)));
 
                 var newAccessToken = CreateToken(userResult, rsa, "AccessToken", kid);
-
-                var newRefreshToken = CreateToken(userResult, rsa, "RefreshToken", kid);
+                var newRefreshToken = GenerateRefreshToken();
 
                 refreshTokenEntity.Token = newRefreshToken;
                 refreshTokenEntity.PublicKey = newPublicKey;
                 refreshTokenEntity.KeyId = kid;
                 refreshTokenEntity.Expiry = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
-                _refreshTokenRepository.Update(refreshTokenEntity);
+                _userTokenRepository.Update(refreshTokenEntity);
+
                 var isSaveChanges = await _unitOfWork.SaveChanges();
                 if (!isSaveChanges)
-                    return BusinessResult.Fail("Refresh token validation failed when saving changes.");
+                    throw new Exception("Failed to update refresh token.");
 
-                // Bước 8: Lưu access token vào cookie (nếu cần)
                 SaveHttpOnlyCookie(newAccessToken, newRefreshToken);
 
-                // Bước 9: Trả về access token và refresh token mới
                 var tokenResult = new TokenResult
                 {
                     AccessToken = newAccessToken,
                     RefreshToken = newRefreshToken
                 };
 
-                return BusinessResult.Success(tokenResult, "Token refreshed successfully.");
+                return new BusinessResult(tokenResult, "Token refreshed successfully.");
             }
             finally
             {
-                rsa.PersistKeyInCsp = false; // Đảm bảo xóa key từ container
+                rsa.PersistKeyInCsp = false;
             }
+        }
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 
     public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
     {
-        try
-        {
-            var userRefreshToken = await _refreshTokenRepository
-                .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
-            if (userRefreshToken == null)
-                return BusinessResult.Fail("You are not logged in, please log in to continue.");
-            _refreshTokenRepository.Delete(userRefreshToken, true);
+        var userRefreshToken = await _userTokenRepository
+            .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
+        if (userRefreshToken == null)
+            throw new DomainException("You are not logged in, please log in to continue.");
+        _userTokenRepository.Delete(userRefreshToken, true);
 
-            var isSaved = await _unitOfWork.SaveChanges();
-            if (!isSaved) throw new Exception();
+        var isSaved = await _unitOfWork.SaveChanges();
+        if (!isSaved) throw new Exception();
 
-            _httpContextAccessor.HttpContext?.Response.Cookies.Delete("accessToken");
-            _httpContextAccessor.HttpContext?.Response.Cookies.Delete("refreshToken");
+        _httpContextAccessor.HttpContext?.Response.Cookies.Delete("accessToken");
+        _httpContextAccessor.HttpContext?.Response.Cookies.Delete("refreshToken");
 
-            return BusinessResult.Fail("The account has been logged out.");
-        }
-        catch (Exception e)
-        {
-            return BusinessResult.ExceptionError(e.Message);
-        }
+        throw new DomainException("The account has been logged out.");
     }
 
 
@@ -333,17 +345,16 @@ public class AuthService : IAuthService
     protected async Task<BusinessResult> GetUserByToken(string accessToken)
     {
         if (string.IsNullOrEmpty(accessToken))
-            return BusinessResult.Fail("No access token provided");
+            throw new DomainException("No access token provided");
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(accessToken);
 
         var userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "Id")?.Value;
         if (string.IsNullOrEmpty(userId))
-            return BusinessResult.Fail("Error the access token provided");
-        
+            throw new DomainException("Error the access token provided");
 
-        var businessResult = await _userService.GetById<UserResult>(new UserGetByIdQuery{Id = Guid.Parse(userId)});
+        var businessResult = await _userService.GetById(new UserGetByIdQuery { Id = Guid.Parse(userId) });
 
         return businessResult;
     }
@@ -399,29 +410,22 @@ public class AuthService : IAuthService
     public BusinessResult ValidateRefreshTokenIpAdMatch(string refreshToken)
     {
         if (refreshToken == null)
-            return BusinessResult.Fail("You are not logged in, please log in to continue.");
+            throw new DomainException("You are not logged in, please log in to continue.");
 
-        var businessResult = _refreshTokenService.ValidateRefreshTokenIpMatch();
+        var businessResult = _userTokenService.ValidateRefreshTokenIpMatch();
         return businessResult;
     }
 
-    public async Task<BusinessResult> GetUserByClaims()
+    private async Task<User?> GetUserByClaims()
     {
-        try
-        {
-            // Lấy thông tin UserId từ Claims
-            var userId = GetUserIdFromClaims();
-            if (!userId.HasValue)
-                return BusinessResult.Fail("No user found.");
+        // Lấy thông tin UserId từ Claims
+        var userId = GetUserIdFromClaims();
+        if (!userId.HasValue)
+            throw new NotFoundException("No user found.");
 
-            // Lấy thông tin người dùng từ database
-            var userResult = await _userService.GetById<UserResult>(new UserGetByIdQuery{Id = userId.Value});
-            return userResult;
-        }
-        catch (Exception ex)
-        {
-            return BusinessResult.ExceptionError(ex.Message);
-        }
+        // Lấy thông tin người dùng từ database
+        var userResult = await _userRepository.GetQueryable(m => m.Id == userId.Value).SingleOrDefaultAsync();
+        return userResult;
     }
 
     private Guid? GetUserIdFromClaims()
@@ -438,8 +442,10 @@ public class AuthService : IAuthService
         {
             new("Id", user.Id.ToString()),
             new("Role", user.Role.ToString()),
-            new("TokenType", tokenType) // 🟢 Thêm claim để phân biệt
+            new("TokenType", tokenType) 
         };
+        
+         // rsa.FromXmlString(privateKey);
 
         var key = new RsaSecurityKey(rsa)
         {
