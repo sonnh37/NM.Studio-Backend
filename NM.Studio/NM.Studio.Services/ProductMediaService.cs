@@ -14,15 +14,15 @@ using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class ProductImageService : BaseService, IProductImageService
+public class ProductMediaService : BaseService, IProductMediaervice
 {
-    private readonly IProductImageRepository _productImageRepository;
+    private readonly IProductMediaRepository _productMediaRepository;
 
-    public ProductImageService(IMapper mapper,
+    public ProductMediaService(IMapper mapper,
         IUnitOfWork unitOfWork)
         : base(mapper, unitOfWork)
     {
-        _productImageRepository = _unitOfWork.ProductImageRepository;
+        _productMediaRepository = _unitOfWork.ProductMediaRepository;
     }
 
     // public async Task<BusinessResult> GetAll(ProductImageGetAllQuery query)
@@ -43,30 +43,30 @@ public class ProductImageService : BaseService, IProductImageService
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
-        ProductImage? entity = null;
-        if (createOrUpdateCommand is ProductImageUpdateCommand updateCommand)
+        ProductMedia? entity = null;
+        if (createOrUpdateCommand is ProductMediaUpdateCommand updateCommand)
         {
-            entity = await _productImageRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
+            entity = await _productMediaRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
 
             if (entity == null)
                 throw new NotFoundException(Const.NOT_FOUND_MSG);
 
             _mapper.Map(updateCommand, entity);
-            _productImageRepository.Update(entity);
+            _productMediaRepository.Update(entity);
         }
-        else if (createOrUpdateCommand is ProductImageCreateCommand createCommand)
+        else if (createOrUpdateCommand is ProductMediaCreateCommand createCommand)
         {
-            entity = _mapper.Map<ProductImage>(createCommand);
+            entity = _mapper.Map<ProductMedia>(createCommand);
             if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
             entity.CreatedDate = DateTimeOffset.UtcNow;
-            _productImageRepository.Add(entity);
+            _productMediaRepository.Add(entity);
         }
 
         var saveChanges = await _unitOfWork.SaveChanges();
         if (!saveChanges)
             throw new Exception();
 
-        var result = _mapper.Map<ProductImageResult>(entity);
+        var result = _mapper.Map<ProductMediaResult>(entity);
 
         return new BusinessResult(result);
     }
@@ -83,18 +83,18 @@ public class ProductImageService : BaseService, IProductImageService
     // }
 
 
-    public async Task<BusinessResult> Delete(ProductImageDeleteCommand command)
+    public async Task<BusinessResult> Delete(ProductMediaDeleteCommand command)
     {
         if (command.ProductVariantId == Guid.Empty || command.ImageId == Guid.Empty)
             throw new DomainException("Empty ProductVariantId or ImageId");
 
-        var entity = await _productImageRepository
+        var entity = await _productMediaRepository
             .GetQueryable(m => m.ProductVariantId == command.ProductVariantId &&
-                               m.ImageId == command.ImageId).SingleOrDefaultAsync();
+                               m.MediaBaseId == command.ImageId).SingleOrDefaultAsync();
         if (entity == null)
             throw new NotFoundException(Const.NOT_FOUND_MSG);
 
-        _productImageRepository.Delete(entity);
+        _productMediaRepository.Delete(entity);
         var saveChanges = await _unitOfWork.SaveChanges();
 
         if (!saveChanges)

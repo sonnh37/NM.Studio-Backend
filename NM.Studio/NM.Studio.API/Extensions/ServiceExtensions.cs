@@ -9,6 +9,7 @@ using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.Models.Options;
+using NM.Studio.Domain.Utilities;
 using NM.Studio.Services;
 using Quartz;
 
@@ -74,7 +75,7 @@ public static class ServiceExtensions
         });
     }
 
-    public static void ConfigureAuth(this IServiceCollection services)
+    public static void ConfigureAuth(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthentication(x =>
             {
@@ -83,42 +84,21 @@ public static class ServiceExtensions
             })
             .AddJwtBearer(options =>
             {
+                var jwtOptions = configuration.GetSection(nameof(UserJwtOptions)).Get<UserJwtOptions>();
+
                 options.SaveToken = true;
                 options.RequireHttpsMetadata = true;
-
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ClockSkew = TimeSpan.Zero,
                     RoleClaimType = "Role",
-
-                    IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
-                    {
-                        var httpContextAccessor =
-                            services.BuildServiceProvider().GetRequiredService<IHttpContextAccessor>();
-
-                        var authService = httpContextAccessor.HttpContext?.RequestServices
-                            .GetRequiredService<IAuthService>();
-                        if (authService == null) throw new SecurityTokenException("AuthService not available.");
-
-                        var rsa = authService.GetRSAKeyFromTokenAsync(token, kid).Result;
-                        return new List<SecurityKey> { new RsaSecurityKey(rsa) };
-                    }
-                };
-
-                // Lấy token từ cookie
-                options.Events = new JwtBearerEvents
-                {
-                    OnMessageReceived = context =>
-                    {
-                        var accessToken = context.Request.Cookies["accessToken"];
-                        if (!string.IsNullOrEmpty(accessToken)) context.Token = accessToken;
-
-                        return Task.CompletedTask;
-                    }
+                    ClockSkew = TimeSpan.Zero,
+                    ValidIssuer = jwtOptions!.ValidIssuer,
+                    ValidAudience = jwtOptions.ValidAudience,
+                    IssuerSigningKey = new RsaSecurityKey(RsaHelper.CreateRsaFromPublicKey(jwtOptions.PublicKey)),
                 };
             });
 
@@ -157,9 +137,8 @@ public static class ServiceExtensions
     {
         services.AddOptions<EmailOptions>()
             .BindConfiguration(nameof(EmailOptions));
-
-        services.AddOptions<TokenSetting>()
-            .BindConfiguration(nameof(TokenSetting));
+        services.AddOptions<UserJwtOptions>()
+            .BindConfiguration(nameof(UserJwtOptions));
     }
 
     public static void AddServices(this IServiceCollection services)
@@ -171,7 +150,7 @@ public static class ServiceExtensions
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IAlbumService, AlbumService>();
         services.AddScoped<IAlbumImageService, AlbumImageService>();
-        services.AddScoped<IProductImageService, ProductImageService>();
+        services.AddScoped<IProductMediaervice, ProductMediaService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ISubCategoryService, SubCategoryService>();
@@ -180,7 +159,7 @@ public static class ServiceExtensions
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IProductVariantService, ProductVariantService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IRefreshTokenService, UserTokenService>();
+        services.AddScoped<IUserTokenService, UserTokenService>();
         services.AddScoped<ICartItemService, CartItemService>();
         services.AddScoped<ICartService, CartService>();
         services.AddScoped<IOrderService, OrderService>();
@@ -190,6 +169,7 @@ public static class ServiceExtensions
         services.AddScoped<IVoucherService, VoucherService>();
         services.AddScoped<IVoucherUsageHistoryService, VoucherUsageHistoryService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ITokenService, TokenService>();
     }
 
     public static void AddRepositories(this IServiceCollection services)
@@ -201,7 +181,7 @@ public static class ServiceExtensions
         services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<IAlbumRepository, AlbumRepository>();
         services.AddScoped<IAlbumImageRepository, AlbumImageRepository>();
-        services.AddScoped<IProductImageRepository, ProductImageRepository>();
+        services.AddScoped<IProductMediaRepository, ProductMediaRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();

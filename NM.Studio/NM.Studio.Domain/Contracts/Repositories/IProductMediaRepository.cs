@@ -3,6 +3,6 @@ using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Domain.Contracts.Repositories;
 
-public interface IProductImageRepository : IBaseRepository<ProductImage>
+public interface IProductMediaRepository : IBaseRepository<ProductMedia>
 {
 }

@@ -14,28 +14,28 @@ public class UserTokenRepository : BaseRepository<UserToken>, IUserTokenReposito
 
     public async Task<UserToken?> GetByRefreshTokenAsync(string refreshToken)
     {
-        var queryable = GetQueryable(x => x.Token != null && x.Token.ToLower() == refreshToken.ToLower());
+        var queryable = GetQueryable(x => x.RefreshToken != null && x.RefreshToken.ToLower() == refreshToken.ToLower());
         var entity = await queryable.SingleOrDefaultAsync();
 
         return entity;
     }
 
-    public async Task<UserToken?> GetByUserIdAndKeyIdAsync(Guid userId, string kid)
-    {
-        var queryable = GetQueryable(x =>
-            x.UserId == userId &&
-            x.KeyId != null &&
-            x.KeyId.ToLower() == kid.ToLower()
-        );
-
-        return await queryable.SingleOrDefaultAsync();
-    }
+    // public async Task<UserToken?> GetByUserIdAndKeyIdAsync(Guid userId, string kid)
+    // {
+    //     var queryable = GetQueryable(x =>
+    //         x.UserId == userId &&
+    //         x.KeyId != null &&
+    //         x.KeyId.ToLower() == kid.ToLower()
+    //     );
+    //
+    //     return await queryable.SingleOrDefaultAsync();
+    // }
 
     public async Task CleanupExpiredTokensAsync()
     {
         try
         {
-            var queryable = GetQueryable(token => token.Expiry < DateTimeOffset.UtcNow);
+            var queryable = GetQueryable(token => token.ExpiryTime < DateTimeOffset.UtcNow);
             if (!queryable.Any()) return;
 
             var expiredTokens = await queryable.ToListAsync();

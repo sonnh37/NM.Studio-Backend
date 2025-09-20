@@ -75,9 +75,9 @@ public class MappingProfile : Profile
         CreateMap<Product, ProductCreateCommand>().ReverseMap();
         CreateMap<Product, ProductUpdateCommand>().ReverseMap();
 
-        CreateMap<ProductImage, ProductImageResult>().ReverseMap();
-        CreateMap<ProductImage, ProductImageCreateCommand>().ReverseMap();
-        CreateMap<ProductImage, ProductImageUpdateCommand>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaResult>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaCreateCommand>().ReverseMap();
+        CreateMap<ProductMedia, ProductMediaUpdateCommand>().ReverseMap();
 
         CreateMap<ProductVariant, ProductVariantResult>().ReverseMap();
         CreateMap<ProductVariant, ProductVariantCreateCommand>().ReverseMap();

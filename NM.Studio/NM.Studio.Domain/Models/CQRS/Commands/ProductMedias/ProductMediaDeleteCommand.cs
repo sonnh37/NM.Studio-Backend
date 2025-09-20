@@ -2,7 +2,7 @@
 
 namespace NM.Studio.Domain.CQRS.Commands.ProductImages;
 
-public class ProductImageDeleteCommand : DeleteCommand
+public class ProductMediaDeleteCommand : DeleteCommand
 {
     public Guid ImageId { get; set; }
     public Guid ProductVariantId { get; set; }

@@ -18,7 +18,7 @@ using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class UserTokenService : BaseService, IRefreshTokenService
+public class UserTokenService : BaseService, IUserTokenService
 {
     private readonly string _clientId;
     private readonly IConfiguration _configuration;
@@ -85,7 +85,7 @@ public class UserTokenService : BaseService, IRefreshTokenService
         // Kiểm tra refreshToken và IP address
         var storedRefreshToken = _userTokenRepository.GetByRefreshTokenAsync(refreshToken).Result;
 
-        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTimeOffset.UtcNow)
+        if (storedRefreshToken == null || storedRefreshToken.ExpiryTime < DateTimeOffset.UtcNow)
             throw new DomainException("Your session has expired. Please log in again.");
 
         if (storedRefreshToken.IpAddress != ipAddress)

@@ -1427,9 +1427,9 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_date");
 
-                    b.Property<DateTimeOffset?>("Expiry")
+                    b.Property<DateTimeOffset?>("ExpiryTime")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("expiry");
+                        .HasColumnName("expiry_time");
 
                     b.Property<string>("IpAddress")
                         .HasColumnType("text")
@@ -1439,17 +1439,9 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<string>("KeyId")
+                    b.Property<string>("RefreshToken")
                         .HasColumnType("text")
-                        .HasColumnName("key_id");
-
-                    b.Property<string>("PublicKey")
-                        .HasColumnType("text")
-                        .HasColumnName("public_key");
-
-                    b.Property<string>("Token")
-                        .HasColumnType("text")
-                        .HasColumnName("token");
+                        .HasColumnName("refresh_token");
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("text")

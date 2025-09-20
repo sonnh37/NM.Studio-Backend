@@ -4,7 +4,7 @@ using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;
 
-public interface IRefreshTokenService : IBaseService
+public interface IUserTokenService : IBaseService
 {
     Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand);
     BusinessResult ValidateRefreshTokenIpMatch();

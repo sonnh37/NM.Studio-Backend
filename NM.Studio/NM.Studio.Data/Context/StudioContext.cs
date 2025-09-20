@@ -13,7 +13,7 @@ public partial class StudioContext : BaseDbContext
     }
 
     public virtual DbSet<Product> Products { get; set; }
-    public virtual DbSet<ProductImage> ProductImages { get; set; }
+    public virtual DbSet<ProductMedia> ProductImages { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<SubCategory> SubCategories { get; set; }
     public virtual DbSet<MediaBase> MediaBases { get; set; }
@@ -225,11 +225,11 @@ public partial class StudioContext : BaseDbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<ProductImage>(entity =>
+        modelBuilder.Entity<ProductMedia>(entity =>
         {
-            entity.HasOne(m => m.Image)
+            entity.HasOne(m => m.MediaBase)
                 .WithMany()
-                .HasForeignKey(m => m.ImageId)
+                .HasForeignKey(m => m.MediaBaseId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

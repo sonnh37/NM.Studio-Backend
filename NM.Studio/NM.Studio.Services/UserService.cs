@@ -135,7 +135,7 @@ public class UserService : BaseService, IUserService
             entity.Role = Role.Customer;
             entity.Status = UserStatus.Active;
             if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
-            entity.CreatedDate = DateTime.UtcNow;
+            entity.CreatedDate = DateTimeOffset.UtcNow;
             _userRepository.Add(entity);
         }
 

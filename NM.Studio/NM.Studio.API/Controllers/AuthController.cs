@@ -22,15 +22,6 @@ public class AuthController : BaseController
     }
 
     [AllowAnonymous]
-    [HttpGet("info")]
-    public IActionResult GetUserInfo([FromQuery] AuthGetByCookieQuery request)
-    {
-        var businessResult = _authService.GetUserByCookie(request);
-
-        return Ok(businessResult);
-    }
-
-    [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] AuthQuery authQuery)
     {
@@ -39,38 +30,24 @@ public class AuthController : BaseController
         return Ok(businessResult);
     }
 
-    [AllowAnonymous]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
+    public async Task<IActionResult> Logout([FromBody] UserLogoutCommand request)
     {
-        var refreshToken = Request.Cookies["refreshToken"];
-
-        var userLogoutCommand = new UserLogoutCommand
-        {
-            RefreshToken = refreshToken
-        };
-        var businessResult = await _authService.Logout(userLogoutCommand);
+        var businessResult = await _authService.Logout(request);
 
         return Ok(businessResult);
     }
 
     [AllowAnonymous]
     [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken()
+    public async Task<IActionResult> RefreshToken([FromBody] UserRefreshTokenCommand request)
     {
-        var refreshToken = Request.Cookies["refreshToken"];
-
-        var request = new UserRefreshTokenCommand
-        {
-            RefreshToken = refreshToken
-        };
         var businessResult = await _authService.RefreshToken(request);
 
         return Ok(businessResult);
     }
 
     [AllowAnonymous]
-    // POST api/<AuthController>
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserCreateCommand request)
     {

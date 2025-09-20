@@ -5,5 +5,6 @@ namespace NM.Studio.Domain.CQRS.Commands.Users;
 
 public class UserRefreshTokenCommand : IRequest<BusinessResult>
 {
+    public string? AccessToken { get; set; }
     public string? RefreshToken { get; set; }
 }

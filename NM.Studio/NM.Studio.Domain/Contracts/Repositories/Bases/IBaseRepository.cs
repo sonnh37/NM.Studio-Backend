@@ -10,8 +10,8 @@ public interface IBaseRepository
 public interface IBaseRepository<TEntity> : IBaseRepository
     where TEntity : BaseEntity
 {
-    IQueryable<TEntity> GetQueryable();
-    IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate);
+    IQueryable<TEntity> GetQueryable(bool isNoTracking = true);
+    IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate, bool isNoTracking = true);
 
     // Task<(List<TEntity>, int)> GetAll(GetQueryableQuery query);
     // Task<TEntity?> GetById(Guid id, string[]? includeProperties = null);

@@ -5,9 +5,9 @@ using NM.Studio.Domain.Entities;
 
 namespace NM.Studio.Data.Repositories;
 
-public class ProductImageRepository : BaseRepository<ProductImage>, IProductImageRepository
+public class ProductMediaRepository : BaseRepository<ProductMedia>, IProductMediaRepository
 {
-    public ProductImageRepository(StudioContext dbContext) : base(dbContext)
+    public ProductMediaRepository(StudioContext dbContext) : base(dbContext)
     {
     }
 }

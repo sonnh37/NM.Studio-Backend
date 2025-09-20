@@ -8,7 +8,7 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IServiceRepository ServiceRepository { get; }
     IProductRepository ProductRepository { get; }
     IProductVariantRepository ProductVariantRepository { get; }
-    IProductImageRepository ProductImageRepository { get; }
+    IProductMediaRepository ProductMediaRepository { get; }
     IAlbumRepository AlbumRepository { get; }
     IAlbumImageRepository AlbumImageRepository { get; }
     ICategoryRepository CategoryRepository { get; }

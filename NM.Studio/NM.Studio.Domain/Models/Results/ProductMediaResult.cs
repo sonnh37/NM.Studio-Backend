@@ -3,7 +3,7 @@ using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Models.Results;
 
-public class ProductImageResult : BaseResult
+public class ProductMediaResult : BaseResult
 {
     public string? ImageId { get; set; }
     public string? ProductVariantId { get; set; }

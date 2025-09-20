@@ -14,7 +14,10 @@ public class UserRepository : BaseRepository<User>, IUserRepository
 
     public async Task<User?> FindUsernameOrEmail(string key)
     {
-        var queryable = GetQueryable();
+        var queryable = GetQueryable().Include(m => m.Avatar)
+            .ThenInclude(m => m.Image)
+            .ThenInclude(m => m.MediaUrl)            
+            .AsQueryable();
         queryable = queryable.Where(entity => !entity.IsDeleted);
 
         queryable = queryable.Where(e => e.Email!.ToLower().Trim() == key.ToLower().Trim()

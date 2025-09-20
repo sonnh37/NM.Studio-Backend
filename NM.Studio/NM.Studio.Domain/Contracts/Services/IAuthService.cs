@@ -11,9 +11,7 @@ public interface IAuthService
 {
     Task<BusinessResult> Login(AuthQuery authQuery);
 
-    Task<RSA> GetRSAKeyFromTokenAsync(string token, string kid);
-
-    BusinessResult GetUserByCookie(AuthGetByCookieQuery request);
+    // BusinessResult GetUserByCookie(AuthGetByCookieQuery request);
 
     Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request);
 

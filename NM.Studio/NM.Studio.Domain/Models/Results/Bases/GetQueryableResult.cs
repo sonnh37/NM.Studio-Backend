@@ -1,4 +1,5 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
+﻿using System.Text.Json.Serialization;
+using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Enums;
 
 namespace NM.Studio.Domain.Models.Results.Bases;
@@ -36,8 +37,8 @@ public class GetQueryableResult
             : 1;
 
         if (!IsPagination) return;
-        PageNumber = query.Pagination.PageNumber;
-        PageSize = query.Pagination.PageSize;
+        PageNumber = IsPagination ? query.Pagination.PageNumber : null;
+        PageSize = IsPagination ? query.Pagination.PageSize : null;
     }
 
     public IEnumerable<object>? Results { get; }
@@ -47,12 +48,14 @@ public class GetQueryableResult
 
     public int? TotalCount { get; protected set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? PageNumber { get; protected set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public int? PageSize { get; protected set; }
 
     public bool IsPagination { get; protected set; }
-
+ 
     public string? SortField { get; protected set; }
 
     public SortDirection? SortDirection { get; protected set; }
