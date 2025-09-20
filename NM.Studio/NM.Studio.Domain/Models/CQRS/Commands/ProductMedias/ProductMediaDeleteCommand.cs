@@ -1,9 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.ProductImages;
+namespace NM.Studio.Domain.Models.CQRS.Commands.ProductMedias;
 
 public class ProductMediaDeleteCommand : DeleteCommand
 {
-    public Guid ImageId { get; set; }
-    public Guid ProductVariantId { get; set; }
+    public Guid? MediaBaseId { get; set; }
+    public Guid? ProductVariantId { get; set; }
 }

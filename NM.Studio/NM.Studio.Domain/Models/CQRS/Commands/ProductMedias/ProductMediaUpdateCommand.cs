@@ -1,9 +1,9 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.ProductImages;
+namespace NM.Studio.Domain.Models.CQRS.Commands.ProductMedias;
 
 public class ProductMediaUpdateCommand : UpdateCommand
 {
-    public string? ImageId { get; set; }
-    public string? ProductVariantId { get; set; }
+    public Guid? MediaBaseId { get; set; }
+    public Guid? ProductVariantId { get; set; }
 }

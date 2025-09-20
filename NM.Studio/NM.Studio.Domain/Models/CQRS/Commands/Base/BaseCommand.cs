@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Models.Results.Bases;
 
-namespace NM.Studio.Domain.CQRS.Commands.Base;
+namespace NM.Studio.Domain.Models.CQRS.Commands.Base;
 
 public abstract class BaseCommand
 {

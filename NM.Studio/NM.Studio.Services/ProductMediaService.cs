@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.ProductImages;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.ProductMedias;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -85,12 +85,12 @@ public class ProductMediaService : BaseService, IProductMediaervice
 
     public async Task<BusinessResult> Delete(ProductMediaDeleteCommand command)
     {
-        if (command.ProductVariantId == Guid.Empty || command.ImageId == Guid.Empty)
+        if (command.ProductVariantId == Guid.Empty || command.MediaBaseId == Guid.Empty)
             throw new DomainException("Empty ProductVariantId or ImageId");
 
         var entity = await _productMediaRepository
             .GetQueryable(m => m.ProductVariantId == command.ProductVariantId &&
-                               m.MediaBaseId == command.ImageId).SingleOrDefaultAsync();
+                               m.MediaBaseId == command.MediaBaseId).SingleOrDefaultAsync();
         if (entity == null)
             throw new NotFoundException(Const.NOT_FOUND_MSG);
 

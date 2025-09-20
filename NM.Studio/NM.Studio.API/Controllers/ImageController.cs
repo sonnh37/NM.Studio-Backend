@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Images;
-using NM.Studio.Domain.CQRS.Queries.Images;
+using NM.Studio.Domain.Models.CQRS.Commands.Images;
+using NM.Studio.Domain.Models.CQRS.Queries.Images;
 
 namespace NM.Studio.API.Controllers;
 

@@ -1,4 +1,4 @@
-﻿namespace NM.Studio.Domain.CQRS.Commands.ServiceBookings;
+﻿namespace NM.Studio.Domain.Models.CQRS.Commands.ServiceBookings;
 
 public class ServiceBookingCancelCommand
 {

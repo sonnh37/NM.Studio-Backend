@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
-using NM.Studio.Domain.CQRS.Queries.Base;
 using NM.Studio.Domain.Enums;
+using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
 namespace NM.Studio.Domain.Models.Results.Bases;
 

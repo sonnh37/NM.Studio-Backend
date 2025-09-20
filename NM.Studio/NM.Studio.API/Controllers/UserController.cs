@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Users;
-using NM.Studio.Domain.CQRS.Queries.Users;
+using NM.Studio.Domain.Models.CQRS.Commands.Users;
+using NM.Studio.Domain.Models.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 

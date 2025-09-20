@@ -1,6 +1,6 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.Videos;
+namespace NM.Studio.Domain.Models.CQRS.Commands.Videos;
 
 public class VideoDeleteCommand : DeleteCommand
 {

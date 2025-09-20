@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Models.Results.Bases;
 
-namespace NM.Studio.Domain.CQRS.Commands.Users;
+namespace NM.Studio.Domain.Models.CQRS.Commands.Users;
 
 public class UserPasswordCommand : IRequest<BusinessResult>
 {

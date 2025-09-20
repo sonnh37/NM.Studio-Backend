@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Blogs;
-using NM.Studio.Domain.CQRS.Queries.Blogs;
+using NM.Studio.Domain.Models.CQRS.Commands.Blogs;
+using NM.Studio.Domain.Models.CQRS.Queries.Blogs;
 
 namespace NM.Studio.API.Controllers;
 

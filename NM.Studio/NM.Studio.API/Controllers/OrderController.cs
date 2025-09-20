@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Orders;
-using NM.Studio.Domain.CQRS.Queries.Orders;
+using NM.Studio.Domain.Models.CQRS.Commands.Orders;
+using NM.Studio.Domain.Models.CQRS.Queries.Orders;
 
 namespace NM.Studio.API.Controllers;
 

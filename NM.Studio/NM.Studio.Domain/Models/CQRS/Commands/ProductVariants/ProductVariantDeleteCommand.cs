@@ -1,6 +1,6 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.ProductVariants;
+namespace NM.Studio.Domain.Models.CQRS.Commands.ProductVariants;
 
 public class ProductVariantDeleteCommand : DeleteCommand
 {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.ProductVariants;
+using NM.Studio.Domain.Models.CQRS.Commands.ProductVariants;
 
 namespace NM.Studio.API.Controllers;
 

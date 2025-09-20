@@ -1,5 +1,5 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
-using NM.Studio.Domain.Entities.Bases;
+﻿using NM.Studio.Domain.Entities.Bases;
+using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
 namespace NM.Studio.Domain.Utilities.Filters;
 

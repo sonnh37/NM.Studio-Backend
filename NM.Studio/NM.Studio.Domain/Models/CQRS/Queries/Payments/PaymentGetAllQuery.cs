@@ -1,7 +1,7 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
-using NM.Studio.Domain.Entities;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
-namespace NM.Studio.Domain.CQRS.Queries.Payments;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Payments;
 
 public class PaymentGetAllQuery : GetAllQuery
 {

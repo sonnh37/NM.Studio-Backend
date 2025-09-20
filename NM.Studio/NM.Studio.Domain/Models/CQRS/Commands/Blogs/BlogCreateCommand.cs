@@ -1,7 +1,7 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.Entities;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.Blogs;
+namespace NM.Studio.Domain.Models.CQRS.Commands.Blogs;
 
 public class BlogCreateCommand : CreateCommand
 {

@@ -1,6 +1,6 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
-namespace NM.Studio.Domain.CQRS.Queries.Orders;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Orders;
 
 public class OrderGetByIdQuery : GetByIdQuery
 {

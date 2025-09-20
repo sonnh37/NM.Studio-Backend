@@ -1,6 +1,6 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.UserTokens;
+namespace NM.Studio.Domain.Models.CQRS.Commands.UserTokens;
 
 public class UserTokenCreateCommand : CreateCommand
 {

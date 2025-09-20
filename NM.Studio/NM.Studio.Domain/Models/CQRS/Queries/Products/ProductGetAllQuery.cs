@@ -1,7 +1,7 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
-using NM.Studio.Domain.Entities;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
-namespace NM.Studio.Domain.CQRS.Queries.Products;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Products;
 
 public class ProductGetAllQuery : GetAllQuery
 {

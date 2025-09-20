@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using NM.Studio.Domain.Enums;
 
-namespace NM.Studio.Domain.CQRS.Queries.Base;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Base;
 
 public abstract class BaseQuery
 {

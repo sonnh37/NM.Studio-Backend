@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using NM.Studio.Domain.Models.Results.Bases;
 
-namespace NM.Studio.Domain.CQRS.Queries.Users;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Users;
 
 public class AuthQuery : IRequest<BusinessResult>
 {

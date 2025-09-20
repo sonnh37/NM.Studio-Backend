@@ -1,7 +1,7 @@
-﻿using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.Entities;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
 
-namespace NM.Studio.Domain.CQRS.Commands.Images;
+namespace NM.Studio.Domain.Models.CQRS.Commands.Images;
 
 public class ImageDeleteCommand : DeleteCommand
 {

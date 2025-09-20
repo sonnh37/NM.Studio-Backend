@@ -1,6 +1,6 @@
-﻿using NM.Studio.Domain.CQRS.Queries.Base;
+﻿using NM.Studio.Domain.Models.CQRS.Queries.Base;
 
-namespace NM.Studio.Domain.CQRS.Queries.Images;
+namespace NM.Studio.Domain.Models.CQRS.Queries.Images;
 
 public class ImageGetAllQuery : GetAllQuery
 {
