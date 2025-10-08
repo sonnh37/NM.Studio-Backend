@@ -15,5 +15,5 @@ public class ProductVariantResult : BaseResult
     public int StockQuantity { get; set; }
     public ProductStatus Status { get; set; }
     public ProductResult? Product { get; set; }
-    public ICollection<ProductMediaResult> ProductImages { get; set; } = new List<ProductMediaResult>();
+    public ICollection<ProductMediaResult> ProductMedias { get; set; } = new List<ProductMediaResult>();
 }

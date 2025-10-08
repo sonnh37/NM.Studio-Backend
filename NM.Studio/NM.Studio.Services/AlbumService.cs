@@ -40,16 +40,30 @@ public class AlbumService : BaseService, IAlbumService
         if (!string.IsNullOrEmpty(query.Slug))
             queryable = queryable.Where(m => m.Slug!.ToLower().Trim() == query.Slug.ToLower().Trim());
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
+        queryable = queryable.Include(m => m.AlbumImages)
+            .ThenInclude(n => n.Image);
+        
+        var pagedListAlbum = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        
+        var pagedList = _mapper.Map<IPagedList<AlbumResult>>(pagedListAlbum);
+        
+        foreach (var albumResult in pagedList.Results)
+        {
+            string? coverUrl = null;
+            if (albumResult.AlbumImages.Count > 0)
+            {
+                coverUrl = albumResult.AlbumImages
+                    .Where(m => m.IsCover)
+                    .Select(n => n.Image?.MediaUrl).FirstOrDefault();
+            }
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<AlbumResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+            albumResult.CoverUrl = coverUrl;
+        }
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)

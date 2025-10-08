@@ -12,6 +12,12 @@ public class MediaBase : BaseEntity
     public int? Height { get; set; }
     public string? CreatedMediaBy { get; set; }
     public DateTimeOffset? TakenMediaDate { get; set; }
-    public virtual Image? Image { get; set; }
-    public virtual Video? Video { get; set; }
+    public string? MediaUrl { get; set; }
+    public MediaBaseType? MediaBaseType { get; set; }
+}
+
+public enum MediaBaseType
+{
+    Image,
+    Video
 }

@@ -8,6 +8,7 @@ using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.CQRS.Commands.Base;
 using NM.Studio.Domain.Models.CQRS.Commands.Users;
 using NM.Studio.Domain.Models.CQRS.Queries.Users;
@@ -41,8 +42,22 @@ public class UserService : BaseService, IUserService
     {
         var entity = await _userRepository.GetQueryable(m => m.Id == request.Id).SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException("Not found");
-        var result = _mapper.Map<ServiceResult>(entity);
+        var result = _mapper.Map<UserResult>(entity);
 
+        return new BusinessResult(result);
+    }
+
+    public async Task<BusinessResult> GetUserByContext()
+    {
+        var userId = _userContextService.GetUserId();
+        if (userId == null) throw new DomainException("Please, login again.");
+        var entity = await _userRepository
+            .GetQueryable(m => m.Id == userId)
+            .Include(e => e.Avatar)
+            .SingleOrDefaultAsync();
+        if (entity == null) throw new NotFoundException("Not found");
+        var result = _mapper.Map<UserContextResponse>(entity);
+        result.AvatarUrl = entity.Avatar?.MediaUrl;
         return new BusinessResult(result);
     }
 
@@ -103,17 +118,16 @@ public class UserService : BaseService, IUserService
     {
         var queryable = _userRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<UserResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListUser = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<UserResult>>(pagedListUser);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
+
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {

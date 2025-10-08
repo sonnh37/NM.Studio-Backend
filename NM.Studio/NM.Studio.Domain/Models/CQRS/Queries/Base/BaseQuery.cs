@@ -67,7 +67,6 @@ public class GetQueryableQuery : BaseQuery
     // Filtering
     public string[]? IncludeProperties { get; set; }
 
-    // Date range validation
     public bool ValidateDateRange()
     {
         if (FromDate.HasValue && ToDate.HasValue) return FromDate.Value <= ToDate.Value;

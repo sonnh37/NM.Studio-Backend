@@ -26,10 +26,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public ISubCategoryRepository SubCategoryRepository => GetRepository<ISubCategoryRepository>();
 
-    public IImageRepository ImageRepository => GetRepository<IImageRepository>();
-
-    public IVideoRepository VideoRepository => GetRepository<IVideoRepository>();
-
     public IMediaBaseRepository MediaBaseRepository => GetRepository<IMediaBaseRepository>();
 
     public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
@@ -37,8 +33,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public IServiceBookingRepository ServiceBookingRepository => GetRepository<IServiceBookingRepository>();
 
     public IUserTokenRepository UserTokenRepository => GetRepository<IUserTokenRepository>();
-
-    public IMediaUrlRepository MediaUrlRepository => GetRepository<IMediaUrlRepository>();
 
     public IProductVariantRepository ProductVariantRepository => GetRepository<IProductVariantRepository>();
 

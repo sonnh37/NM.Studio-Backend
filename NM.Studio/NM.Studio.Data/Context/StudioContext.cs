@@ -13,15 +13,12 @@ public partial class StudioContext : BaseDbContext
     }
 
     public virtual DbSet<Product> Products { get; set; }
-    public virtual DbSet<ProductMedia> ProductImages { get; set; }
+    public virtual DbSet<ProductMedia> ProductMedias { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<SubCategory> SubCategories { get; set; }
     public virtual DbSet<MediaBase> MediaBases { get; set; }
-    public virtual DbSet<MediaUrl> MediaUrls { get; set; }
     public virtual DbSet<AlbumImage> AlbumImages { get; set; }
     public virtual DbSet<Album> Albums { get; set; }
-    public virtual DbSet<Image> Images { get; set; }
-    public virtual DbSet<Video> Videos { get; set; }
     public virtual DbSet<Service> Services { get; set; }
     public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<UserSession> UserSessions { get; set; }
@@ -180,35 +177,6 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<MediaBase>(entity => {  });
 
-        modelBuilder.Entity<MediaUrl>(entity => {  });
-
-        modelBuilder.Entity<Image>(entity =>
-        {
-            entity.HasOne(m => m.MediaBase)
-                .WithOne(m => m.Image)
-                .HasForeignKey<Image>(m => m.MediaBaseId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(m => m.MediaUrl)
-                .WithOne(m => m.Image)
-                .HasForeignKey<Image>(m => m.MediaUrlId)
-                .OnDelete(DeleteBehavior.Cascade);
-            
-        });
-
-        modelBuilder.Entity<Video>(entity =>
-        {
-            entity.HasOne(m => m.MediaBase)
-                .WithOne(m => m.Video)
-                .HasForeignKey<Video>(m => m.MediaBaseId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            entity.HasOne(m => m.MediaUrl)
-                .WithOne(m => m.Video)
-                .HasForeignKey<Video>(m => m.MediaUrlId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
         modelBuilder.Entity<AlbumImage>(entity =>
         {
             entity.HasOne(m => m.Image)
@@ -219,7 +187,7 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<ProductVariant>(entity =>
         {
-            entity.HasMany(m => m.ProductImages)
+            entity.HasMany(m => m.ProductMedias)
                 .WithOne(m => m.ProductVariant)
                 .HasForeignKey(m => m.ProductVariantId)
                 .OnDelete(DeleteBehavior.Cascade);

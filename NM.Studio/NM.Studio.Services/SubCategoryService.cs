@@ -31,21 +31,14 @@ public class SubCategoryService : BaseService, ISubCategoryService
     {
         var queryable = _subCategoryRepository.GetQueryable();
 
-        if (query.CategoryId != null)
-            queryable = queryable.Where(m => m.CategoryId != query.CategoryId);
-        // if (query.IsNullCategoryId.HasValue && query.IsNullCategoryId.Value)
-        //     queryable = queryable.Where(m => m.CategoryId == null);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        var pagedListSubCategory = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<SubCategoryResult>>(pagedListSubCategory);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<SubCategoryResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
-
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)

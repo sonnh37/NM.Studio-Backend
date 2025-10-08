@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Models.CQRS.Commands.Blogs;
@@ -11,9 +12,11 @@ namespace NM.Studio.API.Controllers;
 public class BlogController : BaseController
 {
     private readonly IBlogService _blogService;
+    private readonly ILogger<BlogController> _logger;
 
-    public BlogController(IBlogService blogService)
+    public BlogController(IBlogService blogService, ILogger<BlogController> logger)
     {
+        _logger = logger;
         _blogService = blogService;
     }
 
@@ -37,6 +40,7 @@ public class BlogController : BaseController
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] BlogCreateCommand request)
     {
+        _logger.LogInformation("Blog Create Request: {request}", JsonConvert.SerializeObject(request));
         var businessResult = await _blogService.CreateOrUpdate(request);
 
         return Ok(businessResult);
@@ -45,6 +49,7 @@ public class BlogController : BaseController
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] BlogUpdateCommand request)
     {
+        _logger.LogInformation("Blog Update Request: {request}", JsonConvert.SerializeObject(request));
         var businessResult = await _blogService.CreateOrUpdate(request);
 
         return Ok(businessResult);

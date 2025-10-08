@@ -16,4 +16,7 @@ public class BlogUpdateCommand : UpdateCommand
     public bool IsFeatured { get; set; }
     public int ViewCount { get; set; }
     public string? Tags { get; set; }
+    
+    public string? srcThumbnail { get; set; }
+    public string? srcBackgroundCover { get; set; }
 }

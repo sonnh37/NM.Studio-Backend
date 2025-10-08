@@ -29,17 +29,16 @@ public class OrderItemService : BaseService, IOrderItemService
     {
         var queryable = _orderItemRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<OrderItemResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListOrderItem = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<OrderItemResult>>(pagedListOrderItem);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
+
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {

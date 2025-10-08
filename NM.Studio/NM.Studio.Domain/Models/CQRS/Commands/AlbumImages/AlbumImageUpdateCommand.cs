@@ -4,7 +4,6 @@ namespace NM.Studio.Domain.Models.CQRS.Commands.AlbumImages;
 
 public class AlbumImageUpdateCommand : UpdateCommand
 {
-    public int SortOrder { get; set; }
     public bool IsCover { get; set; }
     public bool IsThumbnail { get; set; }
     public Guid? ImageId { get; set; }

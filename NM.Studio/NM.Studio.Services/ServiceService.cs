@@ -19,11 +19,17 @@ namespace NM.Studio.Services;
 public class ServiceService : BaseService, IServiceService
 {
     private readonly IServiceRepository _serviceRepository;
+    private readonly IMediaBaseService _mediaBaseService;
+    private readonly IMediaUploadService _mediaUploadService;
 
     public ServiceService(IMapper mapper,
+        IMediaBaseService mediaBaseService,
+        IMediaUploadService mediaUploadService,
         IUnitOfWork unitOfWork)
         : base(mapper, unitOfWork)
     {
+        _mediaUploadService = mediaUploadService;
+        _mediaBaseService = mediaBaseService;
         _serviceRepository = _unitOfWork.ServiceRepository;
     }
 
@@ -74,16 +80,14 @@ public class ServiceService : BaseService, IServiceService
     {
         var queryable = _serviceRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<ServiceResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListService = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<ServiceResult>>(pagedListService);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
 
     public async Task<BusinessResult> GetById(ServiceGetByIdQuery request)
@@ -99,7 +103,10 @@ public class ServiceService : BaseService, IServiceService
 
     public async Task<BusinessResult> Delete(ServiceDeleteCommand command)
     {
-        var entity = await _serviceRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
+        var queryable = _serviceRepository.GetQueryable(x => x.Id == command.Id);
+        queryable = RepoHelper.Include(queryable, ["thumbnail.image.mediaUrl"]);
+        var entity = await queryable.SingleOrDefaultAsync();
+
         if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
 
         _serviceRepository.Delete(entity, command.IsPermanent);
@@ -107,6 +114,12 @@ public class ServiceService : BaseService, IServiceService
         var saveChanges = await _unitOfWork.SaveChanges();
         if (!saveChanges)
             throw new Exception();
+        
+        var src = entity.Thumbnail?.MediaUrl;
+        if (!string.IsNullOrEmpty(src))
+        {
+            var res = await _mediaUploadService.DeleteFileAsync(src);
+        }
 
         return new BusinessResult();
     }

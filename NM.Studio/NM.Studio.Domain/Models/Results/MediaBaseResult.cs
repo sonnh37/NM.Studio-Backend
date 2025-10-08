@@ -1,4 +1,5 @@
-﻿using NM.Studio.Domain.Models.Results.Bases;
+﻿using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Models.Results;
 
@@ -12,6 +13,6 @@ public class MediaBaseResult : BaseResult
     public int? Height { get; set; }
     public string? CreatedMediaBy { get; set; }
     public DateTimeOffset? TakenMediaDate { get; set; }
-    public ImageResult? Image { get; set; }
-    public VideoResult? Video { get; set; }
+    public string? MediaUrl { get; set; }
+    public MediaBaseType? MediaBaseType { get; set; }
 }

@@ -27,19 +27,19 @@ public class UserTokenService : BaseService, IUserTokenService
     protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly IMapper _mapper;
     private readonly IUserTokenRepository _userTokenRepository;
-    protected readonly TokenSetting _tokenSetting;
+    protected readonly UserJwtOptions _userJwtOptions;
     protected readonly IUnitOfWork _unitOfWork;
 
     public UserTokenService(IMapper mapper,
         IUnitOfWork unitOfWork,
         IUserService userService,
-        IOptions<TokenSetting> tokenSetting
+        IOptions<UserJwtOptions> userJwtOptions
     ) : base(mapper, unitOfWork)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _httpContextAccessor ??= new HttpContextAccessor();
-        _tokenSetting = tokenSetting.Value;
+        _userJwtOptions = userJwtOptions.Value;
         _userTokenRepository = _unitOfWork.UserTokenRepository;
     }
 
@@ -60,7 +60,7 @@ public class UserTokenService : BaseService, IUserTokenService
             createCommand.IpAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
                                       ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
             createCommand.IpAddress = NormalizeIpAddress(createCommand.IpAddress);
-            createCommand.Expiry = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
+            createCommand.ExpiryTime = DateTimeOffset.UtcNow.AddDays(_userJwtOptions.RefreshTokenExpiryInDays);
             entity = _mapper.Map<UserToken>(createCommand);
             entity.CreatedDate = DateTimeOffset.UtcNow;
             _userTokenRepository.Add(entity);

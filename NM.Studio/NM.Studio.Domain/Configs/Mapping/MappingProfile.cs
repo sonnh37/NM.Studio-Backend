@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models;
 using NM.Studio.Domain.Models.CQRS.Commands.AlbumImages;
 using NM.Studio.Domain.Models.CQRS.Commands.Albums;
 using NM.Studio.Domain.Models.CQRS.Commands.Blogs;
 using NM.Studio.Domain.Models.CQRS.Commands.CartItems;
 using NM.Studio.Domain.Models.CQRS.Commands.Carts;
 using NM.Studio.Domain.Models.CQRS.Commands.Categories;
-using NM.Studio.Domain.Models.CQRS.Commands.Images;
 using NM.Studio.Domain.Models.CQRS.Commands.OrderItems;
 using NM.Studio.Domain.Models.CQRS.Commands.Orders;
 using NM.Studio.Domain.Models.CQRS.Commands.OrderStatusHistories;
@@ -22,23 +22,29 @@ using NM.Studio.Domain.Models.CQRS.Commands.UserTokens;
 using NM.Studio.Domain.Models.CQRS.Commands.Vouchers;
 using NM.Studio.Domain.Models.CQRS.Commands.VoucherUsageHistories;
 using NM.Studio.Domain.Models.Results;
+using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Configs.Mapping;
-
+public class PagedListConverter<TSource, TDestination> : ITypeConverter<IPagedList<TSource>, IPagedList<TDestination>>
+{
+    public IPagedList<TDestination> Convert(IPagedList<TSource> source, IPagedList<TDestination> destination, ResolutionContext context)
+    {
+        var mappedItems = context.Mapper.Map<IEnumerable<TSource>, IEnumerable<TDestination>>(source.Results);
+        return new PagedList<TDestination>(mappedItems, source.PageNumber, source.PageSize, source.TotalItemCount);
+    }
+}
 public class MappingProfile : Profile
 {
     public MappingProfile()
     {
+        CreateMap(typeof(IPagedList<>), typeof(IPagedList<>)).ConvertUsing(typeof(PagedListConverter<,>));
         CategoryMapping();
         SubCategoryMapping();
         UserMapping();
         ServiceMapping();
-        ImageMapping();
         ProductMapping();
         AlbumMapping();
         MediaBaseMapping();
-        MediaUrlMapping();
-        VideoMapping();
         BlogMapping();
         BookingMapping();
         CartMapping();
@@ -50,6 +56,8 @@ public class MappingProfile : Profile
         VoucherMapping();
         VoucherUsageHistoryMapping();
     }
+    
+ 
 
     private void AlbumMapping()
     {
@@ -159,17 +167,13 @@ public class MappingProfile : Profile
         CreateMap<User, UserResult>().ReverseMap();
         CreateMap<User, UserCreateCommand>().ReverseMap();
         CreateMap<User, UserUpdateCommand>().ReverseMap();
+        CreateMap<User, UserContextResponse>().ReverseMap();
         CreateMap<UserToken, UserTokenResult>().ReverseMap();
         CreateMap<UserToken, UserTokenCreateCommand>().ReverseMap();
         CreateMap<UserToken, UserTokenUpdateCommand>().ReverseMap();
     }
 
-    private void ImageMapping()
-    {
-        CreateMap<Image, ImageResult>().ReverseMap();
-        CreateMap<Image, ImageCreateCommand>().ReverseMap();
-        CreateMap<Image, ImageUpdateCommand>().ReverseMap();
-    }
+   
 
     private void MediaBaseMapping()
     {
@@ -178,15 +182,6 @@ public class MappingProfile : Profile
         // CreateMap<MediaBase, MediaBaseUpdateCommand>().ReverseMap();
     }
 
-    private void MediaUrlMapping()
-    {
-        CreateMap<MediaUrl, MediaUrlResult>().ReverseMap();
-    }
-
-    private void VideoMapping()
-    {
-        CreateMap<Video, VideoResult>().ReverseMap();
-    }
 
     private void CategoryMapping()
     {
@@ -200,5 +195,15 @@ public class MappingProfile : Profile
         CreateMap<SubCategory, SubCategoryResult>().ReverseMap();
         CreateMap<SubCategory, SubCategoryCreateCommand>().ReverseMap();
         CreateMap<SubCategory, SubCategoryUpdateCommand>().ReverseMap();
+    }
+}
+
+public static class MapperExtensions
+{
+    public static PagedList<TDestination> MapPagedList<TSource, TDestination>(
+        this IMapper mapper, PagedList<TSource> source)
+    {
+        var items = mapper.Map<List<TDestination>>(source.Results);
+        return new PagedList<TDestination>(items, source.PageNumber, source.PageSize, source.TotalItemCount);
     }
 }

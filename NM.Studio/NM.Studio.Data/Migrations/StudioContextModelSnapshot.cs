@@ -49,10 +49,6 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("groom_name");
 
-                    b.Property<int?>("HomeSortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("home_sort_order");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -72,10 +68,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text")
                         .HasColumnName("slug");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
 
                     b.Property<string>("Title")
                         .HasColumnType("text")
@@ -116,10 +108,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<bool>("IsThumbnail")
                         .HasColumnType("boolean")
                         .HasColumnName("is_thumbnail");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
 
                     b.HasKey("Id");
 
@@ -332,51 +320,9 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("slug");
 
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
-
                     b.HasKey("Id");
 
                     b.ToTable("category");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Image", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_date");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid?>("MediaBaseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_base_id");
-
-                    b.Property<Guid?>("MediaUrlId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_url_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaBaseId")
-                        .IsUnique();
-
-                    b.HasIndex("MediaUrlId")
-                        .IsUnique();
-
-                    b.ToTable("image");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.MediaBase", b =>
@@ -406,6 +352,14 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<string>("MediaBaseType")
+                        .HasColumnType("text")
+                        .HasColumnName("media_base_type");
+
+                    b.Property<string>("MediaUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("media_url");
+
                     b.Property<string>("MimeType")
                         .HasColumnType("text")
                         .HasColumnName("mime_type");
@@ -429,34 +383,6 @@ namespace NM.Studio.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("media_base");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.MediaUrl", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_date");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("UrlExternal")
-                        .HasColumnType("text")
-                        .HasColumnName("url_external");
-
-                    b.Property<string>("UrlInternal")
-                        .HasColumnType("text")
-                        .HasColumnName("url_internal");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("media_url");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
@@ -860,7 +786,7 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("product");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductImage", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductMedia", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -871,13 +797,13 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_date");
 
-                    b.Property<Guid?>("ImageId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("image_id");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
+
+                    b.Property<Guid?>("MediaBaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("media_base_id");
 
                     b.Property<Guid?>("ProductVariantId")
                         .HasColumnType("uuid")
@@ -885,11 +811,11 @@ namespace NM.Studio.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImageId");
+                    b.HasIndex("MediaBaseId");
 
                     b.HasIndex("ProductVariantId");
 
-                    b.ToTable("product_image");
+                    b.ToTable("product_media");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.ProductVariant", b =>
@@ -977,10 +903,6 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<int?>("HomeSortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("home_sort_order");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -1000,10 +922,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text")
                         .HasColumnName("slug");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
 
                     b.Property<string>("TermsAndConditions")
                         .HasColumnType("text")
@@ -1155,10 +1073,6 @@ namespace NM.Studio.Data.Migrations
                     b.Property<string>("Slug")
                         .HasColumnType("text")
                         .HasColumnName("slug");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("integer")
-                        .HasColumnName("sort_order");
 
                     b.HasKey("Id");
 
@@ -1458,57 +1372,6 @@ namespace NM.Studio.Data.Migrations
                     b.ToTable("user_token");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Video", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("category");
-
-                    b.Property<DateTimeOffset?>("CreatedDate")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_date");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<int>("Duration")
-                        .HasColumnType("integer")
-                        .HasColumnName("duration");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid?>("MediaBaseId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_base_id");
-
-                    b.Property<Guid?>("MediaUrlId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_url_id");
-
-                    b.Property<string>("Resolution")
-                        .HasColumnType("text")
-                        .HasColumnName("resolution");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MediaBaseId")
-                        .IsUnique();
-
-                    b.HasIndex("MediaUrlId")
-                        .IsUnique();
-
-                    b.ToTable("video");
-                });
-
             modelBuilder.Entity("NM.Studio.Domain.Entities.Voucher", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1665,7 +1528,7 @@ namespace NM.Studio.Data.Migrations
                         .HasForeignKey("AlbumId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("NM.Studio.Domain.Entities.Image", "Image")
+                    b.HasOne("NM.Studio.Domain.Entities.MediaBase", "Image")
                         .WithMany()
                         .HasForeignKey("ImageId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -1723,23 +1586,6 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("Cart");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Image", b =>
-                {
-                    b.HasOne("NM.Studio.Domain.Entities.MediaBase", "MediaBase")
-                        .WithOne("Image")
-                        .HasForeignKey("NM.Studio.Domain.Entities.Image", "MediaBaseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("NM.Studio.Domain.Entities.MediaUrl", "MediaUrl")
-                        .WithOne("Image")
-                        .HasForeignKey("NM.Studio.Domain.Entities.Image", "MediaUrlId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("MediaBase");
-
-                    b.Navigation("MediaUrl");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
@@ -1810,19 +1656,19 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("SubCategory");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductImage", b =>
+            modelBuilder.Entity("NM.Studio.Domain.Entities.ProductMedia", b =>
                 {
-                    b.HasOne("NM.Studio.Domain.Entities.Image", "Image")
+                    b.HasOne("NM.Studio.Domain.Entities.MediaBase", "MediaBase")
                         .WithMany()
-                        .HasForeignKey("ImageId")
+                        .HasForeignKey("MediaBaseId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NM.Studio.Domain.Entities.ProductVariant", "ProductVariant")
-                        .WithMany("ProductImages")
+                        .WithMany("ProductMedias")
                         .HasForeignKey("ProductVariantId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Image");
+                    b.Navigation("MediaBase");
 
                     b.Navigation("ProductVariant");
                 });
@@ -1931,23 +1777,6 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.Video", b =>
-                {
-                    b.HasOne("NM.Studio.Domain.Entities.MediaBase", "MediaBase")
-                        .WithOne("Video")
-                        .HasForeignKey("NM.Studio.Domain.Entities.Video", "MediaBaseId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("NM.Studio.Domain.Entities.MediaUrl", "MediaUrl")
-                        .WithOne("Video")
-                        .HasForeignKey("NM.Studio.Domain.Entities.Video", "MediaUrlId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("MediaBase");
-
-                    b.Navigation("MediaUrl");
-                });
-
             modelBuilder.Entity("NM.Studio.Domain.Entities.VoucherUsageHistory", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Order", "Order")
@@ -1986,20 +1815,6 @@ namespace NM.Studio.Data.Migrations
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("NM.Studio.Domain.Entities.MediaBase", b =>
-                {
-                    b.Navigation("Image");
-
-                    b.Navigation("Video");
-                });
-
-            modelBuilder.Entity("NM.Studio.Domain.Entities.MediaUrl", b =>
-                {
-                    b.Navigation("Image");
-
-                    b.Navigation("Video");
-                });
-
             modelBuilder.Entity("NM.Studio.Domain.Entities.Order", b =>
                 {
                     b.Navigation("OrderItems");
@@ -2016,7 +1831,7 @@ namespace NM.Studio.Data.Migrations
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.ProductVariant", b =>
                 {
-                    b.Navigation("ProductImages");
+                    b.Navigation("ProductMedias");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.Service", b =>

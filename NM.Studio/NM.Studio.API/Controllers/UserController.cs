@@ -25,7 +25,6 @@ public class UserController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] UserGetAllQuery request)
     {
-        _logger.LogError($"GetAll process started: {JsonSerializer.Serialize(request)}");
         var businessResult = await _userService.GetAll(request);
 
         return Ok(businessResult);
@@ -36,6 +35,14 @@ public class UserController : BaseController
     public async Task<IActionResult> GetById([FromQuery] UserGetByIdQuery request)
     {
         var businessResult = await _userService.GetById(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpGet("context")]
+    public async Task<IActionResult> GetUserByContext()
+    {
+        var businessResult = await _userService.GetUserByContext();
 
         return Ok(businessResult);
     }

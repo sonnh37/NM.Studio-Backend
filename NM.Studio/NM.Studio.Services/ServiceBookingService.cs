@@ -159,17 +159,16 @@ public class ServiceBookingService : BaseService, IServiceBookingService
     {
         var queryable = _serviceBookingRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<ServiceBookingResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListServiceBooking = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<ServiceBookingResult>>(pagedListServiceBooking);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
+
 
     public async Task<BusinessResult> GetById(ServiceBookingGetByIdQuery request)
     {

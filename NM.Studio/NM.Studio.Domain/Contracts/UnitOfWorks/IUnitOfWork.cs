@@ -13,12 +13,10 @@ public interface IUnitOfWork : IBaseUnitOfWork
     IAlbumImageRepository AlbumImageRepository { get; }
     ICategoryRepository CategoryRepository { get; }
     ISubCategoryRepository SubCategoryRepository { get; }
-    IImageRepository ImageRepository { get; }
     IMediaBaseRepository MediaBaseRepository { get; }
     IBlogRepository BlogRepository { get; }
     IServiceBookingRepository ServiceBookingRepository { get; }
     IUserTokenRepository UserTokenRepository { get; }
-    IMediaUrlRepository MediaUrlRepository { get; }
     IOrderRepository OrderRepository { get; }
     IOrderItemRepository OrderItemRepository { get; }
     IPaymentRepository PaymentRepository { get; }
@@ -26,6 +24,5 @@ public interface IUnitOfWork : IBaseUnitOfWork
     ICartRepository CartRepository { get; }
     ICartItemRepository CartItemRepository { get; }
     IVoucherRepository VoucherRepository { get; }
-    IVideoRepository VideoRepository { get; }
     IVoucherUsageHistoryRepository VoucherUsageHistoryRepository { get; }
 }

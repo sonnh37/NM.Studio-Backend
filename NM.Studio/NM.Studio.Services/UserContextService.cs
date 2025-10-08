@@ -15,6 +15,7 @@ public class UserContextService : IUserContextService
 
     public Guid? GetUserId()
     {
+        if(!IsLoggedIn()) return null;
         var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
         if (userId == null)
             return null;
@@ -48,5 +49,10 @@ public class UserContextService : IUserContextService
     public string? GetDisplayName()
     {
         return _httpContextAccessor.HttpContext?.User?.FindFirst("DisplayName")?.Value;
+    }
+    
+    public bool IsLoggedIn()
+    {
+        return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
 }

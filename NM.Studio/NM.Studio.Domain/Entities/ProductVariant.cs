@@ -19,5 +19,5 @@ public class ProductVariant : BaseEntity
     public int StockQuantity { get; set; }
     public ProductStatus Status { get; set; }
     public virtual Product? Product { get; set; }
-    public virtual ICollection<ProductMedia> ProductImages { get; set; } = new List<ProductMedia>();
+    public virtual ICollection<ProductMedia> ProductMedias { get; set; } = new List<ProductMedia>();
 }

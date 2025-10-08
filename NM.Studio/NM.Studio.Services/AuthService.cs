@@ -66,19 +66,19 @@ public class AuthService : IAuthService
         var refreshTokenCreateCommand = new UserTokenCreateCommand
         {
             UserId = user.Id,
-            Token = refreshTokenValue,
-            Expiry = DateTimeOffset.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryInDays)
+            RefreshToken = refreshTokenValue,
         };
         var res = await _userTokenService.CreateOrUpdate(refreshTokenCreateCommand);
         if (res.Status != nameof(Status.OK))
             return res;
 
-        var tokenPair = new TokenResponse
+        var tokenPair = new TokenResult
         {
             AccessToken = accessToken,
-            RefreshToken = refreshTokenValue
+            RefreshToken = refreshTokenValue,
+            ExpireTime = _jwtOptions.ExpiredSecond
         };
-        return new BusinessResult(tokenPair, "Login successfully.");
+        return new BusinessResult(tokenPair);
     }
 
     public async Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request)
@@ -97,7 +97,8 @@ public class AuthService : IAuthService
                     x.RefreshToken.ToLower() == request.RefreshToken.ToLower(),
                 false)
             .SingleOrDefaultAsync();
-        if (userToken == null || userToken.RefreshToken != request.RefreshToken || userToken.ExpiryTime <= DateTimeOffset.UtcNow)
+        if (userToken == null || userToken.RefreshToken != request.RefreshToken ||
+            userToken.ExpiryTime <= DateTimeOffset.UtcNow)
         {
             throw new UnauthorizedException("Invalid refresh token");
         }
@@ -109,8 +110,11 @@ public class AuthService : IAuthService
 
         // Modify userToken
         var user = await _userRepository.GetQueryable(m => m.Id == userToken.UserId)
+            .Include(e => e.Avatar)
             .SingleOrDefaultAsync();
 
+        if (user == null) throw new NotFoundException("Not found");
+        
         var newAccessToken = _tokenService.GenerateJwtToken(user);
         var newRefreshToken = _tokenService.GenerateRefreshToken();
 
@@ -121,14 +125,20 @@ public class AuthService : IAuthService
         var isSaveChanges = await _unitOfWork.SaveChanges();
         if (!isSaveChanges)
             throw new Exception("Failed to update refresh token.");
+        
+       
+        var result = _mapper.Map<UserContextResponse>(user);
+        result.AvatarUrl = user.Avatar?.MediaUrl;
 
-        var tokenResult = new TokenResult
+        var tokenResult = new RefreshTokenResult()
         {
             AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
+            RefreshToken = newRefreshToken,
+            ExpireTime = _jwtOptions.ExpiredSecond,
+            User = result
         };
 
-        return new BusinessResult(tokenResult, "Token refreshed successfully.");
+        return new BusinessResult(tokenResult);
     }
 
     public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
@@ -142,10 +152,7 @@ public class AuthService : IAuthService
         var isSaved = await _unitOfWork.SaveChanges();
         if (!isSaved) throw new Exception();
 
-        return new BusinessResult
-        {
-            Message = "The account has been logged out."
-        };
+        return new BusinessResult();
     }
 
 
@@ -175,5 +182,4 @@ public class AuthService : IAuthService
     //
     //     return businessResult;
     // }
-
 }

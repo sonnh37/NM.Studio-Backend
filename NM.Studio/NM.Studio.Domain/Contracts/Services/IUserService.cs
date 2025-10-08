@@ -14,4 +14,5 @@ public interface IUserService : IBaseService
     Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand);
     Task<BusinessResult> GetById(UserGetByIdQuery request);
     Task<BusinessResult> Delete(UserDeleteCommand command);
+    Task<BusinessResult> GetUserByContext();
 }

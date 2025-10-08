@@ -147,12 +147,10 @@ public static class ServiceExtensions
         services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IServiceService, ServiceService>();
-        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<IAlbumService, AlbumService>();
         services.AddScoped<IAlbumImageService, AlbumImageService>();
         services.AddScoped<IProductMediaervice, ProductMediaService>();
         services.AddScoped<ICategoryService, CategoryService>();
-        services.AddScoped<IImageService, ImageService>();
         services.AddScoped<ISubCategoryService, SubCategoryService>();
         services.AddScoped<IBlogService, BlogService>();
         services.AddScoped<IServiceBookingService, ServiceBookingService>();
@@ -170,6 +168,9 @@ public static class ServiceExtensions
         services.AddScoped<IVoucherUsageHistoryService, VoucherUsageHistoryService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IMediaUploadService, MediaUploadService>();
+        services.AddScoped<IMediaBaseService, MediaBaseService>();
+
     }
 
     public static void AddRepositories(this IServiceCollection services)
@@ -178,12 +179,10 @@ public static class ServiceExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IServiceRepository, ServiceRepository>();
-        services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<IAlbumRepository, AlbumRepository>();
         services.AddScoped<IAlbumImageRepository, AlbumImageRepository>();
         services.AddScoped<IProductMediaRepository, ProductMediaRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<IImageRepository, ImageRepository>();
         services.AddScoped<ISubCategoryRepository, SubCategoryRepository>();
         services.AddScoped<IBlogRepository, BlogRepository>();
         services.AddScoped<IServiceBookingRepository, ServiceBookingRepository>();
@@ -197,5 +196,6 @@ public static class ServiceExtensions
         services.AddScoped<IPaymentRepository, PaymentRepository>();
         services.AddScoped<IVoucherRepository, VoucherRepository>();
         services.AddScoped<IVoucherUsageHistoryRepository, VoucherUsageHistoryRepository>();
+        services.AddScoped<IMediaBaseRepository, MediaBaseRepository>();
     }
 }

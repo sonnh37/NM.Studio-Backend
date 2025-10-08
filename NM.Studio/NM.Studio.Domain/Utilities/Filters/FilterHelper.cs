@@ -5,7 +5,7 @@ namespace NM.Studio.Domain.Utilities.Filters;
 
 public static class FilterHelper
 {
-    public static IQueryable<TEntity> BaseEntity<TEntity>(IQueryable<TEntity> queryable, GetQueryableQuery query)
+    public static IQueryable<TEntity> FilterBase<TEntity>(this IQueryable<TEntity> queryable, BaseQuery query)
         where TEntity : BaseEntity
     {
         if (query.IsDeleted != null) queryable = queryable.Where(m => query.IsDeleted.Value == m.IsDeleted);
@@ -15,7 +15,7 @@ public static class FilterHelper
         return queryable;
     }
 
-    private static IQueryable<TEntity> FromDateToDate<TEntity>(IQueryable<TEntity> queryable, GetQueryableQuery query)
+    private static IQueryable<TEntity> FromDateToDate<TEntity>(IQueryable<TEntity> queryable, BaseQuery query)
         where TEntity : BaseEntity
     {
         if (query.FromDate.HasValue)

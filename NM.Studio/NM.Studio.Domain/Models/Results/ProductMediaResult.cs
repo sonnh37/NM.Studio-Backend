@@ -8,5 +8,5 @@ public class ProductMediaResult : BaseResult
     public string? ImageId { get; set; }
     public string? ProductVariantId { get; set; }
     public virtual ProductVariant? ProductVariant { get; set; }
-    public virtual Image? Image { get; set; }
+    public virtual MediaBase? Image { get; set; }
 }

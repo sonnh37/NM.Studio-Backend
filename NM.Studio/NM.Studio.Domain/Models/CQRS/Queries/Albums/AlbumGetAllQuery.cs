@@ -12,7 +12,7 @@ public class AlbumGetAllQuery : GetAllQuery
     public string? GroomName { get; set; }
     public string? Location { get; set; }
     public string? Photographer { get; set; }
-    public int SortOrder { get; set; }
+    
     public bool IsFeatured { get; set; }
     public int? HomeSortOrder { get; set; }
 }
