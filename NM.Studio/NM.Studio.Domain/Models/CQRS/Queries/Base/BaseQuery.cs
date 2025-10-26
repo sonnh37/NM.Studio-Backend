@@ -5,8 +5,6 @@ namespace NM.Studio.Domain.Models.CQRS.Queries.Base;
 
 public abstract class BaseQuery
 {
-    public string? CreatedBy { get; set; }
-    public string? LastUpdatedBy { get; set; }
     public bool? IsDeleted { get; set; }
     public DateTimeOffset? FromDate { get; set; }
     public DateTimeOffset? ToDate { get; set; }

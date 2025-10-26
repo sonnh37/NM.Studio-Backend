@@ -32,37 +32,39 @@ public class ProductService : BaseService, IProductService
 
     public async Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query)
     {
-        var categories = _categoryRepository.GetQueryable(c => !c.IsDeleted);
+        var subCategories = _unitOfWork.SubCategoryRepository.GetQueryable(c => !c.IsDeleted);
         // .OrderByDescending(m => m.CreatedDate)
         // .Include(c => c.SubCategories);
         // .ThenInclude(sc => sc.Products)
         // .ThenInclude(p => p.ProductMedias)
         // .ThenInclude(px => px.MediaFile);
 
-        var groupedCategories = await categories
-            .Select(c => new ProductRepresentativeByCategoryResult
+        var groupedCategories = await (
+                from c in _categoryRepository.GetQueryable(x => !x.IsDeleted)
+                join sc in subCategories
+                    on c.Id equals sc.CategoryId
+                join p in _productRepository.GetQueryable(x => !x.IsDeleted)
+                    on sc.Id equals p.SubCategoryId
+                select new { c, p }
+            )
+            .GroupBy(x => x.c)
+            .Select(g => new ProductRepresentativeByCategoryResult
             {
                 Category = new CategoryResult
                 {
-                    Id = c.Id,
-                    Name = c.Name
-                }
-                // Product = c.SubCategories
-                //     .SelectMany(sc => sc.Products)
-                //     .OrderByDescending(p => p.LastUpdatedDate)
-                //     .Take(1)
-                //     .Select(p => new ProductRepresentativeResult
-                //     {
-                //         Id = p.Id,
-                //         Sku = p.Sku,
-                //         Slug = p.Slug,
-                //         Src = p.ProductMedias
-                //             .Where(px => px.MediaFile != null)
-                //             .OrderBy(px => px.LastUpdatedDate)
-                //             .Select(px => px.MediaFile!.Src)
-                //             .FirstOrDefault()
-                //     })
-                //     .SingleOrDefault()
+                    Id = g.Key.Id,
+                    Name = g.Key.Name
+                },
+                Product = g
+                    .OrderByDescending(x => x.p.CreatedDate)
+                    .Select(x => new ProductRepresentativeResult
+                    {
+                        Id = x.p.Id,
+                        Sku = x.p.Sku,
+                        Slug = x.p.Slug,
+                        Src = x.p.Thumbnail != null ? x.p.Thumbnail.MediaUrl : null
+                    })
+                    .FirstOrDefault()
             })
             .ToListAsync();
 

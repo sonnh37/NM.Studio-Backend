@@ -7,6 +7,7 @@ using NM.Studio.Domain.Models.CQRS.Commands.Blogs;
 using NM.Studio.Domain.Models.CQRS.Commands.CartItems;
 using NM.Studio.Domain.Models.CQRS.Commands.Carts;
 using NM.Studio.Domain.Models.CQRS.Commands.Categories;
+using NM.Studio.Domain.Models.CQRS.Commands.HomeSlides;
 using NM.Studio.Domain.Models.CQRS.Commands.OrderItems;
 using NM.Studio.Domain.Models.CQRS.Commands.Orders;
 using NM.Studio.Domain.Models.CQRS.Commands.OrderStatusHistories;
@@ -173,13 +174,12 @@ public class MappingProfile : Profile
         CreateMap<UserToken, UserTokenUpdateCommand>().ReverseMap();
     }
 
-   
-
     private void MediaBaseMapping()
     {
         CreateMap<MediaBase, MediaBaseResult>().ReverseMap();
-        // CreateMap<MediaBase, MediaBaseCreateCommand>().ReverseMap();
-        // CreateMap<MediaBase, MediaBaseUpdateCommand>().ReverseMap();
+        CreateMap<HomeSlide, HomeSlideResult>().ReverseMap();
+        CreateMap<HomeSlide, HomeSlideCreateCommand>().ReverseMap();
+        CreateMap<HomeSlide, HomeSlideUpdateCommand>().ReverseMap();
     }
 
 

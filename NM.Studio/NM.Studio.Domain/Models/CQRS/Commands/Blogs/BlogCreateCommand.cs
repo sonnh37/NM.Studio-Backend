@@ -17,6 +17,4 @@ public class BlogCreateCommand : CreateCommand
     public int ViewCount { get; set; }
     public string? Tags { get; set; }
     
-    public string? srcThumbnail { get; set; }
-    public string? srcBackgroundCover { get; set; }
 }

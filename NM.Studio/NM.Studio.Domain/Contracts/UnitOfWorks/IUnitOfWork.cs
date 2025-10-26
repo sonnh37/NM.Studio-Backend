@@ -25,4 +25,5 @@ public interface IUnitOfWork : IBaseUnitOfWork
     ICartItemRepository CartItemRepository { get; }
     IVoucherRepository VoucherRepository { get; }
     IVoucherUsageHistoryRepository VoucherUsageHistoryRepository { get; }
+    IHomeSlideRepository HomeSlideRepository { get; }
 }

@@ -38,6 +38,10 @@ public class BlogService : BaseService, IBlogService
         var queryable = _blogRepository.GetQueryable();
 
         queryable = queryable.FilterBase(query);
+        if (!string.IsNullOrEmpty(query.Slug))
+        {
+            queryable = queryable.Where(n => n.Slug == query.Slug);
+        }
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
@@ -76,20 +80,19 @@ public class BlogService : BaseService, IBlogService
                     throw new DomainException("Title already exists");
             }
             
-            
             _mapper.Map(updateCommand, entity);
             
-            if (!string.IsNullOrEmpty(updateCommand.srcBackgroundCover))
-            {
-                var mediaBaseBackgroundCover = await _mediaBaseService.CreateMediaBaseFromSrc(updateCommand.srcBackgroundCover);
-                entity.BackgroundCoverId = mediaBaseBackgroundCover?.Id;
-            }
-
-            if (!string.IsNullOrEmpty(updateCommand.srcThumbnail))
-            {
-                var mediaBaseThumbnail = await _mediaBaseService.CreateMediaBaseFromSrc(updateCommand.srcThumbnail);
-                entity.ThumbnailId = mediaBaseThumbnail?.Id;
-            }
+            // if (!string.IsNullOrEmpty(updateCommand.srcBackgroundCover))
+            // {
+            //     var mediaBaseBackgroundCover = await _mediaBaseService.CreateMediaBaseFromSrc(updateCommand.srcBackgroundCover);
+            //     entity.BackgroundCoverId = mediaBaseBackgroundCover?.Id;
+            // }
+            //
+            // if (!string.IsNullOrEmpty(updateCommand.srcThumbnail))
+            // {
+            //     var mediaBaseThumbnail = await _mediaBaseService.CreateMediaBaseFromSrc(updateCommand.srcThumbnail);
+            //     entity.ThumbnailId = mediaBaseThumbnail?.Id;
+            // }
 
             
             _blogRepository.Update(entity);
@@ -109,10 +112,10 @@ public class BlogService : BaseService, IBlogService
                 throw new DomainException("Title already exists");
 
             entity = _mapper.Map<Blog>(createCommand);
-            var mediaBaseBackgroundCover = await _mediaBaseService.CreateMediaBaseFromSrc(createCommand.srcBackgroundCover);
-            var mediaBaseThumbnail = await _mediaBaseService.CreateMediaBaseFromSrc(createCommand.srcThumbnail);
-            entity.BackgroundCoverId = mediaBaseBackgroundCover?.Id;
-            entity.ThumbnailId = mediaBaseThumbnail?.Id;
+            // var mediaBaseBackgroundCover = await _mediaBaseService.CreateMediaBaseFromSrc(createCommand.srcBackgroundCover);
+            // var mediaBaseThumbnail = await _mediaBaseService.CreateMediaBaseFromSrc(createCommand.srcThumbnail);
+            // entity.BackgroundCoverId = mediaBaseBackgroundCover?.Id;
+            // entity.ThumbnailId = mediaBaseThumbnail?.Id;
             if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
             entity.CreatedDate = DateTimeOffset.UtcNow;
             _blogRepository.Add(entity);

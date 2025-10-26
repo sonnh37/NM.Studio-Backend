@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using NM.Studio.Domain.Entities.Bases;
@@ -35,19 +36,53 @@ public static class RepoHelper
     public static IQueryable<TEntity> Include<TEntity>(this IQueryable<TEntity> queryable, string[]? includeProperties)
         where TEntity : BaseEntity
     {
-        var validProperties = typeof(TEntity).GetProperties().Select(p => p.Name)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (includeProperties == null || !includeProperties.Any())
+            return queryable;
 
-        if (includeProperties != null)
-            foreach (var property in includeProperties)
+        foreach (var propertyPath in includeProperties)
+        {
+            if (string.IsNullOrWhiteSpace(propertyPath)) 
+                continue;
+
+            // Tìm property path chính xác (case-insensitive)
+            var correctPropertyPath = FindCorrectPropertyPath<TEntity>(propertyPath);
+            if (!string.IsNullOrEmpty(correctPropertyPath))
             {
-                if (string.IsNullOrWhiteSpace(property)) continue;
-                var match = validProperties.FirstOrDefault(p => p.Equals(property, StringComparison.OrdinalIgnoreCase));
-                if (match != null)
-                    queryable = queryable.Include(match);
+                queryable = queryable.Include(correctPropertyPath);
             }
+        }
 
         return queryable;
+    }
+
+    private static string? FindCorrectPropertyPath<TEntity>(string propertyPath)
+    {
+        var parts = propertyPath.Split('.');
+        var correctParts = new List<string>();
+        var currentType = typeof(TEntity);
+
+        foreach (var part in parts)
+        {
+            // Tìm property với case-insensitive
+            var property = currentType.GetProperties()
+                .FirstOrDefault(p => p.Name.Equals(part, StringComparison.OrdinalIgnoreCase));
+
+            if (property == null)
+                return null; // Property không tồn tại
+
+            correctParts.Add(property.Name); // Sử dụng tên chính xác
+
+            // Xử lý nested type
+            currentType = property.PropertyType;
+
+            // Xử lý collection (IEnumerable<T>)
+            if (currentType.IsGenericType && typeof(IEnumerable).IsAssignableFrom(currentType))
+            {
+                currentType = currentType.GetGenericArguments()[0];
+            }
+        }
+
+        return string.Join(".", correctParts);
     }
 
     public static IQueryable<TEntity> GetQueryablePagination<TEntity>(IQueryable<TEntity> queryable,

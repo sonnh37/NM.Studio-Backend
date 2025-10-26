@@ -13,4 +13,5 @@ public class ProductUpdateCommand : UpdateCommand
     public string? Description { get; set; }
     public string? Material { get; set; }
     public ProductStatus Status { get; set; }
+    public Guid? ThumbnailId { get; set; }
 }

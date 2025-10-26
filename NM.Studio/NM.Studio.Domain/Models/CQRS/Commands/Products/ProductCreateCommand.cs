@@ -13,4 +13,5 @@ public class ProductCreateCommand : CreateCommand
     public string? Description { get; set; }
     public string? Material { get; set; }
     public ProductStatus Status { get; set; }
+    public Guid? ThumbnailId { get; set; }
 }

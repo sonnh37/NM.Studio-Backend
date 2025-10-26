@@ -12,5 +12,6 @@ public class AlbumUpdateCommand : UpdateCommand
     public string? GroomName { get; set; }
     public string? Location { get; set; }
     public string? Photographer { get; set; }
+    public string? CoverUrl { get; set; }
     public bool IsFeatured { get; set; }
 }

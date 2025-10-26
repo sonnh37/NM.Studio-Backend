@@ -32,6 +32,10 @@ public class CategoryService : BaseService, ICategoryService
         var queryable = _categoryRepository.GetQueryable();
 
         queryable = queryable.FilterBase(query);
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(n => n.Name != null && query.Name.ToLower().Contains(n.Name.ToLower()));
+        }
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
@@ -75,7 +79,7 @@ public class CategoryService : BaseService, ICategoryService
     public async Task<BusinessResult> GetById(CategoryGetByIdQuery request)
     {
         var queryable = _categoryRepository.GetQueryable(x => x.Id == request.Id);
-        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        queryable = queryable.Include(request.IncludeProperties);
         var entity = await queryable.SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException("Not found");
         var result = _mapper.Map<CategoryResult>(entity);

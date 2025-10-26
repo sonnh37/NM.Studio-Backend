@@ -21,7 +21,7 @@ public class UserController : BaseController
         _logger = logger;
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] UserGetAllQuery request)
     {

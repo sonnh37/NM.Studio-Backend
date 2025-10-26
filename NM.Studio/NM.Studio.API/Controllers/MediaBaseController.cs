@@ -34,21 +34,6 @@ public class MediaBaseController : BaseController
         return Ok(businessResult);
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MediaBaseCreateCommand request)
-    {
-        var businessResult = await _mediaBaseService.CreateOrUpdate(request);
-
-        return Ok(businessResult);
-    }
-
-    [HttpPut]
-    public async Task<IActionResult> Update([FromBody] MediaBaseUpdateCommand request)
-    {
-        var businessResult = await _mediaBaseService.CreateOrUpdate(request);
-
-        return Ok(businessResult);
-    }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] MediaBaseDeleteCommand request)

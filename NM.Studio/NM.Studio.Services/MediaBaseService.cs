@@ -8,6 +8,7 @@ using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.CQRS.Commands.Base;
 using NM.Studio.Domain.Models.CQRS.Commands.MediaBases;
 using NM.Studio.Domain.Models.CQRS.Queries.MediaBases;
+using NM.Studio.Domain.Models.Requests;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -20,13 +21,11 @@ namespace NM.Studio.Services;
 public class MediaBaseService : BaseService, IMediaBaseService
 {
     private readonly IMediaBaseRepository _mediaBaseRepository;
-    private readonly IMediaUploadService _mediaUploadService;
 
-    public MediaBaseService(IMapper mapper, IUnitOfWork unitOfWork, IMediaUploadService mediaUploadService) : base(
+    public MediaBaseService(IMapper mapper, IUnitOfWork unitOfWork) : base(
         mapper, unitOfWork)
     {
         _mediaBaseRepository = _unitOfWork.MediaBaseRepository;
-        _mediaUploadService = mediaUploadService;
     }
     
     public async Task<BusinessResult> GetAll(MediaBaseGetAllQuery query)
@@ -43,6 +42,10 @@ public class MediaBaseService : BaseService, IMediaBaseService
         return new BusinessResult(pagedList);
     }
 
+    // public Task<BusinessResult> SaveMediaWithSrc(FileUploadRequest request)
+    // {
+    //     throw new NotImplementedException();
+    // }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
@@ -98,46 +101,5 @@ public class MediaBaseService : BaseService, IMediaBaseService
 
         return new BusinessResult();
     }
-
-    public async Task<MediaBaseResult?> CreateMediaBaseFromSrc(string? src)
-    {
-        if (string.IsNullOrEmpty(src)) return null;
-        MediaBase? entity = null;
-        var getResourceResult = await _mediaUploadService.GetResourceAsync(src);
-        if (getResourceResult == null) throw new NotFoundException("Not found resource on cloudinary by src");
-        entity = FromCloudinaryResource(getResourceResult);
-        _mediaBaseRepository.Add(entity);
-
-        var saveChanges = await _unitOfWork.SaveChanges();
-        if (!saveChanges)
-            throw new Exception();
-
-        var result = _mapper.Map<MediaBaseResult>(entity);
-
-        return result;
-    }
-
-    private MediaBase FromCloudinaryResource(GetResourceResult resource)
-    {
-        if (resource == null)
-            throw new ArgumentNullException(nameof(resource));
-
-        var mediaBase = new MediaBase
-        {
-            DisplayName = resource.DisplayName ?? resource.PublicId,
-            Title = resource.PublicId,
-            MimeType = resource.Format,
-            Size = resource.Bytes,
-            Width = resource.Width,
-            Height = resource.Height,
-            MediaUrl = resource.SecureUrl,
-            TakenMediaDate = !string.IsNullOrWhiteSpace(resource.CreatedAt)
-                ? DateTimeOffset.Parse(resource.CreatedAt, null, System.Globalization.DateTimeStyles.AssumeUniversal)
-                : null,
-            MediaBaseType = resource.ResourceType == ResourceType.Image ? MediaBaseType.Image : MediaBaseType.Video,
-            CreatedDate = DateTimeOffset.UtcNow
-        };
-
-        return mediaBase;
-    }
+    
 }

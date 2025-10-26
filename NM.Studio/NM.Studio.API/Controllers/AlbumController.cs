@@ -21,7 +21,7 @@ public class AlbumController : BaseController
         _albumService = albumService;
     }
 
-    // [AllowAnonymous]
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] AlbumGetAllQuery request)
     {
@@ -43,6 +43,24 @@ public class AlbumController : BaseController
     {
         _logger.LogInformation("Album Create Request: {request}", JsonConvert.SerializeObject(request));
         var businessResult = await _albumService.CreateOrUpdate(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpPost("images")]
+    public async Task<IActionResult> CreateImages([FromBody] AlbumWithImagesCreateCommand request)
+    {
+        _logger.LogInformation("Album Create Request: {request}", JsonConvert.SerializeObject(request));
+        var businessResult = await _albumService.CreateWithImages(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpPut("images/set-cover")]
+    public async Task<IActionResult> SetCoverAlbum([FromBody] AlbumSetCoverUpdateCommand request)
+    {
+        _logger.LogInformation("Album Create Request: {request}", JsonConvert.SerializeObject(request));
+        var businessResult = await _albumService.SetCoverAlbum(request);
 
         return Ok(businessResult);
     }

@@ -81,6 +81,16 @@ public class ServiceService : BaseService, IServiceService
         var queryable = _serviceRepository.GetQueryable();
 
         queryable = queryable.FilterBase(query);
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(n => n.Name != null && query.Name.ToLower().Contains(n.Name.ToLower()));
+        }
+        
+        if (!string.IsNullOrEmpty(query.Slug))
+        {
+            queryable = queryable.Where(n => n.Slug == query.Slug);
+        }
+        
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 

@@ -170,7 +170,7 @@ public static class ServiceExtensions
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IMediaUploadService, MediaUploadService>();
         services.AddScoped<IMediaBaseService, MediaBaseService>();
-
+        services.AddScoped<IHomeSlideService, HomeSlideService>();
     }
 
     public static void AddRepositories(this IServiceCollection services)
@@ -197,5 +197,6 @@ public static class ServiceExtensions
         services.AddScoped<IVoucherRepository, VoucherRepository>();
         services.AddScoped<IVoucherUsageHistoryRepository, VoucherUsageHistoryRepository>();
         services.AddScoped<IMediaBaseRepository, MediaBaseRepository>();
+        services.AddScoped<IHomeSlideRepository, HomeSlideRepository>();
     }
 }

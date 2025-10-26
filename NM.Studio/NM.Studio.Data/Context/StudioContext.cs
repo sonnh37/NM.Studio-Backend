@@ -17,6 +17,7 @@ public partial class StudioContext : BaseDbContext
     public virtual DbSet<Category> Categories { get; set; }
     public virtual DbSet<SubCategory> SubCategories { get; set; }
     public virtual DbSet<MediaBase> MediaBases { get; set; }
+    public virtual DbSet<HomeSlide> HomeSlides { get; set; }
     public virtual DbSet<AlbumImage> AlbumImages { get; set; }
     public virtual DbSet<Album> Albums { get; set; }
     public virtual DbSet<Service> Services { get; set; }
@@ -157,6 +158,10 @@ public partial class StudioContext : BaseDbContext
 
         modelBuilder.Entity<SubCategory>(entity =>
         {
+            entity.HasOne(c => c.Category)
+                .WithMany(sc => sc.SubCategories)
+                .HasForeignKey(sc => sc.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Product>(entity =>
@@ -164,6 +169,21 @@ public partial class StudioContext : BaseDbContext
             entity.HasMany(m => m.Variants)
                 .WithOne(m => m.Product)
                 .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.Thumbnail)
+                .WithOne()
+                .HasForeignKey<Product>(m => m.ThumbnailId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.Category)
+                .WithOne()
+                .HasForeignKey<Product>(m => m.CategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(m => m.SubCategory)
+                .WithOne()
+                .HasForeignKey<Product>(m => m.SubCategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -176,6 +196,14 @@ public partial class StudioContext : BaseDbContext
         });
 
         modelBuilder.Entity<MediaBase>(entity => {  });
+        
+        modelBuilder.Entity<HomeSlide>(entity =>
+        {
+            entity.HasOne(m => m.Slide)
+                .WithOne()
+                .HasForeignKey<HomeSlide>(m => m.SlideId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
 
         modelBuilder.Entity<AlbumImage>(entity =>
         {

@@ -11,4 +11,6 @@ public class SubCategoryResult : BaseResult
     public bool IsFeatured { get; set; }
 
     public Guid? CategoryId { get; set; }
+    
+    public CategoryResult? Category { get; set; }
 }

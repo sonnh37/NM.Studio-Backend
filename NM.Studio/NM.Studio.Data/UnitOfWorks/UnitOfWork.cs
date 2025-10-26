@@ -52,4 +52,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IVoucherUsageHistoryRepository VoucherUsageHistoryRepository =>
         GetRepository<IVoucherUsageHistoryRepository>();
+
+    public IHomeSlideRepository HomeSlideRepository => GetRepository<IHomeSlideRepository>();
 }

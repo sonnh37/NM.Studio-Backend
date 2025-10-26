@@ -119,6 +119,10 @@ public class UserService : BaseService, IUserService
         var queryable = _userRepository.GetQueryable();
 
         queryable = queryable.FilterBase(query);
+        if (!string.IsNullOrEmpty(query.Email))
+        {
+            queryable = queryable.Where(n => n.Email != null && query.Email.ToLower().Contains(n.Email.ToLower()));
+        }
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 

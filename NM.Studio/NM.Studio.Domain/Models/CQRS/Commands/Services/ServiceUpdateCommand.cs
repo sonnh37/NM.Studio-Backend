@@ -9,8 +9,6 @@ public class ServiceUpdateCommand : UpdateCommand
     public string? Description { get; set; }
     public decimal? Price { get; set; }
     public bool IsFeatured { get; set; }
-    public int? HomeSortOrder { get; set; }
-    
     public Guid? BackgroundCoverId { get; set; }
     public Guid? ThumbnailId { get; set; }
     public string? TermsAndConditions { get; set; }

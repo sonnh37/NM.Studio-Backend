@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NM.Studio.Data.Context;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NM.Studio.Data.Migrations
 {
     [DbContext(typeof(StudioContext))]
-    partial class StudioContextModelSnapshot : ModelSnapshot
+    [Migration("20251020173001_AddHomeSlide")]
+    partial class AddHomeSlide
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -810,14 +813,9 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("sub_category_id");
 
-                    b.Property<Guid?>("ThumbnailId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("thumbnail_id");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId")
-                        .IsUnique();
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("Sku")
                         .IsUnique();
@@ -825,11 +823,7 @@ namespace NM.Studio.Data.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.HasIndex("SubCategoryId")
-                        .IsUnique();
-
-                    b.HasIndex("ThumbnailId")
-                        .IsUnique();
+                    b.HasIndex("SubCategoryId");
 
                     b.ToTable("product");
                 });
@@ -1703,25 +1697,16 @@ namespace NM.Studio.Data.Migrations
             modelBuilder.Entity("NM.Studio.Domain.Entities.Product", b =>
                 {
                     b.HasOne("NM.Studio.Domain.Entities.Category", "Category")
-                        .WithOne()
-                        .HasForeignKey("NM.Studio.Domain.Entities.Product", "CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("NM.Studio.Domain.Entities.SubCategory", "SubCategory")
-                        .WithOne()
-                        .HasForeignKey("NM.Studio.Domain.Entities.Product", "SubCategoryId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("NM.Studio.Domain.Entities.MediaBase", "Thumbnail")
-                        .WithOne()
-                        .HasForeignKey("NM.Studio.Domain.Entities.Product", "ThumbnailId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .WithMany()
+                        .HasForeignKey("SubCategoryId");
 
                     b.Navigation("Category");
 
                     b.Navigation("SubCategory");
-
-                    b.Navigation("Thumbnail");
                 });
 
             modelBuilder.Entity("NM.Studio.Domain.Entities.ProductMedia", b =>

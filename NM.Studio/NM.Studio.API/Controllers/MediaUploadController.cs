@@ -17,9 +17,17 @@ public class MediaUploadController : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> UploadCv([FromForm] FileUploadRequest request)
+    public async Task<IActionResult> UploadFile([FromForm] FileUploadRequest request)
     {
         var businessResult = await _mediaUploadService.UploadFile(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpPut]
+    public async Task<IActionResult> UpdateFile([FromForm] FileUpdateRequest request)
+    {
+        var businessResult = await _mediaUploadService.UpdateFile(request);
 
         return Ok(businessResult);
     }
