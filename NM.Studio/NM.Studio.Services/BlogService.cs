@@ -42,6 +42,10 @@ public class BlogService : BaseService, IBlogService
         {
             queryable = queryable.Where(n => n.Slug == query.Slug);
         }
+        if (query.IsFeatured != null)
+        {
+            queryable = queryable.Where(n => n.IsFeatured == query.IsFeatured);
+        }
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
