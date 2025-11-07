@@ -80,8 +80,8 @@ public partial class StudioContext : BaseDbContext
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.Avatar)
-                .WithOne()
-                .HasForeignKey<User>(m => m.AvatarId)
+                .WithMany()
+                .HasForeignKey(m => m.AvatarId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
@@ -101,13 +101,13 @@ public partial class StudioContext : BaseDbContext
         modelBuilder.Entity<Service>(entity =>
         {
             entity.HasOne(m => m.Thumbnail)
-                .WithOne()
-                .HasForeignKey<Service>(m => m.ThumbnailId)
+                .WithMany()
+                .HasForeignKey(m => m.ThumbnailId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.BackgroundCover)
-                .WithOne()
-                .HasForeignKey<Service>(m => m.BackgroundCoverId)
+                .WithMany()
+                .HasForeignKey(m => m.BackgroundCoverId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasMany(c => c.Bookings)
@@ -133,8 +133,8 @@ public partial class StudioContext : BaseDbContext
         modelBuilder.Entity<Blog>(entity =>
         {
             entity.HasOne(m => m.Thumbnail)
-                .WithOne()
-                .HasForeignKey<Blog>(m => m.ThumbnailId)
+                .WithMany()
+                .HasForeignKey(m => m.ThumbnailId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.BackgroundCover)
@@ -172,18 +172,18 @@ public partial class StudioContext : BaseDbContext
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.Thumbnail)
-                .WithOne()
-                .HasForeignKey<Product>(m => m.ThumbnailId)
+                .WithMany()
+                .HasForeignKey(m => m.ThumbnailId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.Category)
-                .WithOne()
-                .HasForeignKey<Product>(m => m.CategoryId)
+                .WithMany()
+                .HasForeignKey(m => m.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
             
             entity.HasOne(m => m.SubCategory)
-                .WithOne()
-                .HasForeignKey<Product>(m => m.SubCategoryId)
+                .WithMany()
+                .HasForeignKey(m => m.SubCategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

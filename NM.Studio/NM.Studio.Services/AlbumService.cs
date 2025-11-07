@@ -57,18 +57,23 @@ public class AlbumService : BaseService, IAlbumService
 
         foreach (var albumResult in pagedList.Results)
         {
-            string? coverUrl = null;
-            if (albumResult.AlbumImages.Count > 0)
-            {
-                coverUrl = albumResult.AlbumImages
-                    .Where(m => m.IsCover)
-                    .Select(n => n.Image?.MediaUrl).FirstOrDefault();
-            }
-
-            albumResult.CoverUrl = coverUrl;
+            SetAlbumCover(albumResult);
         }
 
         return new BusinessResult(pagedList);
+    }
+
+    private void SetAlbumCover(AlbumResult albumResult)
+    {
+        string? coverUrl = null;
+        if (albumResult.AlbumImages.Count > 0)
+        {
+            coverUrl = albumResult.AlbumImages
+                .Where(m => m.IsCover)
+                .Select(n => n.Image?.MediaUrl).FirstOrDefault();
+        }
+
+        albumResult.CoverUrl = coverUrl;
     }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
@@ -211,7 +216,7 @@ public class AlbumService : BaseService, IAlbumService
         var entity = await queryable.SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException("Not found");
         var result = _mapper.Map<AlbumResult>(entity);
-
+        SetAlbumCover(result);
         return new BusinessResult(result);
     }
 
@@ -219,7 +224,7 @@ public class AlbumService : BaseService, IAlbumService
     {
         var entity = await _albumRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
-
+    
         _albumRepository.Delete(entity, command.IsPermanent);
 
         var saveChanges = await _unitOfWork.SaveChanges();

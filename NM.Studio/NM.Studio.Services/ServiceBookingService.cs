@@ -163,7 +163,8 @@ public class ServiceBookingService : BaseService, IServiceBookingService
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
-        var pagedListServiceBooking = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedListServiceBooking =
+            await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
         var pagedList = _mapper.Map<IPagedList<ServiceBookingResult>>(pagedListServiceBooking);
 
         return new BusinessResult(pagedList);

@@ -30,6 +30,7 @@ public class AuthController : BaseController
     }
 
     [HttpPost("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout([FromBody] UserLogoutCommand request)
     {
         var businessResult = await _authService.Logout(request);
