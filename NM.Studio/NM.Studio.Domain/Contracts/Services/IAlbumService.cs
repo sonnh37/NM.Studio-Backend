@@ -14,4 +14,5 @@ public interface IAlbumService : IBaseService
     Task<BusinessResult> Delete(AlbumDeleteCommand command);
     Task<BusinessResult> CreateWithImages(AlbumWithImagesCreateCommand createCommand);
     Task<BusinessResult> SetCoverAlbum(AlbumSetCoverUpdateCommand updateCommand);
+    Task<BusinessResult> GetAlbumBySlug(AlbumGetBySlugQuery query);
 }

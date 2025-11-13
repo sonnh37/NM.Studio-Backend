@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NM.Studio.Data.Context;
 using NM.Studio.Data.Repositories.Base;
 using NM.Studio.Domain.Contracts.Repositories.Bases;
@@ -13,17 +14,28 @@ public class BaseUnitOfWork<TContext> : IBaseUnitOfWork
 {
     private readonly TContext _context;
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<BaseUnitOfWork<TContext>> _logger;
 
-    protected BaseUnitOfWork(TContext context, IServiceProvider serviceProvider)
+    protected BaseUnitOfWork(TContext context, IServiceProvider serviceProvider, ILogger<BaseUnitOfWork<TContext>> logger)
     {
         _context = context;
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     public async Task<bool> SaveChanges(CancellationToken cancellationToken = default)
     {
-        var result = await _context.SaveChangesAsync(cancellationToken);
-        return result > 0;
+        try
+        {
+            var result = await _context.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("[UoW] Saved {Count} changes in {Context}", result, typeof(TContext).Name);
+            return result > 0;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[UoW] Error saving changes in {Context}", typeof(TContext).Name);
+            throw;
+        }
     }
 
     #region Dispose()
@@ -36,7 +48,11 @@ public class BaseUnitOfWork<TContext> : IBaseUnitOfWork
 
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing) _context.Dispose();
+        if (disposing)
+        {
+            _logger.LogDebug("[UoW] Disposing DbContext {Context}", typeof(TContext).Name);
+            _context.Dispose();
+        }
     }
 
     #endregion
@@ -48,9 +64,12 @@ public class BaseUnitOfWork<TContext> : IBaseUnitOfWork
         if (_serviceProvider != null)
         {
             var result = _serviceProvider.GetService<TRepository>();
+            if (result == null)
+                _logger.LogWarning("[UoW] Repository {Repository} not found in DI", typeof(TRepository).Name);
             return result;
         }
 
+        _logger.LogWarning("[UoW] ServiceProvider is null when resolving {Repository}", typeof(TRepository).Name);
         return default;
     }
 
@@ -62,9 +81,11 @@ public class BaseUnitOfWork<TContext> : IBaseUnitOfWork
             if (type.IsAssignableFrom(property.PropertyType))
             {
                 var value = (IBaseRepository<TEntity>)property.GetValue(this);
+                _logger.LogDebug("[UoW] Resolved repository {Repository} by entity {Entity}", property.Name, typeof(TEntity).Name);
                 return value;
             }
 
+        _logger.LogInformation("[UoW] Creating new BaseRepository for entity {Entity}", typeof(TEntity).Name);
         return new BaseRepository<TEntity>(_context);
     }
 

@@ -63,6 +63,20 @@ public class AlbumService : BaseService, IAlbumService
         return new BusinessResult(pagedList);
     }
 
+    public async Task<BusinessResult> GetAlbumBySlug(AlbumGetBySlugQuery query)
+    {
+        var queryable = _albumRepository.GetQueryable();
+
+        if (!string.IsNullOrEmpty(query.Slug))
+            queryable = queryable.Where(m =>
+                m.Slug != null && m.Slug.ToLower().Trim() == (query.Slug.ToLower().Trim()));
+        queryable = queryable.Include(i => i.AlbumImages).ThenInclude(ti => ti.Image);
+        var album = await queryable.SingleOrDefaultAsync();
+        var albumResult = _mapper.Map<AlbumResult>(album);
+
+        return new BusinessResult(albumResult);
+    }
+
     private void SetAlbumCover(AlbumResult albumResult)
     {
         string? coverUrl = null;
@@ -119,19 +133,20 @@ public class AlbumService : BaseService, IAlbumService
 
         return new BusinessResult(result);
     }
-    
+
     public async Task<BusinessResult> SetCoverAlbum(AlbumSetCoverUpdateCommand updateCommand)
     {
-        var albumImages = await _albumImageRepository.GetQueryable(m => m.AlbumId == updateCommand.AlbumId).ToListAsync();
+        var albumImages =
+            await _albumImageRepository.GetQueryable(m => m.AlbumId == updateCommand.AlbumId).ToListAsync();
 
         if (albumImages.Count <= 0) throw new DomainException("Not found images");
         var entity = albumImages.FirstOrDefault(m => m.ImageId == updateCommand.ImageId);
-        
+
         if (entity == null)
             throw new NotFoundException(Const.NOT_FOUND_MSG);
 
         if (entity.IsCover) throw new DomainException("This image is already cover");
-        
+
         foreach (var albumImage in albumImages)
         {
             albumImage.IsCover = (albumImage.ImageId == updateCommand.ImageId);
@@ -224,7 +239,7 @@ public class AlbumService : BaseService, IAlbumService
     {
         var entity = await _albumRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
-    
+
         _albumRepository.Delete(entity, command.IsPermanent);
 
         var saveChanges = await _unitOfWork.SaveChanges();

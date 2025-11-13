@@ -29,6 +29,15 @@ public class AlbumController : BaseController
 
         return Ok(businessResult);
     }
+    
+    [AllowAnonymous]
+    [HttpGet("by-slug")]
+    public async Task<IActionResult> GetAlbumBySlug([FromQuery] AlbumGetBySlugQuery request)
+    {
+        var businessResult = await _albumService.GetAlbumBySlug(request);
+
+        return Ok(businessResult);
+    }
 
     [AllowAnonymous]
     [HttpGet("id")]

@@ -38,13 +38,31 @@ public class ServiceBookingService : BaseService, IServiceBookingService
         {
             entity = await _serviceBookingRepository.GetQueryable(m => m.Id == updateCommand.Id).SingleOrDefaultAsync();
             if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+            var service = await _serviceRepository.GetQueryable(m => m.Id == updateCommand.ServiceId)
+                .SingleOrDefaultAsync();
+            if (service == null)
+                throw new DomainException("Error creating booking by serviceId null");
+
             _mapper.Map(updateCommand, entity);
+            if (entity.ServiceId != updateCommand.ServiceId)
+            {
+                entity.ServicePrice = service.Price ?? 0;
+                entity.TotalAmount = service.Price ?? 0;
+                entity.IsDepositPaid = false;
+                entity.DepositAmount = 0;
+            }
+
             _serviceBookingRepository.Update(entity);
+            var saveChanges = await _unitOfWork.SaveChanges();
+            if (!saveChanges)
+                throw new Exception();
+            var result = _mapper.Map<ServiceBookingResult>(entity);
+
+            return new BusinessResult(result);
         }
         else if (createOrUpdateCommand is ServiceBookingCreateCommand createCommand)
         {
-            var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
-            createCommand.Status = ServiceBookingStatus.Pending;
             // Giả sử BookingDate gốc là giờ UTC nhưng không có Kind
 
             var service = await _serviceRepository.GetQueryable(m => m.Id == createCommand.ServiceId)
@@ -52,11 +70,39 @@ public class ServiceBookingService : BaseService, IServiceBookingService
             if (service == null)
                 throw new DomainException("Error creating booking by serviceId null");
 
-            // Gửi email
-            // Tạo nội dung email dạng HTML
-            var cancelLink = $"{frontendUrl}/cancel-booking/{service.Id}"; // Link cancel booking
+            entity = _mapper.Map<ServiceBooking>(createCommand);
+            entity.Status = ServiceBookingStatus.Pending;
+            entity.BookingNumber = CommonHelper.GenerateId();
+            entity.ServicePrice = service.Price ?? 0;
+            entity.TotalAmount = service.Price ?? 0;
+            entity.IsDepositPaid = false;
+            entity.DepositAmount = 0;
+            entity.CreatedDate = DateTimeOffset.UtcNow;
+            _serviceBookingRepository.Add(entity);
+            var saveChanges = await _unitOfWork.SaveChanges();
+            if (!saveChanges)
+                throw new Exception();
 
-            var emailBody = $@"
+            await SendEmail(entity, service);
+
+            var result = _mapper.Map<ServiceBookingResult>(entity);
+
+            return new BusinessResult(result);
+        }
+        
+        throw new DomainException("Error creating booking");
+    }
+
+    private async Task SendEmail(ServiceBooking serviceBooking, Service service)
+    {
+        var frontendUrl = _httpContextAccessor.HttpContext?.Request.Headers.Origin.ToString();
+
+        // Gửi email
+        // Tạo nội dung email dạng HTML
+        var cancelLink = $"{frontendUrl}/cancel-booking/{serviceBooking.Id}"; // Link cancel booking
+
+        var localDate = serviceBooking.AppointmentDate.ToLocalTime();
+        var emailBody = $@"
 <table width='100%' cellpadding='0' cellspacing='0' border='0' style='background:#f7f7f9;padding:0;margin:0;'>
   <tr>
     <td align='center'>
@@ -68,7 +114,7 @@ public class ServiceBookingService : BaseService, IServiceBookingService
         </tr>
         <tr>
           <td style='padding:0 32px 12px 32px;'>
-            <p style='font-size:18px;margin-bottom:4px;'>Xin chào <b>{createCommand.CustomerName}</b>,</p>
+            <p style='font-size:18px;margin-bottom:4px;'>Xin chào <b>{serviceBooking.CustomerName}</b>,</p>
             <p style='margin-top:0;margin-bottom:16px;'>Cảm ơn bạn đã đặt lịch với chúng tôi.<br/>Sau đây là thông tin chi tiết lịch hẹn của bạn:</p>
           </td>
         </tr>
@@ -77,11 +123,11 @@ public class ServiceBookingService : BaseService, IServiceBookingService
             <table cellpadding='0' cellspacing='0' border='0' style='width:100%;margin-bottom:14px;'>
               <tr>
                 <td style='font-weight:bold;width:150px;padding:8px 0;'>Họ & tên:</td>
-                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{createCommand.CustomerName}</td>
+                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{serviceBooking.CustomerName}</td>
               </tr>
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Số điện thoại:</td>
-                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{createCommand.CustomerPhone}</td>
+                <td style='padding:8px 0;border-bottom:1px solid #f0f0f3;'>{serviceBooking.CustomerPhone}</td>
               </tr>
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Dịch vụ:</td>
@@ -90,7 +136,7 @@ public class ServiceBookingService : BaseService, IServiceBookingService
               <tr>
                 <td style='font-weight:bold;padding:8px 0;'>Ngày đến:</td>
                 <td style='padding:8px 0;'>
-                  {createCommand.AppointmentDate:dd/MM/yyyy HH:mm} 
+                  {localDate:dd/MM/yyyy HH:mm} 
                 </td>
               </tr>
             </table>
@@ -118,21 +164,7 @@ public class ServiceBookingService : BaseService, IServiceBookingService
   </tr>
 </table>
 ";
-            await _emailService.SendEmailAsync(createCommand.CustomerEmail, "Booking Confirmation", emailBody);
-
-            entity = _mapper.Map<ServiceBooking>(createCommand);
-            if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
-            entity.CreatedDate = DateTimeOffset.UtcNow;
-            _serviceBookingRepository.Add(entity);
-        }
-
-        var saveChanges = await _unitOfWork.SaveChanges();
-        if (!saveChanges)
-            throw new Exception();
-
-        var result = _mapper.Map<ServiceBookingResult>(entity);
-
-        return new BusinessResult(result);
+        await _emailService.SendEmailAsync(serviceBooking.CustomerEmail, "Booking Confirmation", emailBody);
     }
 
     public async Task<BusinessResult> Cancel(ServiceBookingCancelCommand cancelCommand)
@@ -144,6 +176,8 @@ public class ServiceBookingService : BaseService, IServiceBookingService
 
         if (booking == null)
             throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        if (booking.Status == ServiceBookingStatus.Cancelled) throw new DomainException("Service Booking Cancelled!");
         booking.Status = ServiceBookingStatus.Cancelled;
 
         _serviceBookingRepository.Update(booking);

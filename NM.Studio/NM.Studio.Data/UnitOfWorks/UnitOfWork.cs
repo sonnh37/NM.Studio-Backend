@@ -1,4 +1,5 @@
-﻿using NM.Studio.Data.Context;
+﻿using Microsoft.Extensions.Logging;
+using NM.Studio.Data.Context;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 
@@ -6,7 +7,9 @@ namespace NM.Studio.Data.UnitOfWorks;
 
 public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 {
-    public UnitOfWork(StudioContext context, IServiceProvider serviceProvider) : base(context, serviceProvider)
+    public UnitOfWork(StudioContext context, IServiceProvider serviceProvider,
+        ILogger<BaseUnitOfWork<StudioContext>> logger)
+        : base(context, serviceProvider, logger)
     {
     }
 
