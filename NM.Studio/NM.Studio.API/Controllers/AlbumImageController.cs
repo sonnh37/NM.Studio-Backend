@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.AlbumImages;
+using NM.Studio.Domain.Models.CQRS.Commands.AlbumImages;
 
 namespace NM.Studio.API.Controllers;
 

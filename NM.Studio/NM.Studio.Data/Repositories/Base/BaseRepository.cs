@@ -107,17 +107,17 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     //     return entity;
     // }
 
-    public IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate)
+    public IQueryable<TEntity> GetQueryable(Expression<Func<TEntity, bool>> predicate, bool isNoTracking = true)
     {
-        var queryable = GetQueryable();
+        var queryable = GetQueryable(isNoTracking);
         queryable = queryable.Where(predicate);
         return queryable;
     }
 
-    public IQueryable<TEntity> GetQueryable()
+    public IQueryable<TEntity> GetQueryable(bool isNoTracking = true)
     {
         IQueryable<TEntity> queryable = GetDbSet();
-        return queryable;
+        return isNoTracking ? queryable.AsNoTracking() : queryable;
     }
 
 

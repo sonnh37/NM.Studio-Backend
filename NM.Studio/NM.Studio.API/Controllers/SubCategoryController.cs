@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.SubCategories;
-using NM.Studio.Domain.CQRS.Queries.SubCategories;
+using NM.Studio.Domain.Models.CQRS.Commands.SubCategories;
+using NM.Studio.Domain.Models.CQRS.Queries.SubCategories;
 
 namespace NM.Studio.API.Controllers;
 

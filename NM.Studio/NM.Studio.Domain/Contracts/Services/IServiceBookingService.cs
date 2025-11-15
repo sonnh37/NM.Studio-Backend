@@ -1,7 +1,7 @@
 ﻿using NM.Studio.Domain.Contracts.Services.Bases;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.ServiceBookings;
-using NM.Studio.Domain.CQRS.Queries.ServiceBookings;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.ServiceBookings;
+using NM.Studio.Domain.Models.CQRS.Queries.ServiceBookings;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;

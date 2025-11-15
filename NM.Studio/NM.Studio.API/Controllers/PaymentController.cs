@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Payments;
-using NM.Studio.Domain.CQRS.Queries.Payments;
 
 namespace NM.Studio.API.Controllers;
 

@@ -15,7 +15,8 @@ public class UserContextService : IUserContextService
 
     public Guid? GetUserId()
     {
-        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if(!IsLoggedIn()) return null;
+        var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("Id")?.Value;
         if (userId == null)
             return null;
         if (Guid.TryParse(userId, out var guid))
@@ -25,26 +26,33 @@ public class UserContextService : IUserContextService
 
     public string? GetEmail()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
+        return null;
+        // return _httpContextAccessor.HttpContext?.User?.FindFirst(m => m.Type)?.Value;
     }
 
     public string? GetUserName()
     {
+        return null;
         return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Name)?.Value;
     }
 
     public string? GetPhoneNumber()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.MobilePhone)?.Value;
+        return _httpContextAccessor.HttpContext?.User?.FindFirst("Phone")?.Value;
     }
 
     public string? GetRole()
     {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Role)?.Value;
+        return _httpContextAccessor.HttpContext?.User?.FindFirst("Role")?.Value;
     }
 
     public string? GetDisplayName()
     {
         return _httpContextAccessor.HttpContext?.User?.FindFirst("DisplayName")?.Value;
+    }
+    
+    public bool IsLoggedIn()
+    {
+        return _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     }
 }

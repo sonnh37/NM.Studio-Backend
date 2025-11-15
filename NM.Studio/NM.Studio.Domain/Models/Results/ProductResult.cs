@@ -10,11 +10,13 @@ public class ProductResult : BaseResult
     public string? Slug { get; set; }
     public Guid? CategoryId { get; set; }
     public Guid? SubCategoryId { get; set; }
+    public Guid? ThumbnailId { get; set; }
     public string? Description { get; set; }
     public string? Material { get; set; }
     public ProductStatus Status { get; set; }
     public CategoryResult? Category { get; set; }
     public SubCategoryResult? SubCategory { get; set; }
+    public MediaBaseResult? Thumbnail { get; set; }
     public ICollection<ProductVariantResult> Variants { get; set; } = new List<ProductVariantResult>();
 }
 

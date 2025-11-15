@@ -7,9 +7,9 @@ using Microsoft.Extensions.Options;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.UserTokens;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.UserTokens;
 using NM.Studio.Domain.Models.Options;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
@@ -18,7 +18,7 @@ using NM.Studio.Services.Bases;
 
 namespace NM.Studio.Services;
 
-public class UserTokenService : BaseService, IRefreshTokenService
+public class UserTokenService : BaseService, IUserTokenService
 {
     private readonly string _clientId;
     private readonly IConfiguration _configuration;
@@ -27,19 +27,19 @@ public class UserTokenService : BaseService, IRefreshTokenService
     protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly IMapper _mapper;
     private readonly IUserTokenRepository _userTokenRepository;
-    protected readonly TokenSetting _tokenSetting;
+    protected readonly UserJwtOptions _userJwtOptions;
     protected readonly IUnitOfWork _unitOfWork;
 
     public UserTokenService(IMapper mapper,
         IUnitOfWork unitOfWork,
         IUserService userService,
-        IOptions<TokenSetting> tokenSetting
+        IOptions<UserJwtOptions> userJwtOptions
     ) : base(mapper, unitOfWork)
     {
         _mapper = mapper;
         _unitOfWork = unitOfWork;
         _httpContextAccessor ??= new HttpContextAccessor();
-        _tokenSetting = tokenSetting.Value;
+        _userJwtOptions = userJwtOptions.Value;
         _userTokenRepository = _unitOfWork.UserTokenRepository;
     }
 
@@ -60,7 +60,7 @@ public class UserTokenService : BaseService, IRefreshTokenService
             createCommand.IpAddress = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
                                       ?? httpContext.Connection.RemoteIpAddress?.ToString() ?? "0.0.0.0";
             createCommand.IpAddress = NormalizeIpAddress(createCommand.IpAddress);
-            createCommand.Expiry = DateTimeOffset.UtcNow.AddDays(_tokenSetting.RefreshTokenExpiryDays);
+            createCommand.ExpiryTime = DateTimeOffset.UtcNow.AddDays(_userJwtOptions.RefreshTokenExpiryInDays);
             entity = _mapper.Map<UserToken>(createCommand);
             entity.CreatedDate = DateTimeOffset.UtcNow;
             _userTokenRepository.Add(entity);
@@ -85,7 +85,7 @@ public class UserTokenService : BaseService, IRefreshTokenService
         // Kiểm tra refreshToken và IP address
         var storedRefreshToken = _userTokenRepository.GetByRefreshTokenAsync(refreshToken).Result;
 
-        if (storedRefreshToken == null || storedRefreshToken.Expiry < DateTimeOffset.UtcNow)
+        if (storedRefreshToken == null || storedRefreshToken.ExpiryTime < DateTimeOffset.UtcNow)
             throw new DomainException("Your session has expired. Please log in again.");
 
         if (storedRefreshToken.IpAddress != ipAddress)

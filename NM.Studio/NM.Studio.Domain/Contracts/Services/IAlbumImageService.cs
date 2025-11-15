@@ -1,6 +1,6 @@
 ﻿using NM.Studio.Domain.Contracts.Services.Bases;
-using NM.Studio.Domain.CQRS.Commands.AlbumImages;
-using NM.Studio.Domain.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.AlbumImages;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;

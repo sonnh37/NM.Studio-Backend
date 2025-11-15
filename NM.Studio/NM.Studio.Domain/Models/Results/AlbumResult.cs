@@ -12,8 +12,8 @@ public class AlbumResult : BaseResult
     public string? GroomName { get; set; }
     public string? Location { get; set; }
     public string? Photographer { get; set; }
-    public int SortOrder { get; set; }
+    public string? CoverUrl { get; set; }
+    
     public bool IsFeatured { get; set; }
-    public int? HomeSortOrder { get; set; }
     public ICollection<AlbumImageResult> AlbumImages { get; set; } = new List<AlbumImageResult>();
 }

@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.Categories;
-using NM.Studio.Domain.CQRS.Queries.Categories;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.Categories;
+using NM.Studio.Domain.Models.CQRS.Queries.Categories;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -31,17 +31,20 @@ public class CategoryService : BaseService, ICategoryService
     {
         var queryable = _categoryRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        if (!string.IsNullOrEmpty(query.Name))
+        {
+            queryable = queryable.Where(n => n.Name != null && query.Name.ToLower().Contains(n.Name.ToLower()));
+        }
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<CategoryResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListCategory = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<CategoryResult>>(pagedListCategory);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
+
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
@@ -76,7 +79,7 @@ public class CategoryService : BaseService, ICategoryService
     public async Task<BusinessResult> GetById(CategoryGetByIdQuery request)
     {
         var queryable = _categoryRepository.GetQueryable(x => x.Id == request.Id);
-        queryable = RepoHelper.Include(queryable, request.IncludeProperties);
+        queryable = queryable.Include(request.IncludeProperties);
         var entity = await queryable.SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException("Not found");
         var result = _mapper.Map<CategoryResult>(entity);

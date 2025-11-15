@@ -1,8 +1,7 @@
 ﻿using System.Security.Cryptography;
-using NM.Studio.Domain.CQRS.Commands.Users;
-using NM.Studio.Domain.CQRS.Queries.Auths;
-using NM.Studio.Domain.CQRS.Queries.Users;
 using NM.Studio.Domain.Models;
+using NM.Studio.Domain.Models.CQRS.Commands.Users;
+using NM.Studio.Domain.Models.CQRS.Queries.Users;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;
@@ -11,9 +10,7 @@ public interface IAuthService
 {
     Task<BusinessResult> Login(AuthQuery authQuery);
 
-    Task<RSA> GetRSAKeyFromTokenAsync(string token, string kid);
-
-    BusinessResult GetUserByCookie(AuthGetByCookieQuery request);
+    // BusinessResult GetUserByCookie(AuthGetByCookieQuery request);
 
     Task<BusinessResult> RefreshToken(UserRefreshTokenCommand request);
 

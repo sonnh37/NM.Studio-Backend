@@ -34,11 +34,11 @@ public class GlobalExceptionHandler(
         };
 
         activity?.SetStatus(ActivityStatusCode.Error, exception.Message);
-        httpContext.Response.StatusCode = (int)problem.Status!;
+        httpContext.Response.StatusCode = StatusCodes.Status200OK;
 
         var businessResult = new BusinessResult
         {
-            Status = problem.Status == StatusCodes.Status200OK ? Status.OK : Status.ERROR,
+            Status = problem.Status == StatusCodes.Status200OK ? nameof(Status.OK) : nameof(Status.ERROR),
             Error = problem,
             Data = null,
             TraceId = activity?.TraceId.ToString()

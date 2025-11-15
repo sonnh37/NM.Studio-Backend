@@ -1,7 +1,7 @@
 ﻿using NM.Studio.Domain.Contracts.Services.Bases;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.CartItems;
-using NM.Studio.Domain.CQRS.Queries.CartItems;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.CartItems;
+using NM.Studio.Domain.Models.CQRS.Queries.CartItems;
 using NM.Studio.Domain.Models.Results.Bases;
 
 namespace NM.Studio.Domain.Contracts.Services;

@@ -23,10 +23,12 @@ public class Product : BaseEntity
 
     public Guid? CategoryId { get; set; }
     public Guid? SubCategoryId { get; set; }
+    public Guid? ThumbnailId { get; set; }
     public string? Description { get; set; }
     public string? Material { get; set; }
     public ProductStatus Status { get; set; }
     public virtual Category? Category { get; set; }
     public virtual SubCategory? SubCategory { get; set; }
+    public virtual MediaBase? Thumbnail { get; set; }
     public virtual ICollection<ProductVariant> Variants { get; set; } = new List<ProductVariant>();
 }

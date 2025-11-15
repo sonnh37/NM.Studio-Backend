@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.Vouchers;
-using NM.Studio.Domain.CQRS.Queries.Vouchers;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.Vouchers;
+using NM.Studio.Domain.Models.CQRS.Queries.Vouchers;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -29,16 +29,14 @@ public class VoucherService : BaseService, IVoucherService
     {
         var queryable = _voucherRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<VoucherResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListVoucher = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<VoucherResult>>(pagedListVoucher);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)

@@ -10,8 +10,9 @@ using NM.Studio.Domain.Shared.Handler;
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Host.AddAppConfiguration();
+// builder.Host.AddAppConfiguration();
 // Add Cors
+builder.Services.AddHttpContextAccessor();
 builder.Services.ConfigureCors(builder.Configuration);
 // Add serilog
 builder.Host.AddSerilog(builder.Configuration);
@@ -31,12 +32,11 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-builder.Services.AddHttpContextAccessor();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.ConfigureBind();
-builder.Services.ConfigureAuth();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.ConfigureAuth(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
 

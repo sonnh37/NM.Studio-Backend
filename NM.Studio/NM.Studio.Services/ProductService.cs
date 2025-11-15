@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
-using NM.Studio.Domain.CQRS.Commands.Base;
-using NM.Studio.Domain.CQRS.Commands.Products;
-using NM.Studio.Domain.CQRS.Queries.Products;
 using NM.Studio.Domain.Entities;
+using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.Products;
+using NM.Studio.Domain.Models.CQRS.Queries.Products;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -32,37 +32,39 @@ public class ProductService : BaseService, IProductService
 
     public async Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query)
     {
-        var categories = _categoryRepository.GetQueryable(c => !c.IsDeleted);
+        var subCategories = _unitOfWork.SubCategoryRepository.GetQueryable(c => !c.IsDeleted);
         // .OrderByDescending(m => m.CreatedDate)
         // .Include(c => c.SubCategories);
         // .ThenInclude(sc => sc.Products)
         // .ThenInclude(p => p.ProductMedias)
         // .ThenInclude(px => px.MediaFile);
 
-        var groupedCategories = await categories
-            .Select(c => new ProductRepresentativeByCategoryResult
+        var groupedCategories = await (
+                from c in _categoryRepository.GetQueryable(x => !x.IsDeleted)
+                join sc in subCategories
+                    on c.Id equals sc.CategoryId
+                join p in _productRepository.GetQueryable(x => !x.IsDeleted)
+                    on sc.Id equals p.SubCategoryId
+                select new { c, p }
+            )
+            .GroupBy(x => x.c)
+            .Select(g => new ProductRepresentativeByCategoryResult
             {
                 Category = new CategoryResult
                 {
-                    Id = c.Id,
-                    Name = c.Name
-                }
-                // Product = c.SubCategories
-                //     .SelectMany(sc => sc.Products)
-                //     .OrderByDescending(p => p.LastUpdatedDate)
-                //     .Take(1)
-                //     .Select(p => new ProductRepresentativeResult
-                //     {
-                //         Id = p.Id,
-                //         Sku = p.Sku,
-                //         Slug = p.Slug,
-                //         Src = p.ProductMedias
-                //             .Where(px => px.MediaFile != null)
-                //             .OrderBy(px => px.LastUpdatedDate)
-                //             .Select(px => px.MediaFile!.Src)
-                //             .FirstOrDefault()
-                //     })
-                //     .SingleOrDefault()
+                    Id = g.Key.Id,
+                    Name = g.Key.Name
+                },
+                Product = g
+                    .OrderByDescending(x => x.p.CreatedDate)
+                    .Select(x => new ProductRepresentativeResult
+                    {
+                        Id = x.p.Id,
+                        Sku = x.p.Sku,
+                        Slug = x.p.Slug,
+                        Src = x.p.Thumbnail != null ? x.p.Thumbnail.MediaUrl : null
+                    })
+                    .FirstOrDefault()
             })
             .ToListAsync();
 
@@ -118,16 +120,14 @@ public class ProductService : BaseService, IProductService
     {
         var queryable = _productRepository.GetQueryable();
 
-        queryable = FilterHelper.BaseEntity(queryable, query);
-        queryable = RepoHelper.Include(queryable, query.IncludeProperties);
-        queryable = RepoHelper.Sort(queryable, query);
+        queryable = queryable.FilterBase(query);
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Sort(query.Sorting);
 
-        var totalCount = await queryable.CountAsync();
-        var entities = await RepoHelper.GetQueryablePagination(queryable, query).ToListAsync();
-        var results = _mapper.Map<List<ProductResult>>(entities);
-        var getQueryableResult = new GetQueryableResult(results, totalCount, query);
+        var pagedListProduct = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<ProductResult>>(pagedListProduct);
 
-        return new BusinessResult(getQueryableResult);
+        return new BusinessResult(pagedList);
     }
 
     public async Task<BusinessResult> GetById(ProductGetByIdQuery request)

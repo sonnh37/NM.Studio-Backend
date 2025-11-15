@@ -11,7 +11,6 @@ COPY ["NM.Studio.API/NM.Studio.API.csproj", "NM.Studio.API/"]
 COPY ["NM.Studio.Data/NM.Studio.Data.csproj", "NM.Studio.Data/"]
 COPY ["NM.Studio.Domain/NM.Studio.Domain.csproj", "NM.Studio.Domain/"]
 COPY ["NM.Studio.Services/NM.Studio.Services.csproj", "NM.Studio.Services/"]
-COPY ["NM.Studio.Handler/NM.Studio.Handler.csproj", "NM.Studio.Handler/"]
 COPY ["NM.Studio.Validations/NM.Studio.Validations.csproj", "NM.Studio.Validations/"]
 RUN dotnet restore "NM.Studio.API/NM.Studio.API.csproj"
 COPY . .

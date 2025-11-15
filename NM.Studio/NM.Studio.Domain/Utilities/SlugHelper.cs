@@ -12,25 +12,15 @@ public static class SlugHelper
 
         // Convert to lowercase
         var slug = title.ToLowerInvariant();
-        Console.WriteLine($"Lowercase: {slug}");
-
         // Remove accents
         slug = RemoveAccents(slug);
-        Console.WriteLine($"Without accents: {slug}");
-
         // Replace spaces and other characters with hyphens
         slug = Regex.Replace(slug, @"[^a-z0-9\s-]", string.Empty); // Remove non-alphanumeric characters
-        Console.WriteLine($"After removing non-alphanumeric characters: {slug}");
 
         slug = Regex.Replace(slug, @"\s+", " "); // Convert multiple spaces to a single space
-        Console.WriteLine($"After converting multiple spaces: {slug}");
-
         slug = Regex.Replace(slug, @"\s", "-"); // Replace spaces with hyphens
-        Console.WriteLine($"Before trimming final slug: {slug}");
-
         // Remove trailing hyphen if exists
         slug = slug.Trim('-');
-        Console.WriteLine($"Final slug: {slug}");
 
         return slug;
     }

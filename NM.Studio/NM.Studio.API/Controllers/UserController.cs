@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NM.Studio.API.Controllers.Base;
 using NM.Studio.Domain.Contracts.Services;
-using NM.Studio.Domain.CQRS.Commands.Users;
-using NM.Studio.Domain.CQRS.Queries.Users;
+using NM.Studio.Domain.Models.CQRS.Commands.Users;
+using NM.Studio.Domain.Models.CQRS.Queries.Users;
 
 namespace NM.Studio.API.Controllers;
 
@@ -21,11 +21,10 @@ public class UserController : BaseController
         _logger = logger;
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] UserGetAllQuery request)
     {
-        _logger.LogError($"GetAll process started: {JsonSerializer.Serialize(request)}");
         var businessResult = await _userService.GetAll(request);
 
         return Ok(businessResult);
@@ -36,6 +35,14 @@ public class UserController : BaseController
     public async Task<IActionResult> GetById([FromQuery] UserGetByIdQuery request)
     {
         var businessResult = await _userService.GetById(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpGet("context")]
+    public async Task<IActionResult> GetUserByContext()
+    {
+        var businessResult = await _userService.GetUserByContext();
 
         return Ok(businessResult);
     }

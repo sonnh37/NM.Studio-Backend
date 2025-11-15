@@ -1,4 +1,5 @@
-﻿using NM.Studio.Data.Context;
+﻿using Microsoft.Extensions.Logging;
+using NM.Studio.Data.Context;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 
@@ -6,7 +7,9 @@ namespace NM.Studio.Data.UnitOfWorks;
 
 public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 {
-    public UnitOfWork(StudioContext context, IServiceProvider serviceProvider) : base(context, serviceProvider)
+    public UnitOfWork(StudioContext context, IServiceProvider serviceProvider,
+        ILogger<BaseUnitOfWork<StudioContext>> logger)
+        : base(context, serviceProvider, logger)
     {
     }
 
@@ -16,7 +19,7 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IProductRepository ProductRepository => GetRepository<IProductRepository>();
 
-    public IProductImageRepository ProductImageRepository => GetRepository<IProductImageRepository>();
+    public IProductMediaRepository ProductMediaRepository => GetRepository<IProductMediaRepository>();
 
     public IAlbumRepository AlbumRepository => GetRepository<IAlbumRepository>();
 
@@ -26,10 +29,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public ISubCategoryRepository SubCategoryRepository => GetRepository<ISubCategoryRepository>();
 
-    public IImageRepository ImageRepository => GetRepository<IImageRepository>();
-
-    public IVideoRepository VideoRepository => GetRepository<IVideoRepository>();
-
     public IMediaBaseRepository MediaBaseRepository => GetRepository<IMediaBaseRepository>();
 
     public IBlogRepository BlogRepository => GetRepository<IBlogRepository>();
@@ -37,8 +36,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
     public IServiceBookingRepository ServiceBookingRepository => GetRepository<IServiceBookingRepository>();
 
     public IUserTokenRepository UserTokenRepository => GetRepository<IUserTokenRepository>();
-
-    public IMediaUrlRepository MediaUrlRepository => GetRepository<IMediaUrlRepository>();
 
     public IProductVariantRepository ProductVariantRepository => GetRepository<IProductVariantRepository>();
 
@@ -58,4 +55,6 @@ public class UnitOfWork : BaseUnitOfWork<StudioContext>, IUnitOfWork
 
     public IVoucherUsageHistoryRepository VoucherUsageHistoryRepository =>
         GetRepository<IVoucherUsageHistoryRepository>();
+
+    public IHomeSlideRepository HomeSlideRepository => GetRepository<IHomeSlideRepository>();
 }
