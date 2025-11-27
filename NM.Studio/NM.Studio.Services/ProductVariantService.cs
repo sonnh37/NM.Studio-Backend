@@ -119,6 +119,25 @@ public class ProductVariantService : BaseService, IProductVariantService
         return new BusinessResult(result);
     }
 
+
+    public async Task<BusinessResult> CreateList(List<ProductVariantCreateCommand> commands)
+    {
+        List<ProductVariant>? entities = null;
+
+        entities = _mapper.Map<List<ProductVariant>>(commands);
+        if (entities == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+        entities.ForEach(x => x.CreatedDate = DateTimeOffset.UtcNow);
+        _productVariantRepository.AddRange(entities);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<List<ProductVariantResult>>(entities);
+
+        return new BusinessResult(result);
+    }
+
     // public async Task<BusinessResult> GetById(ProductVariantGetByIdQuery request)
     // {
     //     var queryable = _productVariantRepository.GetQueryable(x => x.Id == request.Id);

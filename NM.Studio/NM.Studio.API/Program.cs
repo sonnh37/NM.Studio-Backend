@@ -45,19 +45,7 @@ builder.Services.ConfigureSwaggerGen();
 var app = builder.Build();
 
 app.UseExceptionHandler();
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.DefaultModelsExpandDepth(-1);
-        options.DisplayRequestDuration();
-        options.EnableDeepLinking();
-        options.EnableFilter();
-    });
-}
 
-app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseCors(ServiceExtensions.CorsPolicyName);
@@ -71,5 +59,19 @@ app.Lifetime.ApplicationStarted.Register(() =>
 {
     logger.LogInformation("[Successfully] Server started successfully and is listening for requests...");
 });
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.DefaultModelsExpandDepth(-1);
+        options.DisplayRequestDuration();
+        options.EnableDeepLinking();
+        options.EnableFilter();
+    });
+}
+
+app.UseHttpsRedirection();
 
 app.Run();

@@ -127,8 +127,8 @@ public static class ServiceExtensions
     {
         services.AddDbContext<StudioContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-            // npgsqlOptions => npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             // options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
     }

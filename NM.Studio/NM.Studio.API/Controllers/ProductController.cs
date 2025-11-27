@@ -34,6 +34,24 @@ public class ProductController : BaseController
 
         return Ok(businessResult);
     }
+    
+    [AllowAnonymous]
+    [HttpGet("preview")]
+    public async Task<IActionResult> GetAllPreview([FromQuery] ProductGetAllQuery request)
+    {
+        var businessResult = await _productService.GetAllPreview(request);
+
+        return Ok(businessResult);
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("preview/by-slug")]
+    public async Task<IActionResult> GetProductPreviewBySlug([FromQuery] ProductGetBySlugQuery request)
+    {
+        var businessResult = await _productService.GetProductPreviewBySlug(request);
+
+        return Ok(businessResult);
+    }
 
     [AllowAnonymous]
     [HttpGet("id")]
@@ -55,6 +73,14 @@ public class ProductController : BaseController
     public async Task<IActionResult> Update([FromBody] ProductUpdateCommand request)
     {
         var businessResult = await _productService.CreateOrUpdate(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpPut("status")]
+    public async Task<IActionResult> UpdateStatus([FromBody] ProductUpdateStatusCommand request)
+    {
+        var businessResult = await _productService.UpdateStatus(request);
 
         return Ok(businessResult);
     }

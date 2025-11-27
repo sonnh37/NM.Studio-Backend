@@ -81,6 +81,7 @@ public class MappingProfile : Profile
     private void ProductMapping()
     {
         CreateMap<Product, ProductResult>().ReverseMap();
+        CreateMap<Product, ProductPreviewResult>().ReverseMap();
         CreateMap<Product, ProductCreateCommand>().ReverseMap();
         CreateMap<Product, ProductUpdateCommand>().ReverseMap();
 

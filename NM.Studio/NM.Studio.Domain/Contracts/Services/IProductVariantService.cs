@@ -12,4 +12,5 @@ public interface IProductVariantService : IBaseService
 
     // Task<BusinessResult> GetById(ProductVariantGetByIdQuery request);
     Task<BusinessResult> Delete(ProductVariantDeleteCommand command);
+    Task<BusinessResult> CreateList(List<ProductVariantCreateCommand> commands);
 }

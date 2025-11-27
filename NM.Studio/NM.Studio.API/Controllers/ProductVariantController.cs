@@ -23,6 +23,14 @@ public class ProductVariantController : BaseController
 
         return Ok(businessResult);
     }
+    
+    [HttpPost("list")]
+    public async Task<IActionResult> CreateListProductVariant([FromBody] List<ProductVariantCreateCommand> request)
+    {
+        var businessResult = await _productVariantService.CreateList(request);
+
+        return Ok(businessResult);
+    }
 
     [HttpPut]
     public async Task<IActionResult> Update([FromBody] ProductVariantUpdateCommand request)
