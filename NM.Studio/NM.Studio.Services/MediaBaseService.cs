@@ -21,13 +21,15 @@ namespace NM.Studio.Services;
 public class MediaBaseService : BaseService, IMediaBaseService
 {
     private readonly IMediaBaseRepository _mediaBaseRepository;
+    private readonly IMediaUploadService _mediaUploadService;
 
-    public MediaBaseService(IMapper mapper, IUnitOfWork unitOfWork) : base(
+    public MediaBaseService(IMapper mapper, IUnitOfWork unitOfWork, IMediaUploadService mediaUploadService) : base(
         mapper, unitOfWork)
     {
+        _mediaUploadService = mediaUploadService;
         _mediaBaseRepository = _unitOfWork.MediaBaseRepository;
     }
-    
+
     public async Task<BusinessResult> GetAll(MediaBaseGetAllQuery query)
     {
         var queryable = _mediaBaseRepository.GetQueryable();
@@ -36,7 +38,8 @@ public class MediaBaseService : BaseService, IMediaBaseService
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
-        var pagedListMediaBase = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedListMediaBase =
+            await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
         var pagedList = _mapper.Map<IPagedList<MediaBaseResult>>(pagedListMediaBase);
 
         return new BusinessResult(pagedList);
@@ -92,6 +95,10 @@ public class MediaBaseService : BaseService, IMediaBaseService
     {
         var entity = await _mediaBaseRepository.GetQueryable(x => x.Id == command.Id).SingleOrDefaultAsync();
         if (entity == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+        if (command.IsPermanent)
+        {
+            if (entity.MediaUrl != null) _mediaUploadService.DeleteFileAsync(entity.MediaUrl);
+        }
 
         _mediaBaseRepository.Delete(entity, command.IsPermanent);
 
@@ -101,5 +108,4 @@ public class MediaBaseService : BaseService, IMediaBaseService
 
         return new BusinessResult();
     }
-    
 }

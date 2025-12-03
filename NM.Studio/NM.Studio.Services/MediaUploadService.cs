@@ -1,8 +1,11 @@
+using System.Net;
 using AutoMapper;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using NM.Studio.Domain.Contracts.Services;
 using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.Entities;
@@ -12,6 +15,7 @@ using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
 using NM.Studio.Domain.Utilities;
+using ResourceType = NM.Studio.Domain.Entities.ResourceType;
 
 namespace NM.Studio.Services;
 
@@ -20,16 +24,20 @@ public class MediaUploadService : IMediaUploadService
     private readonly Cloudinary _cloudinary;
     private readonly IUserContextService _userContext;
     protected readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IMapper _mapper;
+    private readonly ILogger<MediaUploadService> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public MediaUploadService(IUnitOfWork unitOfWork, IUserContextService userContext,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor, IMapper mapper, ILogger<MediaUploadService> logger)
     {
         var cloudinaryUrl = Environment.GetEnvironmentVariable("CLOUDINARY_URL");
         var cloudinary = new Cloudinary(cloudinaryUrl);
         cloudinary.Api.Secure = true;
         _cloudinary = cloudinary;
         _httpContextAccessor = httpContextAccessor;
+        _mapper = mapper;
+        _logger = logger;
         _userContext = userContext;
         _unitOfWork = unitOfWork;
     }
@@ -39,7 +47,7 @@ public class MediaUploadService : IMediaUploadService
         var userIdClaim = _userContext.GetUserId();
         if (userIdClaim == null)
             throw new UnauthorizedException("You need to authenticate with TeamMatching.");
-        
+
         if (request.File == null) throw new DomainException("File is null");
 
         if (request.File.Length == 0)
@@ -48,11 +56,74 @@ public class MediaUploadService : IMediaUploadService
         if (request.File.Length > 10485760)
             throw new DomainException("File size exceeds 10MB limit.");
 
-        var mediaBase = await UploadFileAsync(request, userIdClaim.Value);
-        if (mediaBase == null)
-            throw new DomainException("Failed to update file");
+        var uploadResult = await UploadFileAsync(request, userIdClaim.Value);
+        if (uploadResult != null)
+        {
+            return await HandleResult(uploadResult);
+        }
 
-        return new BusinessResult(mediaBase);
+        return new BusinessResult();
+    }
+
+    public async Task<BusinessResult> UploadFiles(FileUploadListRequest request)
+    {
+        var userIdClaim = _userContext.GetUserId();
+        if (userIdClaim == null)
+            throw new UnauthorizedException("You need to authenticate with TeamMatching.");
+
+        if (request.Files == null || request.Files.Count <= 0)
+            throw new DomainException("File is null");
+
+        if (request.Files.Any(n => n.Length > 10485760))
+            throw new DomainException("File size exceeds 10MB limit.");
+
+        // Tạo danh sách các task upload
+        var uploadTasks = new List<Task<UploadResult>>();
+
+        foreach (var file in request.Files)
+        {
+            var fileUploadRequest = new FileUploadRequest
+            {
+                File = file,
+                FolderName = request.FolderName,
+            };
+
+            // Tạo task upload nhưng chưa await
+            var uploadTask = UploadFileAsync(fileUploadRequest, userIdClaim.Value);
+
+            uploadTasks.Add(uploadTask);
+        }
+
+        // Chờ tất cả các task upload hoàn thành song song
+        var results = await Task.WhenAll(uploadTasks);
+        if (results.Any(result => result == null))
+            throw new DomainException("Failed to upload one or more files");
+
+        var mediaBases = new List<MediaBase>();
+        if (results.Length > 0)
+        {
+            foreach (var uploadTask in results)
+            {
+                if (uploadTask != null && uploadTask.StatusCode == HttpStatusCode.OK)
+                {
+                    var src = uploadTask.SecureUrl.ToString();
+                    if (string.IsNullOrEmpty(src)) throw new DomainException("File is null");
+                    var getResourceResult = await GetResourceAsync(src);
+                    if (getResourceResult == null)
+                        throw new NotFoundException("Not found resource on cloudinary by src");
+                    var entity = FromCloudinaryResource(getResourceResult);
+                    _unitOfWork.MediaBaseRepository.Add(entity);
+                    var saveChanges = await _unitOfWork.SaveChanges();
+                    if (!saveChanges)
+                        throw new DomainException("Failed to save changes");
+                    mediaBases.Add(entity);
+                }
+            }
+        }
+
+        var mediaBaseResults = _mapper.Map<List<MediaBaseResult>>(mediaBases);
+
+        return new BusinessResult(mediaBaseResults);
     }
 
     public async Task<BusinessResult> UpdateFile(FileUpdateRequest request)
@@ -117,7 +188,7 @@ public class MediaUploadService : IMediaUploadService
 
             mediaBase.DisplayName = resource.DisplayName ?? resource.PublicId;
             mediaBase.Title = resource.PublicId;
-            mediaBase.MimeType = resource.Format;
+            mediaBase.Format = resource.Format;
             mediaBase.Size = resource.Bytes;
             mediaBase.Width = resource.Width;
             mediaBase.Height = resource.Height;
@@ -125,7 +196,8 @@ public class MediaUploadService : IMediaUploadService
             mediaBase.TakenMediaDate = !string.IsNullOrWhiteSpace(resource.CreatedAt)
                 ? DateTimeOffset.Parse(resource.CreatedAt, null, System.Globalization.DateTimeStyles.AssumeUniversal)
                 : null;
-            mediaBase.MediaBaseType = resource.ResourceType == ResourceType.Image ? MediaBaseType.Image : MediaBaseType.Video;
+            mediaBase.ResourceType =
+                resource.ResourceType == CloudinaryDotNet.Actions.ResourceType.Image ? ResourceType.Image : ResourceType.Video;
             _unitOfWork.MediaBaseRepository.Update(mediaBase);
             if (!await _unitOfWork.SaveChanges()) return null;
             return mediaBase;
@@ -136,7 +208,7 @@ public class MediaUploadService : IMediaUploadService
         }
     }
 
-    private async Task<MediaBase?> UploadFileAsync(FileUploadRequest request, Guid userId)
+    private async Task<UploadResult?> UploadFileAsync(FileUploadRequest request, Guid userId)
     {
         try
         {
@@ -165,11 +237,7 @@ public class MediaUploadService : IMediaUploadService
                 throw new DomainException($"Upload failed: {uploadResult.Error.Message}");
             }
 
-            if (uploadResult.StatusCode != System.Net.HttpStatusCode.OK) throw new DomainException("Unknown error");
-            var mediaBaseResult = await CreateMediaBaseFromSrc(uploadResult.SecureUrl.ToString());
-            if (mediaBaseResult == null) throw new DomainException("Failed to create media base");
-
-            return mediaBaseResult;
+            return uploadResult;
         }
         catch (Exception ex)
         {
@@ -272,7 +340,7 @@ public class MediaUploadService : IMediaUploadService
 
         var deletionParams = new DeletionParams(publicId)
         {
-            ResourceType = ResourceType.Auto
+            ResourceType = (CloudinaryDotNet.Actions.ResourceType)ResourceType.Auto
         };
 
         var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
@@ -335,6 +403,8 @@ public class MediaUploadService : IMediaUploadService
 
     private MediaBase FromCloudinaryResource(GetResourceResult resource)
     {
+        _logger.LogInformation("Cloudinary Resource: {request}", JsonConvert.SerializeObject(resource));
+
         if (resource == null)
             throw new ArgumentNullException(nameof(resource));
 
@@ -342,7 +412,7 @@ public class MediaUploadService : IMediaUploadService
         {
             DisplayName = resource.DisplayName ?? resource.PublicId,
             Title = resource.PublicId,
-            MimeType = resource.Format,
+            Format = resource.Format,
             Size = resource.Bytes,
             Width = resource.Width,
             Height = resource.Height,
@@ -350,7 +420,7 @@ public class MediaUploadService : IMediaUploadService
             TakenMediaDate = !string.IsNullOrWhiteSpace(resource.CreatedAt)
                 ? DateTimeOffset.Parse(resource.CreatedAt, null, System.Globalization.DateTimeStyles.AssumeUniversal)
                 : null,
-            MediaBaseType = resource.ResourceType == ResourceType.Image ? MediaBaseType.Image : MediaBaseType.Video,
+            ResourceType = resource.ResourceType == (CloudinaryDotNet.Actions.ResourceType)ResourceType.Image ? ResourceType.Image : ResourceType.Video,
             CreatedDate = DateTimeOffset.UtcNow
         };
 

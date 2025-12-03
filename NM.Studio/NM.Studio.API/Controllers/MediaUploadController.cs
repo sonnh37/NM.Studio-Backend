@@ -24,6 +24,14 @@ public class MediaUploadController : BaseController
         return Ok(businessResult);
     }
     
+    [HttpPost("list")]
+    public async Task<IActionResult> UploadFiles([FromForm] FileUploadListRequest request)
+    {
+        var businessResult = await _mediaUploadService.UploadFiles(request);
+
+        return Ok(businessResult);
+    }
+    
     [HttpPut]
     public async Task<IActionResult> UpdateFile([FromForm] FileUpdateRequest request)
     {

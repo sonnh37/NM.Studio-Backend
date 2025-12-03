@@ -39,6 +39,14 @@ public class ProductVariantController : BaseController
 
         return Ok(businessResult);
     }
+    
+    [HttpPut("status")]
+    public async Task<IActionResult> UpdateStatus([FromBody] ProductVariantUpdateStatusCommand request)
+    {
+        var businessResult = await _productVariantService.UpdateStatus(request);
+
+        return Ok(businessResult);
+    }
 
     [HttpDelete]
     public async Task<IActionResult> Delete([FromQuery] ProductVariantDeleteCommand request)
