@@ -33,7 +33,7 @@ public static class ServiceExtensions
     {
         services.AddCors(options =>
         {
-            var origins = configuration.GetValue<string>("AllowOrigins")?.Split(",");
+            var origins = configuration.GetValue<string>("AllowOrigins")?.Split(",") ?? Array.Empty<string>();
             options.AddPolicy(CorsPolicyName, builder =>
             {
                 if (origins.Length == 0)
