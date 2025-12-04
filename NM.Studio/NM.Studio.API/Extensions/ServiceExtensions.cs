@@ -1,3 +1,5 @@
+using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +13,8 @@ using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.Models.Options;
 using NM.Studio.Domain.Utilities;
 using NM.Studio.Services;
+using FluentValidation;
+using NM.Studio.Validations.Commands.ProductVariants;
 using Quartz;
 
 namespace NM.Studio.API.Extensions;
@@ -127,8 +131,8 @@ public static class ServiceExtensions
     {
         services.AddDbContext<StudioContext>(options =>
         {
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-            // npgsqlOptions => npgsqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
+                o => o.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery));
             // options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
     }
@@ -149,7 +153,7 @@ public static class ServiceExtensions
         services.AddScoped<IServiceService, ServiceService>();
         services.AddScoped<IAlbumService, AlbumService>();
         services.AddScoped<IAlbumImageService, AlbumImageService>();
-        services.AddScoped<IProductMediaervice, ProductMediaService>();
+        services.AddScoped<IProductMediaService, ProductMediaService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ISubCategoryService, SubCategoryService>();
         services.AddScoped<IBlogService, BlogService>();
@@ -198,5 +202,27 @@ public static class ServiceExtensions
         services.AddScoped<IVoucherUsageHistoryRepository, VoucherUsageHistoryRepository>();
         services.AddScoped<IMediaBaseRepository, MediaBaseRepository>();
         services.AddScoped<IHomeSlideRepository, HomeSlideRepository>();
+    }
+
+    public static IServiceCollection AddFluentValidation(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssemblies(GetAssemblies(), ServiceLifetime.Transient);
+        return services;
+    }
+
+    public static void LoadAssemblies(this IServiceCollection services)
+    {
+        var folder = AppContext.BaseDirectory;
+        foreach (var dll in Directory.GetFiles(folder, "*.dll"))
+        {
+            AssemblyLoadContext.Default.LoadFromAssemblyPath(dll);
+        }
+    }
+
+    private static Assembly[] GetAssemblies()
+    {
+        return AssemblyLoadContext.Default.Assemblies
+            .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.FullName))
+            .ToArray();
     }
 }

@@ -13,6 +13,6 @@ public class ProductVariantCreateCommand : CreateCommand
     public decimal? RentalPrice { get; set; }
     public decimal? Deposit { get; set; }
     public int StockQuantity { get; set; }
-    public ProductStatus Status { get; set; }
-    public virtual Product? Product { get; set; }
+    public int StockDefaultQuantity { get; set; }
+    public InventoryStatus Status { get; set; }
 }

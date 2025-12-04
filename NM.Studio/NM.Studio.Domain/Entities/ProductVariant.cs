@@ -17,7 +17,15 @@ public class ProductVariant : BaseEntity
     [Column(TypeName = "decimal(18,2)")] public decimal? RentalPrice { get; set; }
     [Column(TypeName = "decimal(18,2)")] public decimal? Deposit { get; set; }
     public int StockQuantity { get; set; }
-    public ProductStatus Status { get; set; }
+    public int StockDefaultQuantity { get; set; }
+    public InventoryStatus Status { get; set; }
     public virtual Product? Product { get; set; }
     public virtual ICollection<ProductMedia> ProductMedias { get; set; } = new List<ProductMedia>();
+}
+
+public enum InventoryStatus
+{
+    Available,
+    Rented,
+    InMaintenance
 }

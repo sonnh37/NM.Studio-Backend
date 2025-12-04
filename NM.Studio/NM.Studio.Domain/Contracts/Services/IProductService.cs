@@ -12,6 +12,8 @@ public interface IProductService : IBaseService
     Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand);
     Task<BusinessResult> GetById(ProductGetByIdQuery request);
     Task<BusinessResult> Delete(ProductDeleteCommand command);
-
     Task<BusinessResult> GetRepresentativeByCategory(ProductRepresentativeByCategoryQuery query);
+    Task<BusinessResult> GetProductPreviewBySlug(ProductGetBySlugQuery query);
+    Task<BusinessResult> GetAllPreview(ProductGetAllQuery query);
+    Task<BusinessResult> UpdateStatus(ProductUpdateStatusCommand updateStatusCommand);
 }

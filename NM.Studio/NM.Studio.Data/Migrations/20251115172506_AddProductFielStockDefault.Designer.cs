@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NM.Studio.Data.Context;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NM.Studio.Data.Migrations
 {
     [DbContext(typeof(StudioContext))]
-    partial class StudioContextModelSnapshot : ModelSnapshot
+    [Migration("20251115172506_AddProductFielStockDefault")]
+    partial class AddProductFielStockDefault
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -382,10 +385,6 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("text")
                         .HasColumnName("display_name");
 
-                    b.Property<string>("Format")
-                        .HasColumnType("text")
-                        .HasColumnName("format");
-
                     b.Property<int?>("Height")
                         .HasColumnType("integer")
                         .HasColumnName("height");
@@ -394,13 +393,17 @@ namespace NM.Studio.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<string>("MediaBaseType")
+                        .HasColumnType("text")
+                        .HasColumnName("media_base_type");
+
                     b.Property<string>("MediaUrl")
                         .HasColumnType("text")
                         .HasColumnName("media_url");
 
-                    b.Property<string>("ResourceType")
+                    b.Property<string>("MimeType")
                         .HasColumnType("text")
-                        .HasColumnName("resource_type");
+                        .HasColumnName("mime_type");
 
                     b.Property<long>("Size")
                         .HasColumnType("bigint")

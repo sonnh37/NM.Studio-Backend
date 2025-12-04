@@ -6,11 +6,9 @@ namespace NM.Studio.Domain.Entities;
 
 public enum ProductStatus
 {
-    Unspecified,
-    Available,
-    Rented,
-    InMaintenance,
-    Unavailable
+    Active,
+    Draft,
+    Archived
 }
 
 [Index(nameof(Slug), IsUnique = true)]

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using NM.Studio.Domain.Contracts.Repositories;
 using NM.Studio.Domain.Contracts.Services;
@@ -109,6 +110,47 @@ public class ProductVariantService : BaseService, IProductVariantService
             entity.CreatedDate = DateTimeOffset.UtcNow;
             _productVariantRepository.Add(entity);
         }
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<ProductVariantResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
+
+    public async Task<BusinessResult> CreateList(List<ProductVariantCreateCommand> commands)
+    {
+        await commands.ValidateDynamicAsync();
+
+        List<ProductVariant>? entities = null;
+        
+        entities = _mapper.Map<List<ProductVariant>>(commands);
+        if (entities == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+        entities.ForEach(x => x.CreatedDate = DateTimeOffset.UtcNow);
+        _productVariantRepository.AddRange(entities);
+        
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+        
+        var result = _mapper.Map<List<ProductVariantResult>>(entities);
+
+        return new BusinessResult(result);
+    }
+    
+    public async Task<BusinessResult> UpdateStatus(ProductVariantUpdateStatusCommand updateStatusCommand)
+    {
+        ProductVariant? entity = null;
+        entity = _productVariantRepository.GetQueryable(m => m.Id == updateStatusCommand.Id).SingleOrDefault();
+
+        if (entity == null)
+            throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        entity.Status = updateStatusCommand.Status;
+        _productVariantRepository.Update(entity);
 
         var saveChanges = await _unitOfWork.SaveChanges();
         if (!saveChanges)

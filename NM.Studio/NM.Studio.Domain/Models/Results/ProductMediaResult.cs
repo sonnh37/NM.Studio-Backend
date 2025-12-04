@@ -5,8 +5,8 @@ namespace NM.Studio.Domain.Models.Results;
 
 public class ProductMediaResult : BaseResult
 {
-    public string? ImageId { get; set; }
-    public string? ProductVariantId { get; set; }
-    public virtual ProductVariant? ProductVariant { get; set; }
-    public virtual MediaBase? Image { get; set; }
+    public Guid? MediaBaseId { get; set; }
+    public Guid? ProductVariantId { get; set; }
+    public ProductVariantResult? ProductVariant { get; set; }
+    public MediaBaseResult? MediaBase { get; set; }
 }

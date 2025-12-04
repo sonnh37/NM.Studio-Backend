@@ -116,19 +116,102 @@ public class ProductService : BaseService, IProductService
         return new BusinessResult(result);
     }
 
+    public async Task<BusinessResult> UpdateStatus(ProductUpdateStatusCommand updateStatusCommand)
+    {
+        Product? entity = null;
+        entity = _productRepository.GetQueryable(m => m.Id == updateStatusCommand.Id).SingleOrDefault();
+
+        if (entity == null)
+            throw new NotFoundException(Const.NOT_FOUND_MSG);
+
+        entity.Status = updateStatusCommand.Status;
+        _productRepository.Update(entity);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<ProductResult>(entity);
+
+        return new BusinessResult(result);
+    }
+
     public async Task<BusinessResult> GetAll(ProductGetAllQuery query)
     {
         var queryable = _productRepository.GetQueryable();
 
         queryable = queryable.FilterBase(query);
+        if (query.Status != null)
+        {
+            queryable = queryable.Where(n => n.Status == query.Status);
+        }
+
         queryable = queryable.Include(query.IncludeProperties);
         queryable = queryable.Sort(query.Sorting);
 
         var pagedListProduct = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
         var pagedList = _mapper.Map<IPagedList<ProductResult>>(pagedListProduct);
 
+
         return new BusinessResult(pagedList);
     }
+
+    public async Task<BusinessResult> GetAllPreview(ProductGetAllQuery query)
+    {
+        var queryable = _productRepository.GetQueryable();
+
+        queryable = queryable.FilterBase(query);
+        if (query.Status != null)
+        {
+            queryable = queryable.Where(n => n.Status == query.Status);
+        }
+
+        queryable = queryable.Include(query.IncludeProperties);
+        queryable = queryable.Include(n => n.Variants).ThenInclude(n => n.ProductMedias)
+            .ThenInclude(n => n.MediaBase);
+
+        queryable = queryable.Sort(query.Sorting);
+
+        var pagedListProduct = await queryable.ToPagedListAsync(query.Pagination.PageNumber, query.Pagination.PageSize);
+        var pagedList = _mapper.Map<IPagedList<ProductPreviewResult>>(pagedListProduct);
+        foreach (var product in pagedList.Results)
+        {
+            if (product.Variants.Count > 0)
+            {
+                product.MinPrice = product.GetMinPrice();
+                product.MaxPrice = product.GetMaxPrice();
+
+                var totalStockQuantity = product.Variants.Sum(n => n.StockQuantity);
+                var totalStockDefaultQuantity = product.Variants.Sum(n => n.StockDefaultQuantity);
+                product.totalStockDefaultQuantity = totalStockDefaultQuantity;
+                product.totalStockQuantity = totalStockQuantity;
+            }
+        }
+
+        return new BusinessResult(pagedList);
+    }
+
+    public async Task<BusinessResult> GetProductPreviewBySlug(ProductGetBySlugQuery query)
+    {
+        var queryable = _productRepository.GetQueryable();
+
+        if (!string.IsNullOrEmpty(query.Slug))
+            queryable = queryable.Where(m =>
+                m.Slug != null && m.Slug.ToLower().Trim() == (query.Slug.ToLower().Trim()));
+        queryable = queryable.Include(i => i.Category)
+            .Include(i => i.SubCategory)
+            .Include(i => i.Thumbnail)
+            .Include(i => i.Variants)
+            .ThenInclude(i => i.ProductMedias)
+            .ThenInclude(i => i.MediaBase);
+        var product = await queryable.SingleOrDefaultAsync();
+        var productResult = _mapper.Map<ProductPreviewResult>(product);
+        productResult.MinPrice = productResult.GetMinPrice();
+        productResult.MaxPrice = productResult.GetMaxPrice();
+
+        return new BusinessResult(productResult);
+    }
+
 
     public async Task<BusinessResult> GetById(ProductGetByIdQuery request)
     {

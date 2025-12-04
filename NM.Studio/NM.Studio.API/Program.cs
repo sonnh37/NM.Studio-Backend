@@ -6,10 +6,12 @@ using NM.Studio.API.Extensions;
 using NM.Studio.Domain.Configs.Mapping;
 using NM.Studio.Domain.Configs.Slugify;
 using NM.Studio.Domain.Shared.Handler;
+using NM.Studio.Domain.Utilities;
 
 Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.LoadAssemblies();
 // builder.Host.AddAppConfiguration();
 // Add Cors
 builder.Services.AddHttpContextAccessor();
@@ -28,6 +30,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 builder.Services.ConfigureContext(builder.Configuration);
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
@@ -36,6 +39,8 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.ConfigureBind();
 builder.Services.AddServices();
 builder.Services.AddRepositories();
+builder.Services.AddFluentValidation();
+
 builder.Services.ConfigureAuth(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.ConfigureSwaggerGen();
@@ -43,21 +48,10 @@ builder.Services.ConfigureSwaggerGen();
 // -----------------app-------------------------
 
 var app = builder.Build();
+ValidatorHelper.ServiceProvider = app.Services;
 
 app.UseExceptionHandler();
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.DefaultModelsExpandDepth(-1);
-        options.DisplayRequestDuration();
-        options.EnableDeepLinking();
-        options.EnableFilter();
-    });
-}
 
-app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseCors(ServiceExtensions.CorsPolicyName);
@@ -71,5 +65,19 @@ app.Lifetime.ApplicationStarted.Register(() =>
 {
     logger.LogInformation("[Successfully] Server started successfully and is listening for requests...");
 });
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.DefaultModelsExpandDepth(-1);
+        options.DisplayRequestDuration();
+        options.EnableDeepLinking();
+        options.EnableFilter();
+    });
+}
+
+app.UseHttpsRedirection();
 
 app.Run();
