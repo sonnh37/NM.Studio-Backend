@@ -33,6 +33,10 @@ public class AuthController : BaseController
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] UserLogoutCommand request)
     {
+        string? ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                     ?? HttpContext.Request.Headers["X-Real-IP"].FirstOrDefault()
+                     ?? HttpContext.Connection.RemoteIpAddress?.ToString();
+        request.IpAddress = ip;
         var businessResult = await _authService.Logout(request);
 
         return Ok(businessResult);

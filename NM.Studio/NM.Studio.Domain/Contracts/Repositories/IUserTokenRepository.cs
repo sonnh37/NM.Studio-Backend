@@ -6,6 +6,8 @@ namespace NM.Studio.Domain.Contracts.Repositories;
 public interface IUserTokenRepository : IBaseRepository<UserToken>
 {
     Task<UserToken?> GetByRefreshTokenAsync(string refreshToken);
+
+    Task<UserToken?> GetByRefreshTokenAndIpAsync(string refreshToken, string ip);
     // Task<UserToken?> GetByUserIdAndKeyIdAsync(Guid userId, string kid);
     Task CleanupExpiredTokensAsync();
 }

@@ -143,8 +143,10 @@ public class AuthService : IAuthService
 
     public async Task<BusinessResult> Logout(UserLogoutCommand userLogoutCommand)
     {
+        if(userLogoutCommand.IpAddress == null) throw new NotFoundException("Not found address");
+        var ipNormalize = CommonHelper.NormalizeIP(userLogoutCommand.IpAddress);
         var userRefreshToken = await _userTokenRepository
-            .GetByRefreshTokenAsync(userLogoutCommand.RefreshToken ?? string.Empty);
+            .GetByRefreshTokenAndIpAsync(userLogoutCommand.RefreshToken ?? string.Empty, ipNormalize);
         if (userRefreshToken == null)
             throw new DomainException("You are not logged in, please log in to continue.");
         _userTokenRepository.Delete(userRefreshToken, true);

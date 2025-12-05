@@ -20,6 +20,16 @@ public class UserTokenRepository : BaseRepository<UserToken>, IUserTokenReposito
         return entity;
     }
 
+    public async Task<UserToken?> GetByRefreshTokenAndIpAsync(string refreshToken, string ip)
+    {
+        var queryable = GetQueryable(x => x.RefreshToken != null && x.IpAddress != null 
+                                                                 && x.RefreshToken.ToLower() == refreshToken.ToLower()
+                                                                 &&  x.IpAddress == ip);
+        var entity = await queryable.SingleOrDefaultAsync();
+
+        return entity;
+    }
+
     // public async Task<UserToken?> GetByUserIdAndKeyIdAsync(Guid userId, string kid)
     // {
     //     var queryable = GetQueryable(x =>
