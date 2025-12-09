@@ -79,15 +79,15 @@ public class AlbumService : BaseService, IAlbumService
 
     private void SetAlbumCover(AlbumResult albumResult)
     {
-        string? coverUrl = null;
-        if (albumResult.AlbumImages.Count > 0)
-        {
-            coverUrl = albumResult.AlbumImages
-                .Where(m => m.IsCover)
-                .Select(n => n.Image?.MediaUrl).FirstOrDefault();
-        }
-
-        albumResult.CoverUrl = coverUrl;
+        // string? coverUrl = null;
+        // if (albumResult.AlbumImages.Count > 0)
+        // {
+        //     coverUrl = albumResult.AlbumImages
+        //         .Where(m => m.IsCover)
+        //         .Select(n => n.Image?.MediaUrl).FirstOrDefault();
+        // }
+        //
+        // albumResult.CoverUrl = coverUrl;
     }
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
@@ -145,12 +145,12 @@ public class AlbumService : BaseService, IAlbumService
         if (entity == null)
             throw new NotFoundException(Const.NOT_FOUND_MSG);
 
-        if (entity.IsCover) throw new DomainException("This image is already cover");
-
-        foreach (var albumImage in albumImages)
-        {
-            albumImage.IsCover = (albumImage.ImageId == updateCommand.ImageId);
-        }
+        // if (entity.IsCover) throw new DomainException("This image is already cover");
+        //
+        // foreach (var albumImage in albumImages)
+        // {
+        //     albumImage.IsCover = (albumImage.ImageId == updateCommand.ImageId);
+        // }
 
         _albumImageRepository.UpdateRange(albumImages);
 
@@ -206,7 +206,7 @@ public class AlbumService : BaseService, IAlbumService
         {
             AlbumId = album.Id,
             ImageId = imageId,
-            IsCover = false,
+            // IsCover = false,
         }).ToList();
 
         // 7. Lấy các AlbumImage cần xóa

@@ -1,4 +1,5 @@
-﻿using NM.Studio.Domain.Entities.Bases;
+﻿using System.Net.Mime;
+using NM.Studio.Domain.Entities.Bases;
 
 namespace NM.Studio.Domain.Entities;
 
@@ -13,5 +14,9 @@ public class Album : BaseEntity
     public string? Location { get; set; }
     public string? Photographer { get; set; }
     public bool IsFeatured { get; set; }
+    public Guid? ThumbnailId { get; set; }
+    public Guid? CoverId { get; set; }
+    public virtual MediaBase? Thumbnail { get; set; }
+    public virtual MediaBase? Cover { get; set; }
     public virtual ICollection<AlbumImage> AlbumImages { get; set; } = new List<AlbumImage>();
 }

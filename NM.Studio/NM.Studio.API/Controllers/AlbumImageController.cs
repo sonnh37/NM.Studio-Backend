@@ -39,4 +39,20 @@ public class AlbumImageController : BaseController
 
         return Ok(businessResult);
     }
+    
+    [HttpPost("list")]
+    public async Task<IActionResult> CreateListProductMedia([FromBody] List<AlbumImageCreateCommand> request)
+    {
+        var businessResult = await _albumImageService.CreateList(request);
+
+        return Ok(businessResult);
+    }
+    
+    [HttpDelete("list")]
+    public async Task<IActionResult> DeleteList([FromBody] List<AlbumImageDeleteCommand> request)
+    {
+        var businessResult = await  _albumImageService.DeleteList(request);
+
+        return Ok(businessResult);
+    }
 }

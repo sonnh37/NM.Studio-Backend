@@ -12,4 +12,6 @@ public interface IAlbumImageService : IBaseService
 
     // Task<BusinessResult> GetById(AlbumImageGetByIdQuery request);
     Task<BusinessResult> Delete(AlbumImageDeleteCommand command);
+    Task<BusinessResult> CreateList(List<AlbumImageCreateCommand> commands);
+    Task<BusinessResult> DeleteList(List<AlbumImageDeleteCommand> commands);
 }

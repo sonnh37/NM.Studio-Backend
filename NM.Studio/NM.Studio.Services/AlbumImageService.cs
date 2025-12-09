@@ -6,6 +6,7 @@ using NM.Studio.Domain.Contracts.UnitOfWorks;
 using NM.Studio.Domain.Entities;
 using NM.Studio.Domain.Models.CQRS.Commands.AlbumImages;
 using NM.Studio.Domain.Models.CQRS.Commands.Base;
+using NM.Studio.Domain.Models.CQRS.Commands.MediaBases;
 using NM.Studio.Domain.Models.Results;
 using NM.Studio.Domain.Models.Results.Bases;
 using NM.Studio.Domain.Shared.Exceptions;
@@ -17,11 +18,13 @@ namespace NM.Studio.Services;
 public class AlbumImageService : BaseService, IAlbumImageService
 {
     private readonly IAlbumImageRepository _albumImageRepository;
+    private readonly IMediaBaseService _mediaBaseService;
 
     public AlbumImageService(IMapper mapper,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork, IMediaBaseService mediaBaseService)
         : base(mapper, unitOfWork)
     {
+        _mediaBaseService = mediaBaseService;
         _albumImageRepository = _unitOfWork.AlbumImageRepository;
     }
 
@@ -60,6 +63,68 @@ public class AlbumImageService : BaseService, IAlbumImageService
     //
     //     return new BusinessResult(result);
     // }
+    
+    // public async Task<BusinessResult> CreateWithImages(List<AlbumImageCreateCommand> createCommand)
+    // {
+    //     if (createCommand.ImageIds == null || createCommand.ImageIds.Count <= 0)
+    //         throw new DomainException("Not found images");
+    //
+    //     // Input: A, B, C, D
+    //     var album = await _albumRepository.GetQueryable(m => m.Id == createCommand.AlbumId)
+    //         .SingleOrDefaultAsync();
+    //     if (album == null) throw new DomainException("Not found album");
+    //
+    //     // DB: A, B, E
+    //     // 1. Lấy các AlbumImage đã tồn tại trong album
+    //     var albumImageExisted = await _albumImageRepository
+    //         .GetQueryable(n => n.ImageId != null && n.AlbumId == album.Id)
+    //         .ToListAsync();
+    //
+    //     // 2. Lấy các ImageId đã tồn tại
+    //     var oldImageIds = albumImageExisted
+    //         .Where(w => w.ImageId != null)
+    //         .Select(m => m.ImageId!.Value)
+    //         .ToList();
+    //
+    //     // 3. Lấy các ImageId cần XÓA (có trong DB nhưng không có trong input)
+    //     var imageIdsToRemove = oldImageIds
+    //         .Except(createCommand.ImageIds)
+    //         .ToList();
+    //
+    //     // 4. Lấy các ImageId cần THÊM (có trong input nhưng không có trong DB)
+    //     var newImageIds = createCommand.ImageIds
+    //         .Except(oldImageIds)
+    //         .ToList();
+    //
+    //     // 5. Kiểm tra các ImageId mới có tồn tại trong MediaBase không
+    //     var validNewImages = await _mediaBaseRepository
+    //         .GetQueryable(m => newImageIds.Contains(m.Id))
+    //         .Select(s => s.Id)
+    //         .ToListAsync();
+    //
+    //     // 6. Tạo AlbumImage mới để thêm
+    //     var albumImagesToAdd = validNewImages.Select(imageId => new AlbumImage
+    //     {
+    //         AlbumId = album.Id,
+    //         ImageId = imageId,
+    //         IsCover = false,
+    //     }).ToList();
+    //
+    //     // 7. Lấy các AlbumImage cần xóa
+    //     var albumImagesToRemove = albumImageExisted
+    //         .Where(ai => imageIdsToRemove.Contains(ai.ImageId!.Value))
+    //         .ToList();
+    //
+    //     _albumImageRepository.AddRange(albumImagesToAdd);
+    //     _albumImageRepository.DeleteRange(albumImagesToRemove, true);
+    //
+    //     var saveChanges = await _unitOfWork.SaveChanges();
+    //     if (!saveChanges)
+    //         throw new Exception("Save changes failed");
+    //
+    //     return new BusinessResult();
+    // }
+
 
     public async Task<BusinessResult> CreateOrUpdate(CreateOrUpdateCommand createOrUpdateCommand)
     {
@@ -106,6 +171,64 @@ public class AlbumImageService : BaseService, IAlbumImageService
 
         if (!saveChanges)
             throw new Exception();
+
+        return new BusinessResult();
+    }
+    
+    public async Task<BusinessResult> CreateList(List<AlbumImageCreateCommand> commands)
+    {
+        await commands.ValidateDynamicAsync();
+
+        List<AlbumImage>? entities = null;
+
+        entities = _mapper.Map<List<AlbumImage>>(commands);
+        if (entities == null) throw new NotFoundException(Const.NOT_FOUND_MSG);
+        entities.ForEach(x => x.CreatedDate = DateTimeOffset.UtcNow);
+        _albumImageRepository.AddRange(entities);
+
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception();
+
+        var result = _mapper.Map<List<AlbumImageResult>>(entities);
+
+        return new BusinessResult(result);
+    }
+    
+    public async Task<BusinessResult> DeleteList(List<AlbumImageDeleteCommand> commands)
+    {
+        if (commands == null || commands.Count == 0)
+            throw new DomainException("Command list is empty");
+
+
+        foreach (var command in commands)
+        {
+            var entity = await _albumImageRepository
+                .GetQueryable(m => m.AlbumId == command.AlbumId &&
+                                   m.ImageId == command.ImageId)
+                .SingleOrDefaultAsync();
+
+            if (entity == null)
+                throw new NotFoundException(
+                    $"Not found: AlbumId={command.AlbumId}, ImageId={command.ImageId}");
+
+            _albumImageRepository.Delete(entity, command.IsPermanent);
+        }
+        
+        var saveChanges = await _unitOfWork.SaveChanges();
+        if (!saveChanges)
+            throw new Exception("Failed to save changes");
+
+        // Xóa MediaBase cho các permanent delete
+        foreach (var command in commands.Where(c => c.IsPermanent))
+        {
+            var mediaBaseDeleteCommand = new MediaBaseDeleteCommand
+            {
+                Id = command.ImageId,
+                IsPermanent = command.IsPermanent
+            };
+            await _mediaBaseService.Delete(mediaBaseDeleteCommand);
+        }
 
         return new BusinessResult();
     }

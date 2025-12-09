@@ -12,8 +12,10 @@ public class AlbumResult : BaseResult
     public string? GroomName { get; set; }
     public string? Location { get; set; }
     public string? Photographer { get; set; }
-    public string? CoverUrl { get; set; }
-    
     public bool IsFeatured { get; set; }
+    public Guid? ThumbnailId { get; set; }
+    public Guid? CoverId { get; set; }
+    public MediaBaseResult? Thumbnail { get; set; }
+    public MediaBaseResult? Cover { get; set; }
     public ICollection<AlbumImageResult> AlbumImages { get; set; } = new List<AlbumImageResult>();
 }
